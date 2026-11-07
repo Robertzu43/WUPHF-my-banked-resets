@@ -19,6 +19,15 @@ class WebTests(unittest.TestCase):
         res,_=self.request('GET','/api/settings');self.assertEqual(res.status,403)
         res,_=self.request('POST','/api/settings',{}, {'Cookie':'wuphf_session=test-token','Origin':'https://other.example','X-WUPHF-Token':'test-token'})
         self.assertEqual(res.status,403)
+    def test_pixel_font_is_same_origin_and_requires_session(self):
+        res,_=self.request('GET','/assets/geist-pixel-square.woff2')
+        self.assertEqual(res.status,403)
+        res,body=self.request('GET','/assets/geist-pixel-square.woff2',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,200)
+        self.assertEqual(res.getheader('Content-Type'),'font/woff2')
+        self.assertTrue(body.startswith(b'wOF2'))
+        res,_=self.request('GET','/assets/not-a-font.woff2',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,404)
     def test_only_safe_status_is_exposed(self):
         sample={'count':1,'complete':True,'credits':[{'id':'SECRET-ID','status':'available','expiresAt':1796070020}]}
         with patch('wuphf.web.read_snapshot',return_value=sample),patch('wuphf.web.load',return_value={}):

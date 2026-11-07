@@ -19,6 +19,7 @@ from .reminders import ics
 from .i18n import languages, _all, translate
 
 PAGE=Path(__file__).with_name('web.html')
+PIXEL_FONT=Path(__file__).with_name('assets')/'geist-pixel-square.woff2'
 FIELDS={'telegram':{'chat_id','token'},'email':{'host','port','username','from','to','password'},'ntfy':{'url','topic','token'},'gmail':{'to'}}
 
 
@@ -78,6 +79,7 @@ def create_server(port=0,token=None):
             if not self.authorized():return self.write(403,{'error':'Forbidden'})
             try:
                 if url.path=='/':return self.write(200,PAGE.read_bytes().replace(b'__CSRF_TOKEN__',token.encode()),'text/html; charset=utf-8')
+                if url.path=='/assets/geist-pixel-square.woff2':return self.write(200,PIXEL_FONT.read_bytes(),'font/woff2')
                 if url.path=='/api/settings':return self.write(200,load(cli.SETTINGS,{'advance_days':7,'repeat_hours':24,'channels':{}}))
                 if url.path=='/api/translations':return self.write(200,_all())
                 if url.path=='/api/status':return self.write(200,safe_status())
