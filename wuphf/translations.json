@@ -1,7 +1,7 @@
 {
   "en": {
     "language": "Language",
-    "header": "Codex banked reset reminders",
+    "header": "for Codex banked resets",
     "eyebrow": "A reminder for your Codex reset bank",
     "headline": "Don't miss banked resets.",
     "lead": "Your banked Codex resets have an expiration date. We'll help you remember it.",
@@ -101,7 +101,7 @@
   },
   "es": {
     "language": "Idioma",
-    "header": "Recordatorios de reinicios guardados de Codex",
+    "header": "para reinicios guardados de Codex",
     "eyebrow": "Un recordatorio para tus reinicios guardados de Codex",
     "headline": "No dejes vencer tus reinicios guardados.",
     "lead": "Tus reinicios guardados de Codex tienen fecha de vencimiento. Te ayudamos a recordarla.",
@@ -201,7 +201,7 @@
   },
   "de": {
     "language": "Sprache",
-    "header": "Erinnerungen an gespeicherte Codex-Resets",
+    "header": "für gespeicherte Codex-Resets",
     "eyebrow": "Eine Erinnerung für Ihre gespeicherten Codex-Resets",
     "headline": "Gespeicherte Resets nicht verpassen.",
     "lead": "Ihre gespeicherten Codex-Resets haben ein Ablaufdatum. Wir erinnern Sie daran.",
@@ -301,7 +301,7 @@
   },
   "pt": {
     "language": "Idioma",
-    "header": "Lembretes de redefinições guardadas do Codex",
+    "header": "para redefinições guardadas do Codex",
     "eyebrow": "Um lembrete para suas redefinições guardadas do Codex",
     "headline": "Não perca suas redefinições guardadas.",
     "lead": "Suas redefinições guardadas do Codex têm prazo de validade. Vamos ajudar você a se lembrar.",
@@ -401,7 +401,7 @@
   },
   "fr": {
     "language": "Langue",
-    "header": "Rappels des réinitialisations Codex en réserve",
+    "header": "pour les réinitialisations Codex en réserve",
     "eyebrow": "Un rappel pour vos réinitialisations Codex en réserve",
     "headline": "Ne manquez pas vos réinitialisations en réserve.",
     "lead": "Vos réinitialisations Codex en réserve ont une date d’expiration. Nous vous aidons à vous en souvenir.",
@@ -501,7 +501,7 @@
   },
   "ja": {
     "language": "言語",
-    "header": "Codex の保存済みリセットのリマインダー",
+    "header": "Codex の保存済みリセットのために",
     "eyebrow": "Codex の保存済みリセットをお知らせ",
     "headline": "保存済みリセットをお見逃しなく。",
     "lead": "Codex の保存済みリセットには有効期限があります。期限をお知らせします。",
@@ -601,7 +601,7 @@
   },
   "ko": {
     "language": "언어",
-    "header": "Codex 저장된 리셋 알림",
+    "header": "Codex 저장된 리셋을 위해",
     "eyebrow": "저장된 Codex 리셋을 위한 알림",
     "headline": "저장된 리셋을 놓치지 마세요.",
     "lead": "저장된 Codex 리셋에는 만료일이 있습니다. 잊지 않도록 알려드릴게요.",
@@ -701,7 +701,7 @@
   },
   "zh": {
     "language": "语言",
-    "header": "Codex 已保存重置提醒",
+    "header": "为 Codex 已保存的重置",
     "eyebrow": "提醒您使用已保存的 Codex 重置",
     "headline": "别错过已保存的重置。",
     "lead": "您保存的 Codex 重置有到期时间。我们会帮您记住。",

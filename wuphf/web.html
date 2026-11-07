@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WUPHF · Codex banked resets</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WUPHF! for Codex banked resets</title>
 <style>
 :root {
   color-scheme: light;
@@ -95,7 +95,7 @@ summary { cursor: pointer; font-size: .85rem; font-weight: 600; }
 @media (max-width: 380px) { .controls { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 </style></head><body>
-<header><strong class="wordmark" aria-label="WUPHF!"><span aria-hidden="true">W</span><span aria-hidden="true">U</span><span aria-hidden="true">P</span><span aria-hidden="true">H</span><span aria-hidden="true">F</span><span aria-hidden="true">!</span></strong><span>Codex banked reset reminders</span><div class="locale"><label id="language-label" for="language">Language</label><select id="language" aria-labelledby="language-label"><option value="en">English</option><option value="es">Español</option><option value="de">Deutsch</option><option value="pt">Português</option><option value="fr">Français</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">简体中文</option></select></div></header>
+<header><strong class="wordmark" aria-label="WUPHF!"><span aria-hidden="true">W</span><span aria-hidden="true">U</span><span aria-hidden="true">P</span><span aria-hidden="true">H</span><span aria-hidden="true">F</span><span aria-hidden="true">!</span></strong><span>for Codex banked resets</span><div class="locale"><label id="language-label" for="language">Language</label><select id="language" aria-labelledby="language-label"><option value="en">English</option><option value="es">Español</option><option value="de">Deutsch</option><option value="pt">Português</option><option value="fr">Français</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">简体中文</option></select></div></header>
 <main class="wrap"><div class="hero"><section class="headline"><div class="eyebrow">A reminder for your Codex reset bank</div><h1>Don't miss<br><em>banked resets.</em></h1><p class="lead">Your banked Codex resets have an expiration date. We'll help you remember it.</p><div class="stamp" aria-hidden="true">PLEASE<br>WUPHF<br>ME</div></section><section class="card" aria-labelledby="balance-title"><div class="section-head"><div><div class="eyebrow">Your banked resets</div><h2 id="balance-title">Available now</h2></div><span class="tag">Live status</span></div><div class="status-number" id="count">—</div><div id="status-note" class="note" aria-live="polite">Checking Codex…</div><ul id="dates" class="date-list"></ul><button class="secondary" type="button" id="refresh">Refresh</button></section></div>
 <div class="content"><div class="stack"><section class="card"><div class="section-head"><div><div class="eyebrow">Notifications</div><h2>How should we WUPHF you?</h2></div><span class="tag">Your choice</span></div><p>Pick one channel or all three. Your secrets stay in your Mac's Keychain.</p><form id="settings"><div class="controls"><div><label for="advance">Start reminders, days before</label><input id="advance" type="number" min="0.1" step="0.1" required></div><div><label for="repeat">Repeat every, hours</label><input id="repeat" type="number" min="0.17" step="any" required></div></div>
 <div class="channel"><label class="toggle"><input type="checkbox" id="use-telegram"> Telegram</label><div class="channel-fields" id="fields-telegram" hidden><label for="telegram-chat">Chat ID</label><input id="telegram-chat" autocomplete="off"><label for="telegram-token">Bot token</label><input id="telegram-token" type="password" autocomplete="new-password" placeholder="Leave blank to keep saved token"><p class="note">Create a bot with @BotFather and start a chat with it first.</p><button class="secondary test" data-channel="telegram" type="button">Send test</button></div></div>
@@ -115,7 +115,7 @@ function rememberText(){
   for(const input of document.querySelectorAll('input[placeholder]')){const key=reverse.get(input.placeholder);if(key)placeholders.push([input,key])}
 }
 function applyLanguage(){
-  document.documentElement.lang=locale();document.title='WUPHF · '+t('your_resets');$('language').value=language;
+  document.documentElement.lang=locale();document.title='WUPHF! '+t('header');$('language').value=language;
   for(const [node,key] of textNodes)node.nodeValue=t(key);
   for(const [input,key] of placeholders)input.placeholder=t(key);
   document.querySelector('h1').textContent=t('headline');document.querySelector('.stamp').textContent=t('stamp');

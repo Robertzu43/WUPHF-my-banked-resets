@@ -1,6 +1,6 @@
-# WUPHF My Resets
+# WUPHF! for Codex Banked Resets
 
-WUPHF tracks your banked Codex resets and reminds you before they expire. This is an **early macOS prototype**, not a finished release; don't rely on it as your only reminder until the notification and calendar connections have been tested on your account.
+Inspired by WUPHF from *The Office*, WUPHF! for Codex Banked Resets tracks your saved Codex resets and reminds you before they expire through the channels you choose. This is an **early macOS prototype**, not a finished release; don't rely on it as your only reminder until the notification and calendar connections have been tested on your account.
 
 ## Open WUPHF
 
