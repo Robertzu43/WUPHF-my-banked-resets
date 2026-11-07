@@ -7,18 +7,25 @@
   --muted: #595a58;
   --subtle: #747571;
   --surface: #fff;
-  --canvas: #f5f5f2;
-  --line: #e2e2df;
-  --accent: #116d5b;
+  --canvas: #f3f6ff;
+  --line: #dfe6f5;
+  --accent: #254bd0;
   --ease: cubic-bezier(.22, 1, .36, 1);
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--canvas); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
 button, input { font: inherit; }
 button { cursor: pointer; }
-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px max(24px, calc((100vw - 1120px) / 2)); background: #171717; color: #fff; }
-header strong { font-size: 1.45rem; font-weight: 650; letter-spacing: -.055em; }
-header span { color: #c8c9c4; font-size: .75rem; letter-spacing: .015em; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px max(24px, calc((100vw - 1120px) / 2)); background: #122359; color: #fff; }
+header strong { display: inline-flex; align-items: baseline; font-size: 1.45rem; font-weight: 650; letter-spacing: -.055em; }
+header > span { color: #d6e1ff; font-size: .75rem; letter-spacing: .015em; }
+.wordmark span { display: inline-block; transform-origin: 50% 80%; animation: letter-hello .8s var(--ease) both; }
+.wordmark span:nth-child(2) { animation-delay: .05s; }
+.wordmark span:nth-child(3) { animation-delay: .1s; }
+.wordmark span:nth-child(4) { animation-delay: .15s; }
+.wordmark span:nth-child(5) { animation-delay: .2s; }
+.wordmark span:nth-child(6) { animation-delay: .25s; }
+.wordmark:hover span { animation-name: letter-wiggle; animation-duration: .65s; }
 .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 24px 72px; }
 .hero, .content { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: 20px; }
 .headline, .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; }
@@ -27,14 +34,14 @@ header span { color: #c8c9c4; font-size: .75rem; letter-spacing: .015em; }
 h1 { position: relative; z-index: 1; max-width: 630px; font-size: clamp(3rem, 6vw, 5.25rem); font-weight: 550; letter-spacing: -.065em; line-height: .98; margin: 20px 0; }
 h1 em { font-style: normal; font-weight: inherit; }
 .lead { position: relative; z-index: 1; max-width: min(410px, calc(100% - 112px)); color: var(--muted); font-size: 1.05rem; line-height: 1.55; margin: 0; }
-.stamp { position: absolute; right: 36px; bottom: 32px; display: grid; place-items: center; width: 96px; height: 96px; border: 1px solid #d0e4dd; border-radius: 50%; color: var(--accent); background: #edf7f3; font-size: .65rem; line-height: 1.25; font-weight: 650; text-align: center; transform: rotate(-9deg); }
-.stamp::before, .stamp::after { content: ""; position: absolute; border: 1px solid #d0e4dd; border-radius: 50%; inset: -9px; pointer-events: none; }
+.stamp { position: absolute; right: 36px; bottom: 32px; display: grid; place-items: center; width: 96px; height: 96px; border: 1px solid #c5d5ff; border-radius: 50%; color: var(--accent); background: #edf2ff; font-size: .65rem; line-height: 1.25; font-weight: 650; text-align: center; transform: rotate(-9deg); }
+.stamp::before, .stamp::after { content: ""; position: absolute; border: 1px solid #c5d5ff; border-radius: 50%; inset: -9px; pointer-events: none; }
 .stamp::after { inset: -18px; opacity: .5; }
 .card { padding: 28px; }
 .card h2 { font-size: 1.4rem; letter-spacing: -.035em; font-weight: 550; line-height: 1.2; margin: 8px 0 12px; }
 .card p { color: var(--muted); line-height: 1.55; }
 .section-head { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
-.tag { display: inline-flex; align-items: center; gap: 7px; color: var(--accent); background: #edf7f3; padding: 7px 10px; border-radius: 20px; white-space: nowrap; font-size: .7rem; font-weight: 600; }
+.tag { display: inline-flex; align-items: center; gap: 7px; color: var(--accent); background: #edf2ff; padding: 7px 10px; border-radius: 20px; white-space: nowrap; font-size: .7rem; font-weight: 600; }
 .tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .status-number { font-size: 4.6rem; font-weight: 500; letter-spacing: -.075em; line-height: 1; margin: 28px 0 8px; font-variant-numeric: tabular-nums; }
 .date-list { padding: 0; list-style: none; font-size: .9rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
@@ -44,24 +51,24 @@ h1 em { font-style: normal; font-weight: inherit; }
 .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 label { display: block; color: var(--muted); font-size: .78rem; font-weight: 600; line-height: 1.4; margin: 16px 0 6px; }
 input:not([type=checkbox]) { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid #cfcfcb; border-radius: 9px; background: #fff; color: var(--ink); }
-input:focus, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #85bbaa; outline-offset: 3px; }
+input:focus, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #7698ff; outline-offset: 3px; }
 .channel { border-top: 1px solid var(--line); padding: 8px 0 16px; }
 .toggle { display: flex; align-items: center; gap: 10px; color: var(--ink); font-size: .95rem; cursor: pointer; }
 .toggle input { accent-color: var(--accent); width: 18px; height: 18px; }
 .channel-fields { padding: 0 0 8px 28px; animation: reveal .35s var(--ease) both; }
 .channel-fields[hidden] { display: none; }
 .primary, .secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 10px 16px; border-radius: 9px; font-size: .82rem; font-weight: 600; text-decoration: none; transition: transform .18s var(--ease), background-color .18s ease, border-color .18s ease; }
-.primary { border: 1px solid var(--ink); background: var(--ink); color: #fff; }
+.primary { border: 1px solid var(--accent); background: var(--accent); color: #fff; }
 .secondary { border: 1px solid #d0d1cd; background: #fff; color: var(--ink); }
-.primary:hover { background: #333; transform: translateY(-2px); }
-.secondary:hover { background: #f4f5f2; border-color: #acb1aa; transform: translateY(-2px); }
+.primary:hover { background: #1b3bab; transform: translateY(-2px); }
+.secondary:hover { background: #f1f4fc; border-color: #9eb4f5; transform: translateY(-2px); }
 .primary:active, .secondary:active { transform: translateY(0); }
 button:disabled { opacity: .65; cursor: wait; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .note { color: var(--muted); font-size: .8rem; line-height: 1.55; }
 .flash { min-height: 1.5em; color: #9b4437; font-size: .85rem; font-weight: 600; line-height: 1.5; }
 .footer { margin-top: 28px; color: var(--subtle); font-size: .8rem; }
-.warning { background: #f4f5f2; border-radius: 10px; padding: 14px 16px; font-size: .88rem; line-height: 1.5; }
+.warning { background: #f1f4fc; border-radius: 10px; padding: 14px 16px; font-size: .88rem; line-height: 1.5; }
 summary { cursor: pointer; font-size: .85rem; font-weight: 600; }
 .hero > *, .content > .stack > *, .footer { animation: rise .7s var(--ease) both; }
 .hero > :nth-child(2) { animation-delay: .07s; }
@@ -69,7 +76,11 @@ summary { cursor: pointer; font-size: .85rem; font-weight: 600; }
 .content > .stack:last-child > :nth-child(1) { animation-delay: .17s; }
 .content > .stack:last-child > :nth-child(2) { animation-delay: .22s; }
 .stamp { animation: stamp-in .8s .18s var(--ease) both; }
+.stamp:hover { animation: stamp-wiggle .7s var(--ease) both; }
 .status-number.is-updated { animation: count-in .45s var(--ease); }
+@keyframes letter-hello { 0% { opacity: 0; transform: translateY(8px) rotate(-8deg); } 55% { opacity: 1; transform: translateY(-5px) rotate(5deg); } 100% { opacity: 1; transform: translateY(0) rotate(0); } }
+@keyframes letter-wiggle { 0%, 100% { transform: translateY(0) rotate(0); } 45% { transform: translateY(-5px) rotate(7deg); } 70% { transform: translateY(2px) rotate(-5deg); } }
+@keyframes stamp-wiggle { 0%, 100% { transform: rotate(-9deg); } 30% { transform: rotate(4deg) scale(1.06); } 60% { transform: rotate(-15deg) scale(.98); } }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes reveal { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes stamp-in { from { opacity: 0; transform: rotate(-16deg) scale(.85); } to { opacity: 1; transform: rotate(-9deg) scale(1); } }
@@ -79,7 +90,7 @@ summary { cursor: pointer; font-size: .85rem; font-weight: 600; }
 @media (max-width: 380px) { .controls { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 </style></head><body>
-<header><strong>WUPHF!</strong><span>Your reset reminder, on your Mac</span></header>
+<header><strong class="wordmark" aria-label="WUPHF!"><span aria-hidden="true">W</span><span aria-hidden="true">U</span><span aria-hidden="true">P</span><span aria-hidden="true">H</span><span aria-hidden="true">F</span><span aria-hidden="true">!</span></strong><span>Your reset reminder, on your Mac</span></header>
 <main class="wrap"><div class="hero"><section class="headline"><div class="eyebrow">A friendly reminder from your Mac</div><h1>Don't miss<br><em>the reset.</em></h1><p class="lead">Your banked Codex resets have an expiration date. We'll help you remember it.</p><div class="stamp" aria-hidden="true">PLEASE<br>WUPHF<br>ME</div></section><section class="card" aria-labelledby="balance-title"><div class="section-head"><div><div class="eyebrow">Your resets</div><h2 id="balance-title">Available now</h2></div><span class="tag">Live status</span></div><div class="status-number" id="count">—</div><div id="status-note" class="note" aria-live="polite">Checking Codex…</div><ul id="dates" class="date-list"></ul><button class="secondary" type="button" id="refresh">Refresh</button></section></div>
 <div class="content"><div class="stack"><section class="card"><div class="section-head"><div><div class="eyebrow">Delivery</div><h2>How should we WUPHF you?</h2></div><span class="tag">Your choice</span></div><p>Pick one channel or all three. Your secrets stay in your Mac's Keychain.</p><form id="settings"><div class="controls"><div><label for="advance">Start reminders, days before</label><input id="advance" type="number" min="0.1" step="0.1" required></div><div><label for="repeat">Repeat every, hours</label><input id="repeat" type="number" min="0.17" step="any" required></div></div>
 <div class="channel"><label class="toggle"><input type="checkbox" id="use-telegram"> Telegram</label><div class="channel-fields" id="fields-telegram" hidden><label for="telegram-chat">Chat ID</label><input id="telegram-chat" autocomplete="off"><label for="telegram-token">Bot token</label><input id="telegram-token" type="password" autocomplete="new-password" placeholder="Leave blank to keep saved token"><p class="note">Create a bot with @BotFather and start a chat with it first.</p><button class="secondary test" data-channel="telegram" type="button">Send test</button></div></div>
