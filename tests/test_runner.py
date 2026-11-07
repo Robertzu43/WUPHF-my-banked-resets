@@ -35,6 +35,13 @@ class RunnerTests(unittest.TestCase):
             for s in (first,second,second):check(s,settings,p,now=900,deliver=lambda *a:calls.append(a))
             self.assertEqual(len(calls),1)
             self.assertIn('new',calls[0][2].lower())
+    def test_partial_snapshot_does_not_send_expiry_reminders(self):
+        partial={'count':2,'complete':False,'credits':[{'id':'a','status':'available','expiresAt':1000}]}
+        settings={'advance_days':1,'repeat_hours':1,'channels':{'ntfy':{}}};calls=[]
+        with tempfile.TemporaryDirectory() as d:
+            state=check(partial,settings,Path(d)/'state.json',now=900,deliver=lambda *args:calls.append(args))
+            self.assertEqual(calls,[])
+            self.assertEqual(state['ledger'],{})
     def test_failed_check_never_compares_across_incomplete_gap(self):
         old={'count':0,'complete':True,'credits':[]}
         partial={'count':1,'complete':False,'credits':None}

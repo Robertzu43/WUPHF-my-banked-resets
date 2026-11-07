@@ -6,6 +6,7 @@ from .i18n import translate
 
 
 def pending(snap, channels, ledger, now, advance, repeat):
+    if not snap.get('complete'): return []
     result=[]
     for credit in snap.get('credits') or []:
         if credit.get('status', 'available') != 'available': continue

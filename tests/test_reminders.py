@@ -10,7 +10,7 @@ class ReminderTests(unittest.TestCase):
         reminders=pending(snap,['email','ntfy'],sent,now=900,advance=200,repeat=50)
         self.assertEqual([(x[0]['id'],x[1]) for x in reminders],[('a','ntfy')])
     def test_no_reminder_for_missing_or_expired_dates(self):
-        snap={'credits':[{'id':'a','expiresAt':None},{'id':'b','expiresAt':900}], 'complete':False}
+        snap={'credits':[{'id':'a','expiresAt':None},{'id':'b','expiresAt':900}], 'complete':True}
         self.assertEqual(pending(snap,['email'],{},900,200,50),[])
     def test_calendar_is_a_snapshot_with_utc_expiry_and_escapes(self):
         with patch('wuphf.reminders.datetime') as clock:
