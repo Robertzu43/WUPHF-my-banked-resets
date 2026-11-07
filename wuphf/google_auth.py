@@ -86,9 +86,10 @@ def sync(snap):
     tokens=token_request({'client_id':config['client_id'],'client_secret':secret,'refresh_token':refresh,'grant_type':'refresh_token'})
     access=tokens.get('access_token')
     if not access:raise RuntimeError('Google did not return an access token.')
+    language=load(cli.SETTINGS,{}).get('language','en')
     if not config.get('calendar_id'):
-        config['calendar_id']=create_calendar(access);save(GOOGLE,config)
-    api=GoogleCalendar(access,config['calendar_id']);mapping=load(MAPPING,{})
+        config['calendar_id']=create_calendar(access,language);save(GOOGLE,config)
+    api=GoogleCalendar(access,config['calendar_id'],language);mapping=load(MAPPING,{})
     reconcile(snap,mapping,api,lambda m:save(MAPPING,m))
     return True
 

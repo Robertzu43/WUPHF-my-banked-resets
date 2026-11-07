@@ -11,6 +11,10 @@ WUPHF tracks your banked Codex resets and reminds you before they expire. This i
 
 If Finder blocks an unsigned download, open Terminal, change into the project folder, and run `python3 -m wuphf.web`. You need Python 3.11 or newer and the signed-in Codex CLI. Checks run approximately every 10 minutes, so shorter intervals cannot be guaranteed.
 
+## Languages
+
+Choose English, Spanish, German, Portuguese, French, Japanese, Korean, or Simplified Chinese in the setup page. Your choice is saved and applies to the interface, reminders, and calendar events. Translations are machine-assisted; contributions from native speakers are welcome.
+
 ## Notifications
 
 - **Telegram:** Create a bot using Telegram's @BotFather, start a conversation with it, and enter its bot token and chat ID.

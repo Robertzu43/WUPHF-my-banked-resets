@@ -16,6 +16,7 @@ from .core import read_snapshot
 from .keychain import set_secret
 from .storage import load, save, check_lock
 from .reminders import ics
+from .i18n import languages, _all, translate
 
 PAGE=Path(__file__).with_name('web.html')
 FIELDS={'telegram':{'chat_id','token'},'email':{'host','port','username','from','to','password'},'ntfy':{'url','topic','token'}}
@@ -33,7 +34,7 @@ def clean_settings(payload):
                 if value: secret_values.append((name+'.'+key,str(value)))
             else: entry[key]=value
         channels[name]=entry
-    settings={'advance_days':payload.get('advance_days'),'repeat_hours':payload.get('repeat_hours'),'channels':channels}
+    settings={'advance_days':payload.get('advance_days'),'repeat_hours':payload.get('repeat_hours'),'channels':channels,'language':payload.get('language',load(cli.SETTINGS,{}).get('language','en'))}
     validate(settings)
     for name,value in secret_values: set_secret(name,value)
     return settings
@@ -78,6 +79,7 @@ def create_server(port=0,token=None):
             try:
                 if url.path=='/':return self.write(200,PAGE.read_bytes().replace(b'__CSRF_TOKEN__',token.encode()),'text/html; charset=utf-8')
                 if url.path=='/api/settings':return self.write(200,load(cli.SETTINGS,{'advance_days':7,'repeat_hours':24,'channels':{}}))
+                if url.path=='/api/translations':return self.write(200,_all())
                 if url.path=='/api/status':return self.write(200,safe_status())
                 if url.path=='/api/google/status':
                     from . import google_auth
@@ -86,8 +88,8 @@ def create_server(port=0,token=None):
                     return self.write(200,info)
                 if url.path=='/api/calendar':
                     snap=read_snapshot()
-                    if not snap['complete']:return self.write(409,{'error':'Reset details are incomplete; refresh before exporting.'})
-                    return self.write(200,ics(snap),'text/calendar; charset=utf-8',{'Content-Disposition':'attachment; filename="wuphf-resets.ics"'})
+                    if not snap['complete']:return self.write(409,{'error':translate('api_incomplete_error',load(cli.SETTINGS,{}).get('language','en'))})
+                    return self.write(200,ics(snap,load(cli.SETTINGS,{}).get('language','en')),'text/calendar; charset=utf-8',{'Content-Disposition':'attachment; filename="wuphf-resets.ics"'})
                 return self.write(404,{'error':'Not found'})
             except Exception:return self.write(503,{'error':'Could not check Codex. Verify sign-in and connection.'})
         def do_POST(self):
@@ -98,10 +100,15 @@ def create_server(port=0,token=None):
                 if length<0 or length>16384:raise ValueError('Request too large')
                 payload=json.loads(self.rfile.read(length) or b'{}')
                 if self.path=='/api/settings':save(cli.SETTINGS,clean_settings(payload))
+                elif self.path=='/api/language':
+                    language=payload.get('language')
+                    if language not in languages():raise ValueError('Unknown language')
+                    settings=load(cli.SETTINGS,{'advance_days':7,'repeat_hours':24,'channels':{}})
+                    settings['language']=language;validate(settings);save(cli.SETTINGS,settings)
                 elif self.path=='/api/test':
                     name=payload.get('channel');settings=load(cli.SETTINGS,{})
                     if name not in settings.get('channels',{}):raise ValueError('Save this channel first')
-                    cli.send_with_secrets(name,settings['channels'][name],'WUPHF! This is a test notification.')
+                    cli.send_with_secrets(name,{**settings['channels'][name],'language':settings.get('language','en')},translate('test_message',settings.get('language','en')))
                 elif self.path=='/api/google/connect':
                     from . import google_auth
                     google_auth.start_connect(payload)

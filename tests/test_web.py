@@ -47,3 +47,19 @@ class WebTests(unittest.TestCase):
         self.assertEqual(res.status,409)
         self.assertIn(b'incomplete',body.lower())
         self.assertNotIn(b'BEGIN:VCALENDAR',body)
+    def test_language_preference_preserves_channels(self):
+        current={'advance_days':7,'repeat_hours':24,'channels':{'ntfy':{'topic':'sample'}}}
+        with patch('wuphf.web.load',return_value=current),patch('wuphf.web.save') as save:
+            res,_=self.request('POST','/api/language',{'language':'es'}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,200)
+        self.assertEqual(save.call_args.args[1]['language'],'es')
+        self.assertEqual(save.call_args.args[1]['channels'],current['channels'])
+    def test_rejects_unknown_language(self):
+        with patch('wuphf.web.load',return_value={'advance_days':7,'repeat_hours':24,'channels':{}}),patch('wuphf.web.save') as save:
+            res,_=self.request('POST','/api/language',{'language':'xx'}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,400);save.assert_not_called()
+    def test_incomplete_calendar_error_uses_selected_language(self):
+        with patch('wuphf.web.read_snapshot',return_value={'count':2,'credits':None,'complete':False}),patch('wuphf.web.load',return_value={'language':'es'}):
+            res,body=self.request('GET','/api/calendar',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,409)
+        self.assertIn('incompletos',json.loads(body)['error'].lower())
