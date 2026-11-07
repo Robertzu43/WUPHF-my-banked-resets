@@ -3,12 +3,16 @@ from .channels import send
 from .core import compare, valid_expiry
 from .reminders import message, pending
 from .storage import load, save
+from .i18n import translate
 
 
 def check(snap, settings, state_path, now=None, deliver=send):
     now=time.time() if now is None else now
     state=load(state_path, {'ledger':{}, 'snapshot':None, 'failures':{}})
     state.setdefault('ledger',{});state['failures']={}
+    language=settings.get('language','en')
+    def expiry_message(credit):return message(credit) if language=='en' else message(credit,language)
+    def channel_config(channel):return {**settings['channels'][channel], 'language':language}
     state.setdefault('new_queue', [])
     changes=compare(state.get('snapshot'),snap)
     if changes is not None:
@@ -33,7 +37,7 @@ def check(snap, settings, state_path, now=None, deliver=send):
         if channel not in settings.get('channels',{}):
             state['new_queue'].remove(entry); continue
         try:
-            deliver(channel, settings['channels'][channel], 'WUPHF! You have a new banked Codex reset. '+(message(credit) if valid_expiry(credit.get('expiresAt')) else 'Expiry is not available.'))
+            deliver(channel, channel_config(channel), translate('reminder_new',language)+' '+(expiry_message(credit) if valid_expiry(credit.get('expiresAt')) else translate('reminder_unknown',language)))
             state['new_queue'].remove(entry)
             if valid_expiry(credit.get('expiresAt')):state['ledger'][credit['id']+':'+channel]=now
         except Exception:
@@ -46,7 +50,7 @@ def check(snap, settings, state_path, now=None, deliver=send):
                                    float(settings.get('repeat_hours',24))*3600):
         if (credit['id'],channel) in queued:continue
         try:
-            deliver(channel, settings['channels'][channel], message(credit))
+            deliver(channel, channel_config(channel), expiry_message(credit))
             state['ledger'][credit['id']+':'+channel]=now
         except Exception:
             state['failures'][channel]='Delivery failed; check settings and connection.'

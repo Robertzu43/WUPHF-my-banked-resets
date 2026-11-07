@@ -7,6 +7,7 @@ import math
 import urllib.error
 import urllib.parse
 import urllib.request
+from .i18n import translate
 
 SCOPE='https://www.googleapis.com/auth/calendar.app.created'
 BASE='https://www.googleapis.com/calendar/v3'
@@ -43,7 +44,7 @@ def token_request(data):
 
 
 class GoogleCalendar:
-    def __init__(self,token,calendar_id):self.token,self.calendar_id=token,calendar_id
+    def __init__(self,token,calendar_id,language='en'):self.token,self.calendar_id,self.language=token,calendar_id,language
     def request(self,method,path,payload=None):
         request=urllib.request.Request(BASE+path,data=json.dumps(payload).encode() if payload is not None else None,method=method,headers={'Authorization':'Bearer '+self.token,'Content-Type':'application/json'})
         try:
@@ -58,7 +59,7 @@ class GoogleCalendar:
     def put(self,eid,expiry):
         start=datetime.datetime.fromtimestamp(expiry,datetime.timezone.utc)
         end=start+datetime.timedelta(minutes=1)
-        body={'id':eid,'status':'confirmed','summary':'Codex banked reset expires','description':'Review this reset in Codex Usage.','start':{'dateTime':start.isoformat()},'end':{'dateTime':end.isoformat()},'reminders':{'useDefault':False,'overrides':[{'method':'popup','minutes':1440}]}}
+        body={'id':eid,'status':'confirmed','summary':translate('calendar_summary',self.language),'description':translate('google_event_description',self.language),'start':{'dateTime':start.isoformat()},'end':{'dateTime':end.isoformat()},'reminders':{'useDefault':False,'overrides':[{'method':'popup','minutes':1440}]}}
         if self.request('GET',self.path(eid)) is None:
             if self.request('POST',self.path(),body) is None:raise RuntimeError('Could not create event.')
         else:
@@ -66,8 +67,8 @@ class GoogleCalendar:
     def delete(self,eid):self.request('DELETE',self.path(eid))
 
 
-def create_calendar(token):
-    api=GoogleCalendar(token,'')
-    data=api.request('POST','/calendars',{'summary':'WUPHF Codex resets','timeZone':'UTC'})
+def create_calendar(token,language='en'):
+    api=GoogleCalendar(token,'',language)
+    data=api.request('POST','/calendars',{'summary':translate('calendar_name',language),'timeZone':'UTC'})
     if not data or not data.get('id'):raise RuntimeError('Google Calendar creation failed.')
     return data['id']

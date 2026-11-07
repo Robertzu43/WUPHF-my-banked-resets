@@ -5,6 +5,7 @@ import ssl
 import urllib.parse
 import urllib.request
 from email.message import EmailMessage
+from .i18n import translate
 
 
 class ChannelError(Exception):
@@ -31,7 +32,7 @@ def send(channel, config, text):
             with urllib.request.urlopen(request,timeout=15) as response: result=json.load(response)
             if not result.get('ok'): raise ChannelError('Telegram rejected the message')
         elif channel == 'email':
-            msg=EmailMessage();msg['Subject']='WUPHF! Codex reset reminder';msg['From']=config['from'];msg['To']=config['to'];msg.set_content(text)
+            msg=EmailMessage();msg['Subject']=translate('email_subject',config.get('language','en'));msg['From']=config['from'];msg['To']=config['to'];msg.set_content(text)
             with smtplib.SMTP_SSL(config['host'],int(config.get('port',465)),timeout=15,context=ssl.create_default_context()) as smtp:
                 smtp.login(config['username'],config['password'])
                 if smtp.send_message(msg):raise ChannelError('Email provider refused at least one recipient.')

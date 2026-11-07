@@ -14,6 +14,7 @@ from .config import validate
 from .core import read_snapshot
 from .keychain import get_secret, set_secret
 from .reminders import ics
+from .i18n import translate
 from .runner import check
 from .storage import load, save, check_lock
 
@@ -94,7 +95,7 @@ def main(argv=None):
     elif args.command=='test':
         settings=load(SETTINGS,{});name=args.argument
         if name not in settings.get('channels',{}):raise ValueError('Channel is not enabled.')
-        send_with_secrets(name,settings['channels'][name],'WUPHF! This is a test notification.')
+        send_with_secrets(name,{**settings['channels'][name],'language':settings.get('language','en')},translate('test_message',settings.get('language','en')))
         print('Provider accepted the test. Check your device or inbox.')
     elif args.command=='run':
         DATA.mkdir(parents=True,exist_ok=True,mode=0o700)
@@ -124,7 +125,7 @@ def main(argv=None):
         if target.exists():raise FileExistsError('Refusing to overwrite an existing file.')
         snap=read_snapshot()
         if not snap['complete']: raise ValueError('Reset details are incomplete; refresh before exporting.')
-        target.write_bytes(ics(snap));print('Calendar snapshot saved to',target)
+        target.write_bytes(ics(snap,load(SETTINGS,{}).get('language','en')));print('Calendar snapshot saved to',target)
     elif args.command=='install':install_agent()
     elif args.command=='uninstall':
         if PLIST.exists():
