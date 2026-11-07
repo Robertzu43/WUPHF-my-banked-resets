@@ -63,3 +63,31 @@ class WebTests(unittest.TestCase):
             res,body=self.request('GET','/api/calendar',headers={'Cookie':'wuphf_session=test-token'})
         self.assertEqual(res.status,409)
         self.assertIn('incompletos',json.loads(body)['error'].lower())
+
+    def test_gmail_channel_settings_save_recipient(self):
+        payload={'advance_days':7,'repeat_hours':24,'channels':{'gmail':{'to':'person@example.com'}}}
+        with patch('wuphf.web.save') as save:
+            res,_=self.request('POST','/api/settings',payload,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,200)
+        self.assertEqual(save.call_args.args[1]['channels']['gmail'],{'to':'person@example.com'})
+
+    def test_gmail_rejects_injected_recipient(self):
+        payload={'advance_days':7,'repeat_hours':24,'channels':{'gmail':{'to':'person@example.com\nBcc: other@example.com'}}}
+        with patch('wuphf.web.save') as save:
+            res,_=self.request('POST','/api/settings',payload,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,400);save.assert_not_called()
+
+    def test_gmail_connect_requires_session_and_starts_oauth(self):
+        client={'installed':{'client_id':'id.apps.googleusercontent.com','client_secret':'secret'}}
+        with patch('wuphf.gmail_auth.start_connect') as start:
+            res,_=self.request('POST','/api/gmail/connect',client)
+            self.assertEqual(res.status,403);start.assert_not_called()
+            res,data=self.request('POST','/api/gmail/connect',client,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+            self.assertEqual(res.status,200);start.assert_called_once_with(client);self.assertNotIn(b'secret',data)
+
+    def test_gmail_status_and_disconnect_use_separate_authorization(self):
+        with patch('wuphf.gmail_auth.status',{'state':'disconnected','message':'Not connected'}), patch('wuphf.gmail_auth.connected',return_value=True),patch('wuphf.gmail_auth.disconnect') as disconnect,patch('wuphf.google_auth.disconnect') as calendar_disconnect,patch('wuphf.web.check_lock') as lock:
+            res,body=self.request('GET','/api/gmail/status',headers={'Cookie':'wuphf_session=test-token'})
+            self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['state'],'saved')
+            res,_=self.request('POST','/api/gmail/disconnect',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+            self.assertEqual(res.status,200);disconnect.assert_called_once_with();calendar_disconnect.assert_not_called()

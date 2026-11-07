@@ -23,7 +23,7 @@ DATA=Path.home()/'.local'/'share'/'wuphf-resets'
 SETTINGS=DATA/'settings.json'
 STATE=DATA/'state.json'
 PLIST=Path.home()/'Library'/'LaunchAgents'/'com.wuphf.resets.plist'
-SECRET_FIELDS={'telegram':['token'], 'email':['password'], 'ntfy':['token']}
+SECRET_FIELDS={'telegram':['token'], 'email':['password'], 'ntfy':['token'], 'gmail':[]}
 
 
 def prompt(label, default=''):
@@ -36,10 +36,13 @@ def configure():
     settings['advance_days']=float(prompt('Start reminding this many days before expiry',str(settings['advance_days'])))
     settings['repeat_hours']=float(prompt('Repeat every how many hours',str(settings['repeat_hours'])))
     channels={}
-    for channel in ('telegram','email','ntfy'):
+    for channel in ('telegram','email','ntfy','gmail'):
         enabled=prompt('Enable '+channel+'? (y/n)','y' if channel in settings['channels'] else 'n').lower()=='y'
         if not enabled: continue
         old=settings['channels'].get(channel,{})
+        if channel=='gmail':
+            channels[channel]={'to':prompt('Gmail recipient address',old.get('to',''))}
+            continue
         if channel=='telegram':
             data={'chat_id':prompt('Telegram chat ID',old.get('chat_id',''))};secret='token'
             text='Telegram bot token'
@@ -55,6 +58,10 @@ def configure():
 
 
 def send_with_secrets(name, config, text):
+    if name=='gmail':
+        from . import gmail_auth
+        gmail_auth.send(config['to'],config['to'],text,config.get('language','en'))
+        return
     item=dict(config)
     for field in SECRET_FIELDS[name]:
         value=get_secret(name+'.'+field)

@@ -96,3 +96,9 @@ class CliTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'incomplete'):
                     main(['export',str(p)])
             self.assertFalse(p.exists())
+
+    def test_gmail_delivery_uses_saved_recipient_and_language(self):
+        from wuphf.cli import send_with_secrets
+        with patch('wuphf.gmail_auth.send') as sender:
+            send_with_secrets('gmail',{'to':'person@example.com','language':'es'},'hello')
+        sender.assert_called_once_with('person@example.com','person@example.com','hello','es')

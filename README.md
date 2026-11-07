@@ -18,7 +18,8 @@ Choose English, Spanish, German, Portuguese, French, Japanese, Korean, or Simpli
 ## Notifications
 
 - **Telegram:** Create a bot using Telegram's @BotFather, start a conversation with it, and enter its bot token and chat ID.
-- **Email:** Supply an SMTP SSL server, login, sender, recipient and an app password or other provider-compatible credential. The prototype supports SSL SMTP, typically port 465.
+- **Gmail (experimental):** Choose Gmail, enter the same Gmail address you will authorize, then select **Connect Gmail** and save your settings. This uses Google’s send-only Gmail permission and stores the refresh token in Keychain. A registered Google desktop OAuth client with the Gmail API enabled must currently be supplied under Developer setup; a public release needs an app-owned client and may require Google verification. The connected Gmail account in Codex cannot be reused by this standalone app. The connection has automated mock coverage but has not been tested with a live Gmail account.
+- **Other email (SMTP):** Supply an SMTP SSL server, login, sender, recipient and an app password or other provider-compatible credential. The prototype supports SSL SMTP, typically port 465.
 - **ntfy:** Supply an HTTPS server and topic. Public topics can be read by anyone who knows their name; use an authenticated topic for privacy.
 
 Secrets are stored in macOS Keychain under `WUPHF My Resets`. A provider accepting a message is not proof that it reached your device. Each channel has a test button.
@@ -41,4 +42,4 @@ WUPHF uses the signed-in local Codex CLI and never redeems resets. If expiry det
 
 ## Tests and current limits
 
-Run `python3 -m unittest discover -s tests -v` from this folder. The automated suite uses mocks for external providers and does not prove notification or calendar delivery. A live Codex read, a temporary macOS launch agent, and a temporary Keychain item were tested on the developer's Mac. Telegram, SMTP email, ntfy phone delivery and Google Calendar still need end-to-end tests with the user's own services. The separate Sign in with ChatGPT authorization did not provide account data through the tested configuration, so WUPHF uses your existing Codex CLI sign-in. Public distribution would need release signing, a simpler shared OAuth setup, and any applicable Google app verification.
+Run `python3 -m unittest discover -s tests -v` from this folder. The automated suite uses mocks for external providers and does not prove notification or calendar delivery. A live Codex read, a temporary macOS launch agent, and a temporary Keychain item were tested on the developer's Mac. Telegram, Gmail, SMTP email, ntfy phone delivery and Google Calendar still need end-to-end tests with the user's own services. The separate Sign in with ChatGPT authorization did not provide account data through the tested configuration, so WUPHF uses your existing Codex CLI sign-in. Public distribution would need release signing, a simpler shared OAuth setup, and any applicable Google app verification.

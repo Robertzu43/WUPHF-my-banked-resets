@@ -19,7 +19,7 @@ from .reminders import ics
 from .i18n import languages, _all, translate
 
 PAGE=Path(__file__).with_name('web.html')
-FIELDS={'telegram':{'chat_id','token'},'email':{'host','port','username','from','to','password'},'ntfy':{'url','topic','token'}}
+FIELDS={'telegram':{'chat_id','token'},'email':{'host','port','username','from','to','password'},'ntfy':{'url','topic','token'},'gmail':{'to'}}
 
 
 def clean_settings(payload):
@@ -86,6 +86,11 @@ def create_server(port=0,token=None):
                     info=dict(google_auth.status)
                     if info['state']=='disconnected' and load(google_auth.GOOGLE,{}).get('client_id'):info={'state':'saved','message':'Google authorization is saved. Sync to verify it still works.'}
                     return self.write(200,info)
+                if url.path=='/api/gmail/status':
+                    from . import gmail_auth
+                    info=dict(gmail_auth.status)
+                    if info.get('state')=='disconnected' and gmail_auth.connected():info={'state':'saved','message':'Gmail authorization is saved.'}
+                    return self.write(200,info)
                 if url.path=='/api/calendar':
                     snap=read_snapshot()
                     if not snap['complete']:return self.write(409,{'error':translate('api_incomplete_error',load(cli.SETTINGS,{}).get('language','en'))})
@@ -109,6 +114,12 @@ def create_server(port=0,token=None):
                     name=payload.get('channel');settings=load(cli.SETTINGS,{})
                     if name not in settings.get('channels',{}):raise ValueError('Save this channel first')
                     cli.send_with_secrets(name,{**settings['channels'][name],'language':settings.get('language','en')},translate('test_message',settings.get('language','en')))
+                elif self.path=='/api/gmail/connect':
+                    from . import gmail_auth
+                    gmail_auth.start_connect(payload)
+                elif self.path=='/api/gmail/disconnect':
+                    from . import gmail_auth
+                    with check_lock(cli.DATA/'check.lock'):gmail_auth.disconnect()
                 elif self.path=='/api/google/connect':
                     from . import google_auth
                     google_auth.start_connect(payload)
@@ -124,7 +135,7 @@ def create_server(port=0,token=None):
                 else:return self.write(404,{'error':'Not found'})
                 return self.write(200,{'ok':True})
             except (ValueError,KeyError,TypeError):
-                message='This build needs a Google desktop OAuth client in Developer setup before it can connect.' if self.path=='/api/google/connect' else 'Please check your settings and try again.'
+                message='This build needs a Google desktop OAuth client in Developer setup before it can connect.' if self.path in ('/api/google/connect','/api/gmail/connect') else 'Please check your settings and try again.'
                 return self.write(400,{'error':message})
             except Exception:return self.write(503,{'error':'Action failed. Check your settings, permissions, and connection.'})
     server=ThreadingHTTPServer(('127.0.0.1',port),Handler)
