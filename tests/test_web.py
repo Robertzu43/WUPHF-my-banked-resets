@@ -1,0 +1,49 @@
+import http.client,json,threading,unittest
+from unittest.mock import patch
+from wuphf.web import create_server
+
+class WebTests(unittest.TestCase):
+    def setUp(self):
+        self.server=create_server(port=0, token='test-token')
+        self.thread=threading.Thread(target=self.server.serve_forever,daemon=True);self.thread.start()
+        self.port=self.server.server_port
+    def tearDown(self):
+        self.server.shutdown();self.server.server_close();self.thread.join()
+    def request(self, method, path, body=None, headers=None):
+        conn=http.client.HTTPConnection('127.0.0.1',self.port,timeout=3)
+        headers=headers or {}
+        if body is not None:body=json.dumps(body);headers['Content-Type']='application/json'
+        conn.request(method,path,body,headers);response=conn.getresponse();payload=response.read();conn.close()
+        return response,payload
+    def test_requests_require_session_and_cross_site_post_is_rejected(self):
+        res,_=self.request('GET','/api/settings');self.assertEqual(res.status,403)
+        res,_=self.request('POST','/api/settings',{}, {'Cookie':'wuphf_session=test-token','Origin':'https://other.example','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,403)
+    def test_only_safe_status_is_exposed(self):
+        sample={'count':1,'complete':True,'credits':[{'id':'SECRET-ID','status':'available','expiresAt':1796070020}]}
+        with patch('wuphf.web.read_snapshot',return_value=sample),patch('wuphf.web.load',return_value={}):
+            res,data=self.request('GET','/api/status',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,200);self.assertNotIn(b'SECRET-ID',data)
+        self.assertEqual(json.loads(data)['count'],1)
+    def test_saving_secrets_never_writes_them_to_settings(self):
+        payload={'advance_days':7,'repeat_hours':24,'channels':{'telegram':{'chat_id':'123','token':'123:secret'}}}
+        with patch('wuphf.web.set_secret') as secret,patch('wuphf.web.save') as save:
+            res,_=self.request('POST','/api/settings',payload,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,200);secret.assert_called_once_with('telegram.token','123:secret')
+        self.assertNotIn('secret',str(save.call_args))
+    def test_google_connect_starts_with_imported_client_without_returning_secret(self):
+        client={'installed':{'client_id':'id.apps.googleusercontent.com','client_secret':'secret'}}
+        with patch('wuphf.google_auth.start_connect') as start:
+            res,data=self.request('POST','/api/google/connect',client,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,200);start.assert_called_once_with(client);self.assertNotIn(b'secret',data)
+    def test_direct_google_connect_explains_missing_client_setup(self):
+        with patch('wuphf.google_auth.BUNDLED_CLIENT',new=__import__('pathlib').Path('/nonexistent/wuphf-client.json')):
+            res,data=self.request('POST','/api/google/connect',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,400)
+        self.assertIn(b'OAuth',data)
+    def test_incomplete_snapshot_refuses_calendar_export(self):
+        with patch('wuphf.web.read_snapshot',return_value={'count':2,'credits':None,'complete':False}):
+            res,body=self.request('GET','/api/calendar',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,409)
+        self.assertIn(b'incomplete',body.lower())
+        self.assertNotIn(b'BEGIN:VCALENDAR',body)

@@ -1,0 +1,137 @@
+"""Local setup UI. Bound to loopback with a per-run session and same-origin POSTs."""
+import datetime
+import hmac
+import json
+import secrets
+import threading
+import urllib.parse
+import webbrowser
+from http.cookies import SimpleCookie
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+from . import cli
+from .config import validate
+from .core import read_snapshot
+from .keychain import set_secret
+from .storage import load, save, check_lock
+from .reminders import ics
+
+PAGE=Path(__file__).with_name('web.html')
+FIELDS={'telegram':{'chat_id','token'},'email':{'host','port','username','from','to','password'},'ntfy':{'url','topic','token'}}
+
+
+def clean_settings(payload):
+    if not isinstance(payload,dict) or not isinstance(payload.get('channels'),dict): raise ValueError('Invalid settings')
+    raw=payload['channels']; channels={}; secret_values=[]
+    for name,values in raw.items():
+        if name not in FIELDS or not isinstance(values,dict) or set(values)-FIELDS[name]: raise ValueError('Invalid channel settings')
+        entry={}
+        for key,value in values.items():
+            if not isinstance(value,(str,int)) or isinstance(value,bool) or len(str(value))>2048: raise ValueError('Invalid channel value')
+            if key in cli.SECRET_FIELDS[name]:
+                if value: secret_values.append((name+'.'+key,str(value)))
+            else: entry[key]=value
+        channels[name]=entry
+    settings={'advance_days':payload.get('advance_days'),'repeat_hours':payload.get('repeat_hours'),'channels':channels}
+    validate(settings)
+    for name,value in secret_values: set_secret(name,value)
+    return settings
+
+
+def safe_status():
+    old=load(cli.STATE,{})
+    snap=read_snapshot()
+    entries=[]
+    for c in snap.get('credits') or []:
+        expiry=c.get('expiresAt'); local=None
+        if isinstance(expiry,(int,float)) and not isinstance(expiry,bool):
+            try: local=datetime.datetime.fromtimestamp(expiry).astimezone().isoformat()
+            except (OverflowError,ValueError,OSError): pass
+        entries.append({'status':c.get('status'),'expires':local})
+    return {'count':snap['count'],'complete':snap['complete'],'credits':entries,'last_check':old.get('last_check'),'last_error':old.get('last_error'),'failures':list(old.get('failures',{}))}
+
+
+def create_server(port=0,token=None):
+    token=token or secrets.token_urlsafe(32)
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self,*args): pass
+        def write(self,status,body,content='application/json',headers=None):
+            if isinstance(body,dict):body=json.dumps(body).encode()
+            self.send_response(status);self.send_header('Content-Type',content);self.send_header('Content-Length',str(len(body)))
+            self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff')
+            self.send_header('Referrer-Policy','no-referrer');self.send_header('Content-Security-Policy',"default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
+            for k,v in (headers or {}).items():self.send_header(k,v)
+            self.end_headers();self.wfile.write(body)
+        def valid_host(self):return self.headers.get('Host')==f'127.0.0.1:{self.server.server_port}'
+        def authorized(self):
+            try:
+                cookie=SimpleCookie();cookie.load(self.headers.get('Cookie',''));value=cookie.get('wuphf_session')
+                return bool(value and hmac.compare_digest(value.value,token))
+            except Exception:return False
+        def do_GET(self):
+            if not self.valid_host():return self.write(403,{'error':'Forbidden'})
+            url=urllib.parse.urlsplit(self.path)
+            if url.path=='/' and hmac.compare_digest(urllib.parse.parse_qs(url.query).get('token',[''])[0],token):
+                return self.write(303,b'',headers={'Set-Cookie':f'wuphf_session={token}; HttpOnly; SameSite=Strict; Path=/','Location':'/'})
+            if not self.authorized():return self.write(403,{'error':'Forbidden'})
+            try:
+                if url.path=='/':return self.write(200,PAGE.read_bytes().replace(b'__CSRF_TOKEN__',token.encode()),'text/html; charset=utf-8')
+                if url.path=='/api/settings':return self.write(200,load(cli.SETTINGS,{'advance_days':7,'repeat_hours':24,'channels':{}}))
+                if url.path=='/api/status':return self.write(200,safe_status())
+                if url.path=='/api/google/status':
+                    from . import google_auth
+                    info=dict(google_auth.status)
+                    if info['state']=='disconnected' and load(google_auth.GOOGLE,{}).get('client_id'):info={'state':'saved','message':'Google authorization is saved. Sync to verify it still works.'}
+                    return self.write(200,info)
+                if url.path=='/api/calendar':
+                    snap=read_snapshot()
+                    if not snap['complete']:return self.write(409,{'error':'Reset details are incomplete; refresh before exporting.'})
+                    return self.write(200,ics(snap),'text/calendar; charset=utf-8',{'Content-Disposition':'attachment; filename="wuphf-resets.ics"'})
+                return self.write(404,{'error':'Not found'})
+            except Exception:return self.write(503,{'error':'Could not check Codex. Verify sign-in and connection.'})
+        def do_POST(self):
+            origin=f'http://127.0.0.1:{self.server.server_port}'
+            if not self.valid_host() or not self.authorized() or self.headers.get('Origin')!=origin or not hmac.compare_digest(self.headers.get('X-WUPHF-Token',''),token):return self.write(403,{'error':'Forbidden'})
+            try:
+                length=int(self.headers.get('Content-Length','0'))
+                if length<0 or length>16384:raise ValueError('Request too large')
+                payload=json.loads(self.rfile.read(length) or b'{}')
+                if self.path=='/api/settings':save(cli.SETTINGS,clean_settings(payload))
+                elif self.path=='/api/test':
+                    name=payload.get('channel');settings=load(cli.SETTINGS,{})
+                    if name not in settings.get('channels',{}):raise ValueError('Save this channel first')
+                    cli.send_with_secrets(name,settings['channels'][name],'WUPHF! This is a test notification.')
+                elif self.path=='/api/google/connect':
+                    from . import google_auth
+                    google_auth.start_connect(payload)
+                elif self.path=='/api/google/disconnect':
+                    from . import google_auth
+                    with check_lock(cli.DATA/'check.lock'):google_auth.disconnect()
+                elif self.path=='/api/google/sync':
+                    from . import google_auth
+                    with check_lock(cli.DATA/'check.lock'):
+                        if not google_auth.sync(read_snapshot()):raise ValueError('Complete Codex data and a Google connection are required')
+                elif self.path=='/api/install':cli.install_agent()
+                elif self.path=='/api/uninstall':cli.main(['uninstall'])
+                else:return self.write(404,{'error':'Not found'})
+                return self.write(200,{'ok':True})
+            except (ValueError,KeyError,TypeError):
+                message='This build needs a Google desktop OAuth client in Developer setup before it can connect.' if self.path=='/api/google/connect' else 'Please check your settings and try again.'
+                return self.write(400,{'error':message})
+            except Exception:return self.write(503,{'error':'Action failed. Check your settings, permissions, and connection.'})
+    server=ThreadingHTTPServer(('127.0.0.1',port),Handler)
+    server.daemon_threads=True
+    server.session_token=token
+    return server
+
+
+def main():
+    server=create_server();url=f'http://127.0.0.1:{server.server_port}/?token={server.session_token}'
+    print('WUPHF setup is open in your browser. Keep this window open; press Ctrl+C to close.')
+    webbrowser.open(url)
+    try:server.serve_forever()
+    except KeyboardInterrupt:pass
+    finally:server.server_close()
+
+if __name__=='__main__':main()
