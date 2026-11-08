@@ -66,7 +66,7 @@ class PlatformJobsTests(unittest.TestCase):
             self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'unknown')
 
     def test_mac_monitoring_status_only_asserts_absence_if_domain_accessible(self):
-        with patch('wuphf.platform_jobs.sys.platform','darwin'),patch('wuphf.platform_jobs.os.getuid',return_value=123),patch('wuphf.platform_jobs.subprocess.run') as run:
+        with patch('wuphf.platform_jobs.sys.platform','darwin'),patch('wuphf.platform_jobs.os.getuid',return_value=123,create=True),patch('wuphf.platform_jobs.subprocess.run') as run:
             run.side_effect=[SimpleNamespace(returncode=1),SimpleNamespace(returncode=0)]
             self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'disabled')
             run.side_effect=[SimpleNamespace(returncode=1),SimpleNamespace(returncode=1)]
