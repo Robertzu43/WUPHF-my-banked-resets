@@ -130,7 +130,7 @@ def _copy_bundle(source,staging):
         copy_file.restype=ctypes.c_int
         def copy(old,new):
             if not copy_file(os.fspath(old),os.fspath(new),None,None,None,1): # COPY_FILE_FAIL_IF_EXISTS
-                raise ctypes.WinError()
+                raise ctypes.WinError(ctypes.get_last_error())
             return new
         links=[]
         def skip_links(directory,names):

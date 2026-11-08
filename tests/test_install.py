@@ -119,10 +119,14 @@ class InstallTests(unittest.TestCase):
         from unittest.mock import Mock
         metadata=self.source/'build-info.json';raw=json.loads(metadata.read_text());raw['os']='windows';metadata.write_text(json.dumps(raw))
         (self.source/'WUPHF.exe').chmod(0o755)
-        kernel=Mock();kernel.CopyFileExW.return_value=0
-        with patch.object(sys,'platform','win32'),patch.object(ctypes,'WinDLL',return_value=kernel,create=True),patch.object(ctypes,'WinError',return_value=OSError('native stream copy denied'),create=True):
-            with self.assertRaisesRegex(OSError,'native stream copy denied'):
+        kernel=Mock();kernel.CopyFileExW.return_value=0;codes=[]
+        def windows_error(code=None):
+            codes.append(code)
+            return OSError(f'native stream copy denied ({code})')
+        with patch.object(sys,'platform','win32'),patch.object(ctypes,'WinDLL',return_value=kernel,create=True),patch.object(ctypes,'get_last_error',return_value=5,create=True),patch.object(ctypes,'WinError',side_effect=windows_error,create=True):
+            with self.assertRaisesRegex(OSError,r'native stream copy denied \(5\)'):
                 self.install.install_bundle(self.source,self.destination)
+        self.assertTrue(codes);self.assertEqual(set(codes),{5})
         self.assertFalse(self.destination.exists())
         self.assertEqual(list(self.destination.parent.iterdir()),[])
 
