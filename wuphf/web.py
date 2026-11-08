@@ -98,7 +98,9 @@ def create_server(port=0,token=None):
                     state=load(cli.STATE,{})
                     last=state.get('last_check')
                     if not isinstance(last,(int,float)) or isinstance(last,bool) or not math.isfinite(last):last=None
-                    return self.write(200,{'scheduler':monitoring_status(),'last_check':last,'check_status':background_check_status(state),'last_error':bool(state.get('last_error'))})
+                    failures=state.get('failures',{})
+                    failures=[name for name in failures if name in ('gmail','email','telegram','ntfy','google')] if isinstance(failures,dict) else []
+                    return self.write(200,{'scheduler':monitoring_status(),'last_check':last,'check_status':background_check_status(state),'last_error':bool(state.get('last_error')),'failures':failures})
                 if url.path=='/api/status':return self.write(200,safe_status())
                 if url.path=='/api/google/status':
                     from . import google_auth
