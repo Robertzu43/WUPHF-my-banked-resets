@@ -114,3 +114,67 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(len(calls),2)
             self.assertEqual(state['ledger']['a:ntfy'],87301)
             self.assertEqual(state['new_queue'],[])
+
+    def test_incomplete_snapshot_preserves_last_success_and_delivery_failure(self):
+        from wuphf.storage import save
+        settings={'advance_days':1,'repeat_hours':1,'channels':{'ntfy':{}}}
+        partial={'count':2,'complete':False,'credits':None}
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            save(p,{'ledger':{},'snapshot':None,'last_check':800,'failures':{'ntfy':'Delivery failed'}})
+            state=check(partial,settings,p,now=900,deliver=lambda *a:self.fail('must not send'))
+            self.assertEqual(state['last_check'],800)
+            self.assertEqual(state['last_attempt'],900)
+            self.assertIn('ntfy',state['failures'])
+
+    def test_earlier_expiry_retries_until_delivered_then_respects_cadence(self):
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        initial={'count':1,'complete':True,'credits':[{'id':'a','expiresAt':100000}]}
+        changed={'count':1,'complete':True,'credits':[{'id':'a','expiresAt':91000}]}
+        attempts=[]
+        def deliver(*args):
+            attempts.append(args)
+            if len(attempts)==2:raise RuntimeError('offline')
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            check(initial,settings,p,now=90000,deliver=deliver)
+            check(changed,settings,p,now=90001,deliver=deliver)
+            state=check(changed,settings,p,now=90002,deliver=deliver)
+            check(changed,settings,p,now=90003,deliver=deliver)
+            self.assertEqual(len(attempts),3)
+            self.assertEqual(state['ledger']['a:ntfy'],90002)
+            self.assertNotIn('ntfy',state['failures'])
+
+    def test_successful_delivery_does_not_clear_another_credit_failure(self):
+        settings={'advance_days':1,'repeat_hours':1,'channels':{'ntfy':{}}}
+        snap={'count':2,'complete':True,'credits':[{'id':'a','expiresAt':100000},{'id':'b','expiresAt':100000}]}
+        attempts=[]
+        def deliver(*args):
+            attempts.append(args)
+            if len(attempts)==1:raise RuntimeError('offline')
+        with tempfile.TemporaryDirectory() as d:
+            state=check(snap,settings,Path(d)/'state.json',now=90000,deliver=deliver)
+            self.assertIn('ntfy',state['failures'])
+
+    def test_existing_ledger_is_migrated_before_earlier_expiry(self):
+        from wuphf.storage import save
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        initial={'count':1,'complete':True,'credits':[{'id':'a','expiresAt':100000}]}
+        changed={'count':1,'complete':True,'credits':[{'id':'a','expiresAt':91000}]}
+        calls=[]
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            save(p,{'ledger':{'a:ntfy':90000},'snapshot':initial,'failures':{}})
+            check(changed,settings,p,now=90001,deliver=lambda *args:calls.append(args))
+            self.assertEqual(len(calls),1)
+
+    def test_later_expiry_does_not_bypass_repeat_interval(self):
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        first={'count':1,'complete':True,'credits':[{'id':'a','expiresAt':91000}]}
+        later={'count':1,'complete':True,'credits':[{'id':'a','expiresAt':92000}]}
+        calls=[]
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            check(first,settings,p,now=90000,deliver=lambda *args:calls.append(args))
+            check(later,settings,p,now=90001,deliver=lambda *args:calls.append(args))
+            self.assertEqual(len(calls),1)

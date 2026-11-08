@@ -117,10 +117,13 @@ def main(argv=None):
                 state=check(snap,settings,STATE,deliver=send_with_secrets)
                 try:
                     from . import google_auth
-                    google_auth.sync(snap)
+                    synced=google_auth.sync(snap)
+                    if snap.get('complete') or synced:state['failures'].pop('google',None)
                 except Exception:
                     state['failures']['google']='Google Calendar sync failed; reconnect or check your connection.'
-                state.pop('last_error',None);save(STATE,state)
+                if snap.get('complete'):state.pop('last_error',None)
+                else:state['last_error']='Reset details are incomplete; background reminders are paused.'
+                save(STATE,state)
             except Exception:
                 # Preserve corrupt state rather than silently replacing it.
                 try:

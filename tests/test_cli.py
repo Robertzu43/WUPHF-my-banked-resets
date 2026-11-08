@@ -102,3 +102,18 @@ class CliTests(unittest.TestCase):
         with patch('wuphf.gmail_auth.send') as sender:
             send_with_secrets('gmail',{'to':'person@example.com','language':'es'},'hello')
         sender.assert_called_once_with('person@example.com','person@example.com','hello','es')
+
+    def test_incomplete_background_read_reports_failure_and_preserves_last_success(self):
+        import tempfile
+        from pathlib import Path
+        from wuphf.storage import save, load
+        partial={'count':2,'complete':False,'credits':None}
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'; save(p,{'last_check':100,'failures':{'ntfy':'Delivery failed'},'snapshot':None,'ledger':{}})
+            save(Path(d)/'settings.json',{'advance_days':1,'repeat_hours':1,'channels':{'ntfy':{}}})
+            with patch('wuphf.cli.DATA',Path(d)),patch('wuphf.cli.STATE',p),patch('wuphf.cli.SETTINGS',Path(d)/'settings.json'),patch('wuphf.cli.read_snapshot',return_value=partial),patch('wuphf.google_auth.sync',return_value=False),patch('builtins.print'):
+                main(['run'])
+            state=load(p,{})
+            self.assertEqual(state['last_check'],100)
+            self.assertIn('last_error',state)
+            self.assertIn('ntfy',state['failures'])
