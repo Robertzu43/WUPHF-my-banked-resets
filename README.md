@@ -38,9 +38,9 @@ When Codex supplies an account identifier, WUPHF uses a local fingerprint to avo
 
 ## Try the prototype
 
-These instructions describe the current **cross-platform development branch**, not a finished installer. Windows and Linux require full real-account testing before release.
+These instructions describe the current **cross-platform development branch**, not a finished installer. Windows and Linux require full real-account testing before release. For a more detailed walkthrough, see the [installation and setup guide](https://github.com/Robertzu43/WUPHF-my-banked-resets#installation-and-setup-preview).
 
-1. Install **Python 3.11 or newer** and the [Codex CLI](https://developers.openai.com/codex/cli/). Sign in to the CLI with the ChatGPT account whose resets you want to track.
+1. Install [Python 3.11 or newer](https://www.python.org/downloads/) and the [Codex CLI](https://developers.openai.com/codex/cli/). On Windows, add Python to PATH during installation. Run `codex` and sign in with the ChatGPT account whose resets you want to track; verify that `codex --version` works in your terminal.
 2. Download and unzip the [`feature/cross-platform` branch](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/heads/feature/cross-platform.zip). Keep the extracted folder in a permanent location: background checks need it to remain there. On macOS, keep WUPHF, its Python environment and Codex CLI outside Documents, Desktop and Downloads (for example in `~/Library/Application Support/WUPHF`); background installation blocks those protected folders. Other macOS privacy restrictions may still prevent checks, so confirm the background status after enabling.
 3. Start WUPHF from that folder:
    - **macOS:** Double-click `Start WUPHF.command`. If macOS blocks the unsigned launcher, open Terminal in the folder and run `python3 -m wuphf.web`.
@@ -58,8 +58,8 @@ Choose one or more. Save settings before testing. Never paste passwords, tokens,
 ### Gmail
 
 1. Under **Gmail**, enter the Gmail address you will authorize.
-2. The prototype currently needs a Google desktop OAuth client with the Gmail API enabled. Select its JSON file under **Developer setup** if one is not already provided locally. This file stays on your computer.
-3. Click **Connect Gmail**, approve Google's send-only permission if you agree, and return to WUPHF. Save settings, send a test, and check your inbox.
+2. The prototype currently needs a Google desktop OAuth client with the Gmail API enabled. In your Google Cloud project, enable the Gmail API, configure the consent screen, add yourself as a test user if required, and create a **Desktop app** OAuth client. Download its JSON file and select it under **Developer setup** if one is not already provided locally. See [Google’s setup guide](https://developers.google.com/workspace/gmail/api/quickstart/python) for the project steps. This file stays on your computer.
+3. On the computer running WUPHF, click **Connect Gmail**, approve Google's send-only permission if you agree, and return to WUPHF. Save settings, send a test, and check your inbox.
 
 Google may require app verification or restrict who can authorize a client. An app-owned, verified client for a simpler public connection is planned; don't assume this is finished. A Gmail connection in Codex or ChatGPT cannot be reused by this standalone app. A test email was received on the developer's Mac; background delivery and broader account coverage still need validation.
 
