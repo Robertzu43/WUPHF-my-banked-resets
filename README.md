@@ -1,154 +1,175 @@
 <p align="center">
-  <img src="docs/images/wuphf-logo.svg" width="144" alt="WUPHF pixel-art logo">
+  <img src="https://raw.githubusercontent.com/Robertzu43/WUPHF-my-banked-resets/wuphf-initial/docs/images/wuphf-logo.svg" width="144" alt="WUPHF pixel-art logo">
 </p>
-
 <h1 align="center">WUPHF! for Codex Banked Resets</h1>
-
 <p align="center"><strong>Your reset bank called. It wants you to use it.</strong></p>
-<p align="center">A local, open-source reminder for the Codex banked resets you don't want to miss.</p>
-
+<p align="center">Free, open-source reminders for your banked Codex resets. Your computer. Your accounts. Your choice of channels.</p>
 <p align="center">
-  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases"><img alt="Version: 0.1.0-beta.1 candidate (unreleased)" src="https://img.shields.io/badge/version-0.1.0--beta.1%20candidate-2454dd?style=flat-square"></a>
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2454dd?style=flat-square"></a>
-  <img alt="Desktop: macOS, Windows and Linux preview" src="https://img.shields.io/badge/desktop-macOS%20%7C%20Windows%20%7C%20Linux-2454dd?style=flat-square">
-  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/checks-GitHub%20Actions-2454dd?style=flat-square"></a>
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.1"><img alt="Version 0.1.0-beta.1" src="https://img.shields.io/badge/version-0.1.0--beta.1-2454dd?style=flat-square"></a>
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2454dd?style=flat-square"></a>
+  <img alt="macOS, Windows and Linux" src="https://img.shields.io/badge/desktop-macOS%20%7C%20Windows%20%7C%20Linux-2454dd?style=flat-square">
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/actions"><img alt="Build and test results" src="https://img.shields.io/badge/checks-GitHub%20Actions-2454dd?style=flat-square"></a>
+</p>
+<p align="center">
+  <a href="#install-and-get-started"><strong>Install</strong></a> ·
+  <a href="#connect-your-own-accounts"><strong>Connect your accounts</strong></a> ·
+  <a href="#help-and-troubleshooting"><strong>Get help</strong></a> ·
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.1"><strong>Release notes</strong></a>
 </p>
 
-<p align="center">
-  <a href="#installation-and-setup-preview"><strong>Get started</strong></a> ·
-  <a href="#3-choose-how-to-receive-reminders"><strong>Connect notifications</strong></a> ·
-  <a href="docs/superpowers/plans/2026-11-07-public-beta-release.md"><strong>Release plan</strong></a> ·
-  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/issues"><strong>Report an issue</strong></a>
-</p>
+WUPHF checks your available **banked Codex resets** and reminds you before known expiry dates. It never uses a reset for you. Choose **Gmail, other email, Telegram, calendar dates, or any combination**. There is no WUPHF account or hosted reminder service to sign up for.
 
-> **Release candidate · Not published yet.** Version `0.1.0-beta.1` is being prepared; see the [release readiness report](docs/release-readiness.md) for evidence and remaining gates. Windows and Linux passed automated checks; real-account and background-delivery tests were not performed. Google verification is pending. Keep a backup reminder until WUPHF is tested for your account.
+> **Public beta:** All listed options are included. Google verification is pending, so the bundled Google connection can show warnings or encounter access limits. Packages are unsigned/unnotarized. Keep a backup reminder while testing WUPHF with your account. These limitations do not require you to use the maintainer's accounts or wait to try another channel.
 
-WUPHF checks your available Codex banked resets and reminds you before known expiry dates through **email**, **Telegram**, or both. You can also add expiry dates to your calendar. WUPHF never uses a reset for you.
+## Install and get started
 
-## What you can do
+### 1. Sign in to Codex
 
-- See your available banked reset count and known expiry dates using your existing Codex CLI sign-in.
-- Choose when reminders start and how often they repeat. Use any combination of supported channels.
-- Export an `.ics` snapshot for Google Calendar, Apple Calendar, Outlook, and other compatible calendars. Experimental Google Calendar sync can add events to a separate WUPHF calendar.
-- Use English, Spanish, German, Portuguese, French, Japanese, Korean, or Simplified Chinese. Translations are machine-assisted.
+Install the [official Codex CLI](https://developers.openai.com/codex/cli/), run `codex`, and choose **Sign in with ChatGPT** for the account you want to monitor. Confirm `codex --version` works in your terminal. WUPHF reads that local sign-in; you do not enter your ChatGPT password into WUPHF.
 
-WUPHF runs locally. Your computer must be awake, online, and logged in for background checks and messages to run. Unknown or incomplete Codex data cannot be treated as a confirmed expiry or a used reset. Delivery depends on your selected services.
+Already using the Codex CLI? You can keep your existing sign-in. The Codex desktop app alone does not replace this CLI requirement.
 
-When Codex supplies an account identifier, WUPHF uses a local fingerprint to avoid carrying reminder state between different accounts. Codex may omit that identifier. While it is unavailable, WUPHF cannot send alerts for newly detected resets or reliably detect account or workspace switches; expiry reminders for known deadlines can still run. Check your account and reminders after switching, and keep a backup reminder.
+### 2. Download WUPHF for your computer
 
-## Installation and setup (preview)
+**The packages below include Python. You do not need to install Python separately.**
 
+| Computer | Download | Open after extracting |
+| --- | --- | --- |
+| Mac with Apple silicon (M1 or newer) | [Download for macOS](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.1/wuphf-0.1.0-beta.1-macos-arm64-unsigned.tar.gz) | In the `WUPHF` folder, run `./WUPHF` in Terminal. |
+| Windows 10 or newer, x64 | [Download for Windows](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.1/wuphf-0.1.0-beta.1-windows-x86_64-unsigned.zip) | Extract all files, then double-click `WUPHF.exe`. |
+| Linux x64 desktop (Ubuntu 24.04 build) | [Download for Linux](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.1/wuphf-0.1.0-beta.1-linux-x86_64-unsigned.tar.gz) | Extract with `tar -xzf ARCHIVE_NAME.tar.gz`, then run `./WUPHF` inside the extracted folder. |
 
-These instructions run WUPHF from source. Python is required for this method; the experimental packaged builds include Python. Windows and Linux real-device tests were skipped at the project owner’s request; automated checks remain required.
+Keep the **whole extracted folder** together, including `_internal`, in a permanent location. Background checks use that location. On macOS, put the folder under `~/Library/Application Support/` before opening it; keep both WUPHF and Codex outside Documents, Desktop and Downloads for background operation. In Finder, **Go → Go to Folder** lets you open `~/Library/Application Support/`.
 
-### 1. Install the prerequisites
+Linux requires a graphical session, a running **systemd user service**, and an unlocked **Secret Service keyring**. These are desktop packages, not cloud/server installers. Other architectures, including Intel Macs, can try the [source installation](#run-from-source) with Python 3.11+; compatibility outside the tested builds is not established.
 
-1. Install **Python 3.11 or newer** from [python.org](https://www.python.org/downloads/) or your platform's package manager. On Windows, allow the installer to add Python to your PATH. On Linux, your distribution may also require its Python `venv` package.
-2. Install the **Codex CLI** by following the [official Codex CLI guide](https://developers.openai.com/codex/cli/). Open Terminal, PowerShell, or a Linux terminal and run `codex`; sign in with the ChatGPT account whose banked resets you want to monitor. WUPHF uses the CLI's existing sign-in.
-3. Confirm that `codex --version` works in the terminal where you will start WUPHF. If the command isn't found, follow the Codex guide's installation and PATH instructions and reopen your terminal.
+Because this beta is unsigned, your operating system may ask you to approve opening it or block it. Review the download source and [SHA256SUMS](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.1/SHA256SUMS). On macOS, follow [Apple's instructions for opening an app from an unidentified developer](https://support.apple.com/en-us/102445) if you choose to trust the download. Do not disable system security protections globally. Source installation is also available below.
 
-**Linux only:** A graphical desktop session with a running systemd user service and an unlocked Secret Service keyring is required. The Windows and Linux launchers create a local Python environment and install WUPHF's open-source credential-storage dependency on first run, so an internet connection is needed.
+### 3. Choose your reminders
 
-### 2. Download and open WUPHF
+WUPHF opens a setup page in your browser on **this computer**. Choose a language and confirm your banked-reset count appears. Connect only the options you want using the instructions below.
 
-1. [Download the source preview as a ZIP](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/heads/wuphf-initial.zip), then extract it. This is an unpublished development preview, not a signed installer.
-2. Move the extracted folder to a location where it can stay; background checks use that folder. On macOS, keep WUPHF, its Python executable and the Codex CLI outside **Documents**, **Desktop**, and **Downloads**. For example, use `~/Library/Application Support/WUPHF`. The preview blocks background installation from those folders; other macOS privacy settings can still affect execution.
-3. Open the folder and start the launcher for your computer:
-   - **macOS:** Double-click `Start WUPHF.command`. If macOS blocks the unsigned launcher, open Terminal in the folder and run `python3 -m wuphf.web`.
-   - **Windows:** Double-click `Start WUPHF.bat`. Keep the window open while using the setup page.
-   - **Linux:** Open a terminal in the folder and run `sh "Start WUPHF.sh"`.
-4. WUPHF opens a local setup page in your browser. Choose a language and check that your available reset count appears. If it does not, check your Codex sign-in and use **Refresh**.
+Set **Start reminders, days before** and **Repeat every, hours**, click **Save settings**, and use **Send test** for each notification channel. Confirm the test arrives before relying on reminders.
 
-### 3. Choose how to receive reminders
+### 4. Turn on background checks
 
-You can use email, Telegram, or both. Set **Start reminders, days before** and **Repeat every, hours** to your preference. Save settings before sending a test.
+Click **Enable checks** under **Background checks**. Confirm the status is enabled and the last successful check updates. You can then close the setup page and its window.
 
-#### Telegram
+Your computer must stay **awake, online, and logged in**. WUPHF checks approximately every 10 minutes; reminders follow the frequency you selected. Reopen WUPHF to change settings, inspect errors, or disable checks. For a one-time calendar export, background checks are not needed.
 
-1. In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and follow its instructions to create a bot. Keep the bot token private.
-2. In WUPHF, enable **Telegram** and paste the bot token. Open your new bot in Telegram and tap **Start**.
-3. In WUPHF, select **Generate pairing phrase**. Send the entire phrase to your bot in a private chat within 10 minutes.
-4. Select **Find my chat ID**, then **Save settings**. Select **Send test** and confirm the message arrives. You can enter your private chat ID manually if lookup is unavailable.
+## Connect your own accounts
 
-WUPHF matches the one-time phrase to a private message. If multiple chats match, Telegram has too many pending updates, a webhook is configured, or another bot client is using updates, use the manual chat ID. Never post your bot token in an issue or chat.
+Every installation is independent. Your email sends your reminders, your Telegram bot delivers to your chat, and your calendar receives your events. Your credentials stay in your computer's operating-system credential store. The maintainer does not receive them or run your reminders.
 
-#### Gmail (experimental)
+| I want… | Choose… | What I need |
+| --- | --- | --- |
+| Reminders in my Gmail inbox | Gmail | My Google account; bundled connection subject to Google's pending review. |
+| Reminders through another email provider | Email (SMTP) | My provider's SMTP SSL settings and app password or supported credential. |
+| Messages in Telegram | Telegram | My own bot from BotFather and a private chat with it. |
+| Dates in my preferred calendar | Download `.ics` | A calendar app that imports ICS files; no Google connection required. |
+| Automatically synced Google Calendar dates | Connect Google | My Google account, authorized separately from Gmail. |
 
-WUPHF includes its own Google Desktop app registration. You do **not** need to create a Google Cloud project or upload a JSON file for normal setup. **Google verification is still pending**, so Google may show a warning or restrict access; Gmail is experimental until that review is complete.
+### Gmail
 
-1. Enable **Gmail** and enter the Gmail address you want to receive reminders at. Use the same account when signing in.
-2. Click **Connect Gmail**. On **the same computer running WUPHF**, choose your Google account and review the send-only permission. WUPHF does not request inbox-reading permission.
-3. After approving, return to WUPHF, click **Save settings**, and select **Send test**. Check your inbox to confirm receipt.
+1. Enable **Gmail** and enter **your own Gmail address**. Use this same account when signing in.
+2. Click **Connect Gmail**, choose your account, and review the send-only permission. WUPHF does not request permission to read your inbox.
+3. Return to WUPHF, click **Save settings**, then **Send test**. Check your inbox.
 
-If sign-in times out, return to WUPHF and start again; an old authorization link cannot be reused. If Google blocks access, use Telegram while review is pending. A saved connection alone does not prove delivery, and Google can expire or revoke authorization.
+Complete sign-in in a browser on the **same computer running WUPHF**. A phone cannot finish the local callback. If authorization times out, start again from WUPHF; old links expire.
 
-**Advanced, optional:** Developers can select their own **Desktop app** client JSON under **Developer setup** before connecting. Enable the Gmail API and configure that project's consent screen and any required test users first. See Google's [desktop client setup instructions](https://developers.google.com/workspace/gmail/api/quickstart/python) and our [Google setup notes](docs/google-production.md). Never share user access or refresh tokens.
+**About Google verification:** WUPHF includes a shared Google **app registration**, not a shared email account. You still authorize and use your own Gmail. The registration is unverified: Google may display a warning, block authorization, or apply its unverified-user cap. A public beta does not imply Google approval or unlimited Google onboarding. You can choose another channel or configure your own Desktop app registration in **Developer setup**. An own-client setup has its own consent, policy and quota requirements; it is not a way to bypass Google's rules. [Google setup guide](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/docs/google-production.md).
 
-#### Other email (SMTP)
+### Other email (SMTP)
 
-1. Enable **Email**. Obtain your provider's **SMTP SSL server**, port, username, sender address and app password or other provider-compatible credential from the provider's instructions. WUPHF currently supports SMTP over SSL, commonly port `465`.
-2. Enter those details and the destination email address in WUPHF. The app password is stored in your operating system's credential store.
-3. Select **Save settings**, then **Send test**, and check the destination inbox. Provider settings and app-password requirements vary.
+1. Enable **Email**. Copy the **SMTP SSL server**, port (commonly `465`), username, sender address and app password or supported credential from **your email provider's instructions**.
+2. Enter your destination email address. Save settings and send a test.
 
-### 4. Enable and verify background reminders
+WUPHF supports SMTP over SSL; STARTTLS-only providers/ports are not supported in this beta. Do not enter your ordinary account password unless your provider explicitly requires it. SMTP does not use WUPHF's Google app registration.
 
-1. Under **Background checks**, click **Enable checks**. Keep the extracted WUPHF folder in the same location afterwards.
-2. Check the displayed monitoring status and the time of the **last successful background check**. An enabled scheduler is not proof that a notification arrived; review any displayed errors and test each selected channel.
-3. The setup page may be closed. Your computer must remain **awake, online, and logged in** for checks and notifications. Checks run approximately every 10 minutes; a delay, provider failure, or missing expiry information can prevent an alert.
-4. If Codex does not supply an account identifier, WUPHF cannot reliably detect account or workspace switches or send alerts for newly detected resets. Expiry reminders for known deadlines can still run. Check your settings after switching accounts and keep a backup reminder.
+### Telegram
 
-### 5. Add dates to your calendar (optional)
+1. Open [@BotFather](https://t.me/BotFather) in Telegram, send `/newbot`, and follow its instructions. Copy your new bot's token privately.
+2. Enable **Telegram** in WUPHF and paste the token. Open **your bot's chat** and tap **Start**.
+3. In WUPHF, click **Generate pairing phrase**. Send that exact phrase to your bot in a private chat within 10 minutes.
+4. Click **Find my chat ID**, then **Save settings** and **Send test**. Confirm it arrives in Telegram.
 
-Select **Download .ics** in WUPHF and import it into Google Calendar, Apple Calendar, Outlook, or another compatible calendar. The imported file is a **one-time snapshot**; it does not update automatically.
+You only create the bot once. Never share its token publicly. If automatic lookup fails, enter your private chat ID manually. A bot used by another service, a configured webhook, or multiple matching chats can prevent automatic pairing.
 
-For experimental automatic Google Calendar sync, click **Connect Google**, review the separate calendar permission in the browser on this computer, and click **Sync now** after connecting. WUPHF's bundled Desktop registration is used automatically; you do not need to upload a client file. Developers can optionally select their own Desktop client with the Calendar API enabled under **Developer setup**. WUPHF creates a separate calendar; events may remain after a reset is used or expires and need manual cleanup. Google verification is pending, and this integration has not yet been verified end to end with a live account.
+### Any calendar: ICS export
 
-### Troubleshooting and removal
+Click **Download .ics**, then import the file into Google Calendar, Apple Calendar, Outlook, or another compatible app. This works without connecting WUPHF to Google.
 
-- **WUPHF doesn't open:** Check Python and Codex CLI are installed and available in your session. On Linux, check the `venv` package, systemd user session and unlocked keyring. On macOS, move the project out of protected folders before enabling background checks.
-- **No resets or dates:** Confirm the CLI is signed in to the intended account. If Codex does not supply details, WUPHF displays them as unknown; it cannot invent an expiry.
-- **No notification:** Save settings, run **Send test**, check the destination and displayed error, and ensure your computer is awake and online. A provider accepting a message does not guarantee it reached your device.
-- **Stop checks:** Click **Disable** under Background checks. This leaves your settings and credentials in place. On Windows, a check already in progress may finish.
-- **Remove local data:** After disabling checks, remove WUPHF's entries from macOS Keychain, Windows Credential Manager, or Linux Secret Service, then remove `~/.local/share/wuphf-resets/` (under your user profile on Windows). Remove an app-created Google calendar separately if desired.
-- **Need help:** [Open an issue](https://github.com/Robertzu43/WUPHF-my-banked-resets/issues). Never include tokens, passwords, OAuth client files, raw auth files, or reset identifiers.
+The file is a **snapshot**, not a subscription: it does not automatically update. Review imported events and alarms in your calendar app. Re-importing can create duplicates depending on the app.
 
-## Upgrade safely
+### Google Calendar: automatic sync
 
-Before replacing or moving WUPHF, click **Disable** and close its setup process. Keep your existing data folder and OS credentials. Download the new source or package into its permanent location, reopen it, review your settings, send a test, then enable checks again. Do not run two copies against the same settings at once. If you move the app, reinstall its background job so it points to the new location.
+1. Click **Connect Google** in the calendar section. Choose **your Google account** in a browser on the same computer.
+2. Review the separate permission to create secondary calendars and manage their events. This is independent of Gmail; you can use Calendar alone.
+3. Return to WUPHF and click **Sync now**. WUPHF creates its own calendar for known reset expiry dates. Enable background checks to keep it synced.
 
-## Privacy and limitations
+The bundled registration is used automatically; no client file is needed for that path. For your own registration, enable the Calendar API and select a **Desktop app** client JSON under **Developer setup** before connecting. See the [Google setup guide](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/docs/google-production.md).
 
-WUPHF runs locally and never redeems a reset. It stores credentials in macOS Keychain, Windows Credential Manager, or Linux Secret Service; insecure plaintext keyring backends are rejected. Reset identifiers, settings and reminder history stay in `~/.local/share/wuphf-resets/`. Your chosen provider receives the notification contents. There is no central WUPHF account database or telemetry. Read the [privacy policy](https://robertzu43.github.io/WUPHF-my-banked-resets/privacy.html).
+Events can remain after a reset is used or expires; remove old events manually. Disconnecting removes local authorization, not the remote calendar. Reconnecting can create another WUPHF calendar. Live authorization, saved-token refresh, and test-event creation/update were verified; longer unattended operation and the full reconnect lifecycle remain beta checks.
 
-Gmail and Telegram test messages were received on the developer’s Mac. Generic SMTP delivery, live Google Calendar sync and imports into calendar applications remain unverified. Google Calendar sync is experimental: disconnecting removes local credentials and mappings, but leaves the calendar and its events in Google. Reconnecting can create a new WUPHF calendar.
+## Help and troubleshooting
 
-An older ntfy configuration remains visible so its owner can disable it. New setups offer email and Telegram. Disabling a channel does not erase its saved secret; remove the WUPHF entry from your OS credential store to erase it.
+| Problem | What to try |
+| --- | --- |
+| WUPHF cannot find Codex | Run `codex --version`, confirm your CLI sign-in, then reopen WUPHF. |
+| Reset count or dates are unknown | Use **Refresh** and check the intended Codex account. Missing data is shown as unknown; WUPHF cannot invent expiry dates. |
+| Google sign-in fails | Start a fresh connection on the same computer. Review the Google error; the bundled registration has pending verification and access limits. Other channels and ICS remain independent. |
+| A test does not arrive | Save settings, send a test, check spam/your bot chat and the displayed error. Provider acceptance is not a delivery guarantee. |
+| Background checks fail on Mac | Move WUPHF, Python (source installs) and Codex outside protected Documents/Desktop/Downloads locations; reopen and enable checks again. |
+| Linux credentials or checks fail | Unlock the Secret Service keyring and use a graphical session with a systemd user service. |
+| Need help | [Open an issue](https://github.com/Robertzu43/WUPHF-my-banked-resets/issues) with your OS, WUPHF version and a redacted error. Never include tokens, passwords or raw Codex auth/reset data. |
 
-Eight languages are available: English, Spanish, German, Portuguese, French, Japanese, Korean and Simplified Chinese. Translations are machine-assisted and have not received a complete native-speaker review. Keyboard focus and reduced-motion support are included.
+### Upgrade or uninstall
 
-## Versioning and development
+**Upgrade:** Disable background checks, close WUPHF, and replace its complete application folder with the new version. Keep your data folder and OS credentials. Reopen, review settings, send tests, then enable checks again. Do not run two copies against the same settings.
 
-[`VERSION`](VERSION) identifies the candidate: **0.1.0-beta.1**. It is not a published release. See the [changelog](CHANGELOG.md), [release readiness report](docs/release-readiness.md), and [implementation plan](docs/superpowers/plans/2026-11-07-public-beta-release.md). We use Semantic Versioning with explicit prerelease tags; a version badge is not evidence that an installer has shipped.
+**Stop reminders:** Click **Disable** under Background checks. Settings and credentials remain saved; a check already in progress may finish.
 
-Run the checks from the repository root:
+**Remove WUPHF:** Disable checks first, disconnect Google integrations if used, and delete the app folder. To erase local data too, remove WUPHF entries from macOS Keychain, Windows Credential Manager, or Linux Secret Service, then delete `~/.local/share/wuphf-resets/` (inside your user profile on Windows). Remove WUPHF's calendar separately if desired. To revoke Google access remotely, use your [Google account connections](https://myaccount.google.com/connections).
 
-```sh
-python3 -m unittest discover -s tests -v
-```
+## Run from source
 
-Install Node.js to include the frontend behavioral checks. CI requires Node and runs Python tests on macOS, Windows and Ubuntu. Tests use mocks for external providers; passing them does not prove live delivery. Contributions and translation corrections are welcome. Keep secrets and private reset identifiers out of bug reports.
+<details>
+<summary>For developers or users who prefer Python instead of a packaged download</summary>
 
-### Build an experimental package
+Install Python **3.11+** and the signed-in Codex CLI. [Download the beta source ZIP](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/tags/v0.1.0-beta.1.zip) and extract it to a permanent folder. On macOS, keep the source, Python and Codex outside Documents/Desktop/Downloads.
 
-Build on the operating system you want to target. Use Python 3.11+ in an isolated virtual environment, install `requirements.txt` and `pyinstaller>=6.17,<7`. Building also needs internet access to download the exact CPython version's official source notices; a missing required notice stops the build. This adds no runtime download to the app. Run:
+- **macOS:** Open Terminal in the source folder and run `python3 -m wuphf.web`, or use `Start WUPHF.command`.
+- **Windows:** Run `Start WUPHF.bat`; Python must be on PATH.
+- **Linux:** Run `sh "Start WUPHF.sh"`. Your distribution may need its Python `venv` package.
+
+The Windows/Linux source launchers create a local virtual environment and install the credential-storage dependency on first run, so internet access is required. The same account setup and background-check instructions above apply.
+
+</details>
+
+## Privacy and beta limits
+
+WUPHF is local, free software under the [MIT License](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/LICENSE). It never redeems resets. Credentials use macOS Keychain, Windows Credential Manager or Linux Secret Service; insecure plaintext keyrings are rejected. Settings, reset identifiers and reminder history stay in `~/.local/share/wuphf-resets/`. Your selected providers receive the messages/events necessary for their features. There is no central WUPHF account database or telemetry. [Privacy policy](https://robertzu43.github.io/WUPHF-my-banked-resets/privacy.html).
+
+- Your computer must be awake, online and logged in. Missing expiry data, provider failures and offline time can prevent alerts.
+- When Codex omits a stable account identifier, WUPHF cannot reliably detect account/workspace switches or send new-reset alerts; known-expiry reminders can still run. Check settings after switching accounts.
+- Gmail and Telegram test receipt were confirmed. Calendar authorization and live test-event create/update passed. Generic SMTP receipt, actual ICS imports, long-running sleep/wake behavior and clean-machine installation remain unverified.
+- Windows/Linux have automated test/build coverage; real-device tests were waived, not claimed as passed. Packages cover the architectures listed above; older OS compatibility is not established. Mac binaries are ad-hoc signed, not Developer ID signed or notarized, and can be blocked by Gatekeeper.
+- Eight languages are included: English, Spanish, German, Portuguese, French, Japanese, Korean and Simplified Chinese. Translations are machine-assisted; native-speaker corrections are welcome. Keyboard focus and reduced-motion support are included.
+- Existing ntfy configurations remain available for their owners; new setup focuses on email, Telegram and calendars.
+
+See the [release evidence](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/docs/release-readiness.md) for the precise test scope. WUPHF is independent and is not affiliated with OpenAI or *The Office*.
+
+## Development and versioning
+
+`VERSION` identifies **0.1.0-beta.1**. Releases use Semantic Versioning with explicit beta tags. See the [changelog](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/CHANGELOG.md) and [release procedure](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/docs/releasing.md).
+
+Run `python3 -m unittest discover -s tests -v` from the repository root. Install Node.js for the frontend behavioral checks. CI tests Python on macOS, Windows and Ubuntu; mocked provider tests do not establish live delivery.
+
+To build on your target OS, use Python 3.11+ in a virtual environment, install `requirements.txt` and `pyinstaller>=6.17,<7`, then run:
 
 ```sh
 python scripts/build_package.py --output /path/to/empty/dist --work /path/to/empty/build
 python scripts/smoke_package.py /path/to/empty/dist/WUPHF
 ```
 
-Linux also requires `objdump` (usually from `binutils`). The **Windows package requires Windows 10 or newer** and uses the operating system's Universal C Runtime; Windows 7/8/8.1 are unsupported. The one-folder package includes Python but still requires the signed-in Codex CLI; Linux also needs an unlocked Secret Service keyring and a systemd user session. Keep the whole package folder together. Run `WUPHF` (`WUPHF.exe` on Windows) inside it to open setup. `--version` shows its candidate version; `--check-codex` performs a read-only account check without sending messages.
-
-These packages are **unsigned and unnotarized**. They are development artifacts, not universal installers. CI builds for its runner’s architecture; support for other architectures or older OS versions is not established. POSIX packages must use an archive format that preserves symbolic links, such as `tar.gz`; Windows packages use ZIP. A packaging smoke check uses temporary data and a synthetic Codex process. See the readiness report for exact build evidence and limitations. Packages include `third-party-notices/` with Python and build-environment distribution notices and an inventory; this is not an exhaustive native-library audit. Each CI artifact includes `SHA256SUMS` for its archive and `build-info.json` inside the package. On macOS verify with `shasum -a 256 -c SHA256SUMS`; on Linux use `sha256sum -c SHA256SUMS`; on Windows compare `Get-FileHash .\ARCHIVE_NAME.zip -Algorithm SHA256` with `SHA256SUMS`. Public release downloads will only appear when a release is actually published. Maintainers can prepare validated draft assets with the [release procedure](docs/releasing.md).
-
-WUPHF is free and open source under the [MIT License](LICENSE). The bundled Geist Pixel font uses the [SIL Open Font License](wuphf/assets/geist-pixel-OFL.txt). WUPHF is an independent project inspired by *The Office* and is not affiliated with OpenAI or the show.
+Linux builds also need `objdump` (usually `binutils`). Build-time internet access retrieves the exact CPython source notices; no runtime download is added. Packages include build information and third-party notices, including the Geist Pixel font's SIL Open Font License. Notice provenance is tracked; it is not exhaustive legal certification of every nested/static dependency. Maintainers verify archives and checksums before publication.

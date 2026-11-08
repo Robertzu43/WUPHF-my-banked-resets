@@ -1,6 +1,8 @@
 # Google setup for maintainers
 
-Normal users select **Connect Gmail** or **Connect Google** in WUPHF without creating a Google Cloud project. Both APIs are enabled for WUPHF's registered Desktop client. Google verification is pending, and live Calendar sync has not yet been verified.
+Each user runs WUPHF on their own computer and connects their own Google account. Normal setup uses **Connect Gmail** or **Connect Google** without creating a Google Cloud project: both APIs are enabled for WUPHF's bundled Desktop registration. This registration identifies the app; it does not share the developer's account, tokens or calendar with users. An own-client override is available below.
+
+The owner authorized publishing the beta with all existing options. Google verification remains pending and is a disclosed integration limitation, not a prerequisite for publishing this code or beta. The bundled registration remains subject to Google's unverified-app warnings, account restrictions and 100-user cap; unlimited public Gmail onboarding is not claimed.
 
 ## Registration and local credentials
 
@@ -23,13 +25,21 @@ The two connections are independent. Disconnecting removes local authorization; 
 
 ## Verification status and next steps
 
-On November 7, 2026, Google Cloud showed WUPHF's audience as **External / In production**, with verification still required and a **100-user unverified OAuth cap**. Production status is not Google's approval.
+The November 7–8, 2026 Google Cloud inspections showed WUPHF's audience as **External / In production**, with verification still required and a **100-user unverified OAuth cap**. Production status is not Google's approval. Data Access declares Gmail send-only as sensitive and Calendar app-created as non-sensitive, with no restricted scopes. The Gmail justification is saved; the required demonstration video URL remains outstanding.
 
-The branding issue reported that the homepage ownership was not yet recognized. Search Console ownership was completed earlier that day; Google's dialog explicitly asks maintainers to wait **24 hours** after ownership verification before retrying. The public homepage and privacy policy are deployed under `https://robertzu43.github.io/WUPHF-my-banked-resets/` and the privacy policy is linked from the local app.
+Branding still reported that homepage ownership was not recognized at the November 8, 00:14 Bogotá check, less than 24 hours after the November 7 Search Console verification by the same account; Google's dialog explicitly asks maintainers to wait **24 hours** after ownership verification before retrying. The public homepage and privacy policy are deployed under `https://robertzu43.github.io/WUPHF-my-banked-resets/` and the privacy policy is linked from the local app.
 
 1. After the ownership propagation period, return to Google Auth Platform **Branding → View issues**, retry the ownership check and submit branding for review when eligible.
 2. After branding is accepted, complete **Verification Center** requirements for the scopes actually requested. Provide the app description, scope justification, public privacy policy and any demonstration Google requests. Do not request broader permissions to avoid a review.
-3. Test the complete production browser flow on the same computer as WUPHF, then test sending and later token refresh. Old callback URLs expire; always start a fresh connection in the app.
-4. Update the README and app disclosure only after Google reports approval. Until then, keep the unverified/experimental limitation visible; users can choose Telegram.
+3. Record the actual consent and integration workflows for the verification submission. Continue packaged Calendar UI, disconnect/reconnect and later unattended-refresh checks; the completed live evidence below does not establish those paths. Old callback URLs expire; always start a fresh connection in the app.
+4. Remove the pending-verification disclosure only after Google reports approval. Until then, retain warnings and account limits while offering Gmail, Calendar and the other existing beta options.
 
 Google's console is the authority for current review status. A successful mocked test, bundled registration, or production toggle cannot establish verification or permanent authorization.
+
+## Completed live evidence and limits
+
+The saved Gmail authorization refreshed successfully. Fresh Gmail and Telegram test messages were accepted by their providers; earlier device receipt was confirmed by the user. Provider acceptance alone does not prove new device receipt.
+
+After explicit owner consent, Calendar authorization was saved in the OS credential store. A separate process using candidate `472ebcc` source helpers refreshed that saved token, created a WUPHF secondary calendar, created a labeled synthetic event, updated the same event by one hour and read back its expected ID, title and time with notifications disabled. The event was also verified in Google Calendar's UI. The test event is retained and the saved calendar ID enables normal background sync.
+
+This verifies the source helpers and current saved-token refresh against live APIs. It does not verify the packaged Calendar browser UI, disconnect/reconnect lifecycle or later unattended refresh. Calendar imports into other applications remain untested. Credentials are local to each user's installation; no developer account token or live test data is distributed in the packages.

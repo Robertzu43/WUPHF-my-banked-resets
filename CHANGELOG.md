@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.1.0-beta.1 — Unreleased candidate
+## 0.1.0-beta.1 — 2026-11-08
 
-No version tag or public binary release has been published for this candidate. The [release readiness report](docs/release-readiness.md) tracks the remaining gates.
+First public beta with independent setup for each user’s Gmail, SMTP email, Telegram and calendar accounts. Google verification remains pending; all existing options are included with their limitations disclosed. See the [release readiness report](docs/release-readiness.md).
 
 ### Included
 
@@ -12,7 +12,7 @@ No version tag or public binary release has been published for this candidate. T
 - Calendar snapshot export and experimental sync to an app-created Google calendar.
 - Pixel-art interface with eight languages, keyboard focus and reduced-motion support.
 - User-level background jobs for macOS, Windows and Linux; OS credential storage.
-- Source launchers, experimental one-folder packages and automated CI.
+- Platform downloads with Python included, a package-first installation guide, source launchers and automated CI.
 - Bundled public Desktop app registration for Gmail and Calendar; normal setup no longer requires users to create a Google Cloud project.
 - Draft-only release workflow with versioned OS/architecture archives, exact-commit checks and combined SHA-256 checksums.
 - Public privacy policy linked in the app, with Google review status disclosed in eight languages.
@@ -32,10 +32,10 @@ No version tag or public binary release has been published for this candidate. T
 
 - Google verification remains pending. Gmail and Calendar use the bundled registration but Google can warn or restrict access until approval.
 - Computers must be awake, online and logged in. Missing account identifiers limit switch detection and new-reset alerts; incomplete details pause reminders.
-- Real Windows/Linux account and background-delivery tests were skipped by the project owner's decision. Generic SMTP and live Google Calendar delivery are not confirmed.
+- Real Windows/Linux account and background-delivery tests were skipped by the project owner's decision. Generic SMTP receipt remains unverified. Calendar authorization, saved-token refresh and live test-event create/update passed; longer unattended sync and reconnect remain unverified.
 - Calendar imports are static snapshots; Google events can remain after a reset disappears. Disconnecting does not remove remote calendars.
 - Packages are unsigned and unnotarized; minimum OS compatibility and a clean-machine Mac installation are not established.
 
 ### Upgrade and removal
 
-Disable checks before replacing or moving the app, preserve the data folder and OS credentials, then reopen, test and re-enable checks. To remove WUPHF, disable checks first, remove its OS credentials and `~/.local/share/wuphf-resets/`, and delete any unwanted Google calendar separately. See the [complete setup guide](README.md#installation-and-setup-preview).
+Disable checks before replacing or moving the app, preserve the data folder and OS credentials, then reopen, test and re-enable checks. To remove WUPHF, disable checks first, remove its OS credentials and `~/.local/share/wuphf-resets/`, and delete any unwanted Google calendar separately. See the [complete setup guide](README.md#install-and-get-started).
