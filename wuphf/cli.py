@@ -75,7 +75,8 @@ class ProtectedMacLocation(RuntimeError):
 
 
 def install_agent():
-    if not shutil.which('codex'): raise RuntimeError('Codex CLI was not found in PATH.')
+    codex=shutil.which('codex')
+    if not codex: raise RuntimeError('Codex CLI was not found in PATH.')
     if sys.platform!='darwin':
         from . import platform_jobs
         platform_jobs.install()
@@ -85,12 +86,13 @@ def install_agent():
     frozen=getattr(sys,'frozen',False)
     arguments=[sys.executable,'--background'] if frozen else [sys.executable,'-m','wuphf.cli','run']
     directory=Path(sys.executable).parent if frozen else ROOT
-    protected=[(Path.home()/name).resolve() for name in ('Documents','Desktop','Downloads')]
-    locations=[directory.absolute(),Path(sys.executable).absolute()]
+    folders=[(Path.home()/name).absolute() for name in ('Documents','Desktop','Downloads')]
+    protected=folders+[folder.resolve() for folder in folders]
+    locations=[directory.absolute(),Path(sys.executable).absolute(),Path(codex).absolute()]
     paths=locations+[path.resolve() for path in locations]
     # macOS privacy rules can also block other locations; status still needs monitoring.
     if any(path==folder or folder in path.parents for path in paths for folder in protected):
-        raise ProtectedMacLocation('Move WUPHF and its Python environment out of Documents, Desktop, or Downloads, for example to ~/Library/Application Support/WUPHF; reopen it and enable checks again.')
+        raise ProtectedMacLocation('Move WUPHF and its Python environment out of Documents, Desktop, or Downloads, for example to ~/Library/Application Support/WUPHF. If Codex is in one of these folders, move or reinstall it elsewhere. Reopen WUPHF and enable checks again.')
     PLIST.parent.mkdir(parents=True,exist_ok=True)
     job={'Label':'com.wuphf.resets','ProgramArguments':arguments,'WorkingDirectory':str(directory),'RunAtLoad':True,'StartInterval':600,'EnvironmentVariables':{'PATH':os.environ.get('PATH','/usr/bin:/bin')}}
     with open(PLIST,'wb') as f: plistlib.dump(job,f)

@@ -36,7 +36,7 @@ class CliTests(unittest.TestCase):
             home=Path(d); plist=home/'agent.plist'
             for folder,frozen in ((folder,frozen) for folder in ('Documents','Desktop','Downloads') for frozen in (False,True)):
                 protected=home/folder/'WUPHF'
-                with self.subTest(folder=folder,frozen=frozen),patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',plist),patch.object(cli,'ROOT',protected),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',frozen,create=True),patch.object(cli.sys,'executable',str(protected/'WUPHF')),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run') as launch:
+                with self.subTest(folder=folder,frozen=frozen),patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',plist),patch.object(cli,'ROOT',protected),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',frozen,create=True),patch.object(cli.sys,'executable',str(protected/'WUPHF')),patch.object(cli.shutil,'which',return_value='/usr/bin/codex'),patch.object(cli.subprocess,'run') as launch:
                     with self.assertRaisesRegex(RuntimeError,'Application Support'):cli.install_agent()
                     launch.assert_not_called();self.assertFalse(plist.exists())
 
@@ -47,9 +47,22 @@ class CliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             home=Path(d);target=home/'Documents'/'app';target.mkdir(parents=True)
             alias=home/'app';alias.symlink_to(target,target_is_directory=True)
-            with patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',home/'agent.plist'),patch.object(cli,'ROOT',alias),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.sys,'executable','/usr/bin/python3'),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run') as launch:
+            with patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',home/'agent.plist'),patch.object(cli,'ROOT',alias),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.sys,'executable','/usr/bin/python3'),patch.object(cli.shutil,'which',return_value='/usr/bin/codex'),patch.object(cli.subprocess,'run') as launch:
                 with self.assertRaises(cli.ProtectedMacLocation):cli.install_agent()
                 launch.assert_not_called()
+
+    def test_mac_install_rejects_protected_or_symlinked_codex(self):
+        import tempfile
+        from pathlib import Path
+        from wuphf import cli
+        with tempfile.TemporaryDirectory() as d:
+            home=Path(d);codex=home/'Documents'/'bin'/'codex';codex.parent.mkdir(parents=True);codex.touch()
+            alias=home/'codex';alias.symlink_to(codex)
+            safe=home/'safe-codex';safe.touch();protected_alias=codex.parent/'alias';protected_alias.symlink_to(safe)
+            for exe in (codex,alias,protected_alias):
+                with self.subTest(exe=exe),patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',home/'agent.plist'),patch.object(cli,'ROOT',home/'safe-app'),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.sys,'executable','/usr/bin/python3'),patch.object(cli.shutil,'which',return_value=str(exe)),patch.object(cli.subprocess,'run') as launch:
+                    with self.assertRaisesRegex(cli.ProtectedMacLocation,'Codex'):cli.install_agent()
+                    launch.assert_not_called();self.assertFalse((home/'agent.plist').exists())
 
     def test_failed_background_check_records_failure(self):
         import tempfile
@@ -148,7 +161,7 @@ class CliTests(unittest.TestCase):
         from wuphf import cli
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);exe=root/'Installed WUPHF'/'WUPHF';plist=root/'agent.plist'
-            with patch.object(cli,'PLIST',plist),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',True,create=True),patch.object(cli.sys,'executable',str(exe)),patch.object(cli.sys,'_MEIPASS',str(root/'temporary bundle'),create=True),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
+            with patch.object(cli,'PLIST',plist),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',True,create=True),patch.object(cli.sys,'executable',str(exe)),patch.object(cli.sys,'_MEIPASS',str(root/'temporary bundle'),create=True),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.shutil,'which',return_value='/usr/bin/codex'),patch.object(cli.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
                 cli.install_agent()
             job=plistlib.loads(plist.read_bytes())
             self.assertEqual(job['ProgramArguments'],[str(exe),'--background'])
@@ -162,7 +175,7 @@ class CliTests(unittest.TestCase):
         from wuphf import cli
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);plist=root/'agent.plist'
-            with patch.object(cli,'PLIST',plist),patch.object(cli,'ROOT',root),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.sys,'executable','/usr/bin/python-example'),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
+            with patch.object(cli,'PLIST',plist),patch.object(cli,'ROOT',root),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.sys,'executable','/usr/bin/python-example'),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.shutil,'which',return_value='/usr/bin/codex'),patch.object(cli.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
                 cli.install_agent()
             job=plistlib.loads(plist.read_bytes())
             self.assertEqual(job['ProgramArguments'],['/usr/bin/python-example','-m','wuphf.cli','run'])

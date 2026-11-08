@@ -25,7 +25,7 @@ class WebTests(unittest.TestCase):
         from wuphf import cli
         with tempfile.TemporaryDirectory() as d:
             home=Path(d)
-            with patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',home/'agent.plist'),patch.object(cli,'ROOT',home/'Documents'/'WUPHF'),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.shutil,'which',return_value='codex'):
+            with patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',home/'agent.plist'),patch.object(cli,'ROOT',home/'Documents'/'WUPHF'),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.shutil,'which',return_value='/usr/bin/codex'):
                 res,body=self.request('POST','/api/install',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
             self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'mac_protected_location')
             self.assertFalse((home/'agent.plist').exists())

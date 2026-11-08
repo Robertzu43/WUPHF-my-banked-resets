@@ -131,7 +131,7 @@
     "identity_limit": "New-reset alerts need a known account ID. When Codex does not provide one, WUPHF can still send expiry reminders, but may miss account switches.",
     "legacy_ntfy": "Legacy ntfy alerts",
     "legacy_ntfy_note": "Existing ntfy alerts are enabled. To stop them, uncheck this option and save settings.",
-    "mac_protected_location": "Move WUPHF and its Python environment out of Documents, Desktop, or Downloads, for example to ~/Library/Application Support/WUPHF. Reopen it, then enable checks again."
+    "mac_protected_location": "Move WUPHF and its Python environment out of Documents, Desktop, or Downloads, for example to ~/Library/Application Support/WUPHF. Reopen it, then enable checks again. If Codex is in one of these folders, move or reinstall it elsewhere."
   },
   "es": {
     "language": "Idioma",
@@ -265,7 +265,7 @@
     "identity_limit": "Las alertas de nuevos reinicios necesitan un ID de cuenta conocido. Si Codex no lo proporciona, WUPHF aún puede enviar recordatorios de vencimiento, pero podría no detectar cambios de cuenta.",
     "legacy_ntfy": "Alertas ntfy anteriores",
     "legacy_ntfy_note": "Las alertas ntfy anteriores están activadas. Para detenerlas, desmarca esta opción y guarda los ajustes.",
-    "mac_protected_location": "Mueve WUPHF y su entorno de Python fuera de Documentos, Escritorio o Descargas, por ejemplo a ~/Library/Application Support/WUPHF. Ábrelo de nuevo y activa las comprobaciones."
+    "mac_protected_location": "Mueve WUPHF y su entorno de Python fuera de Documentos, Escritorio o Descargas, por ejemplo a ~/Library/Application Support/WUPHF. Ábrelo de nuevo y activa las comprobaciones. Si Codex está en una de estas carpetas, muévelo o vuelve a instalarlo en otro lugar."
   },
   "de": {
     "language": "Sprache",
@@ -399,7 +399,7 @@
     "identity_limit": "Hinweise auf neue Resets benötigen eine bekannte Konto-ID. Wenn Codex sie nicht liefert, kann WUPHF weiterhin an den Ablauf erinnern, aber Kontowechsel möglicherweise nicht erkennen.",
     "legacy_ntfy": "Bisherige ntfy-Benachrichtigungen",
     "legacy_ntfy_note": "Bisherige ntfy-Benachrichtigungen sind aktiviert. Zum Beenden deaktiviere diese Option und speichere die Einstellungen.",
-    "mac_protected_location": "Verschiebe WUPHF und seine Python-Umgebung aus Dokumente, Schreibtisch oder Downloads, zum Beispiel nach ~/Library/Application Support/WUPHF. Öffne es erneut und aktiviere die Prüfungen."
+    "mac_protected_location": "Verschiebe WUPHF und seine Python-Umgebung aus Dokumente, Schreibtisch oder Downloads, zum Beispiel nach ~/Library/Application Support/WUPHF. Öffne es erneut und aktiviere die Prüfungen. Wenn Codex in einem dieser Ordner liegt, verschiebe es oder installiere es an einem anderen Ort neu."
   },
   "pt": {
     "language": "Idioma",
@@ -533,7 +533,7 @@
     "identity_limit": "Alertas de novos resets precisam de um ID de conta conhecido. Se o Codex não o fornecer, o WUPHF ainda pode lembrar o vencimento, mas pode não detectar mudanças de conta.",
     "legacy_ntfy": "Alertas ntfy anteriores",
     "legacy_ntfy_note": "Os alertas ntfy anteriores estão ativados. Para interrompê-los, desmarque esta opção e salve as configurações.",
-    "mac_protected_location": "Mova o WUPHF e seu ambiente Python para fora de Documentos, Mesa ou Downloads, por exemplo para ~/Library/Application Support/WUPHF. Abra novamente e ative as verificações."
+    "mac_protected_location": "Mova o WUPHF e seu ambiente Python para fora de Documentos, Mesa ou Downloads, por exemplo para ~/Library/Application Support/WUPHF. Abra novamente e ative as verificações. Se o Codex estiver em uma dessas pastas, mova-o ou reinstale-o em outro local."
   },
   "fr": {
     "language": "Langue",
@@ -667,7 +667,7 @@
     "identity_limit": "Les alertes de nouvelles réinitialisations nécessitent un ID de compte connu. Si Codex ne le fournit pas, WUPHF peut toujours rappeler les échéances, mais risque de ne pas détecter les changements de compte.",
     "legacy_ntfy": "Alertes ntfy existantes",
     "legacy_ntfy_note": "Les alertes ntfy existantes sont activées. Pour les arrêter, décochez cette option et enregistrez les paramètres.",
-    "mac_protected_location": "Déplacez WUPHF et son environnement Python hors de Documents, Bureau ou Téléchargements, par exemple vers ~/Library/Application Support/WUPHF. Rouvrez-le puis activez les vérifications."
+    "mac_protected_location": "Déplacez WUPHF et son environnement Python hors de Documents, Bureau ou Téléchargements, par exemple vers ~/Library/Application Support/WUPHF. Rouvrez-le puis activez les vérifications. Si Codex se trouve dans un de ces dossiers, déplacez-le ou réinstallez-le ailleurs."
   },
   "ja": {
     "language": "言語",
@@ -801,7 +801,7 @@
     "identity_limit": "新しいリセットの通知には既知のアカウント ID が必要です。Codex から提供されない場合、期限のリマインダーは送れますが、アカウントの切り替えを検出できないことがあります。",
     "legacy_ntfy": "従来の ntfy 通知",
     "legacy_ntfy_note": "既存の ntfy 通知は有効です。停止するには、この項目のチェックを外して設定を保存してください。",
-    "mac_protected_location": "WUPHFとPython環境を「書類」「デスクトップ」「ダウンロード」の外（例：~/Library/Application Support/WUPHF）に移動してください。開き直してチェックを有効にしてください。"
+    "mac_protected_location": "WUPHFとPython環境を「書類」「デスクトップ」「ダウンロード」の外（例：~/Library/Application Support/WUPHF）に移動してください。開き直してチェックを有効にしてください。 Codexがこれらのフォルダにある場合は、別の場所に移動するか再インストールしてください。"
   },
   "ko": {
     "language": "언어",
@@ -935,7 +935,7 @@
     "identity_limit": "새 리셋 알림에는 알려진 계정 ID가 필요합니다. Codex가 이를 제공하지 않으면 만료 알림은 보낼 수 있지만 계정 전환을 감지하지 못할 수 있습니다.",
     "legacy_ntfy": "기존 ntfy 알림",
     "legacy_ntfy_note": "기존 ntfy 알림이 활성화되어 있습니다. 중지하려면 이 옵션을 선택 해제하고 설정을 저장하세요.",
-    "mac_protected_location": "WUPHF와 Python 환경을 문서, 데스크탑 또는 다운로드 밖의 위치(예: ~/Library/Application Support/WUPHF)로 옮기세요. 다시 열고 확인을 활성화하세요."
+    "mac_protected_location": "WUPHF와 Python 환경을 문서, 데스크탑 또는 다운로드 밖의 위치(예: ~/Library/Application Support/WUPHF)로 옮기세요. 다시 열고 확인을 활성화하세요. Codex가 이 폴더 중 하나에 있다면 다른 위치로 옮기거나 다시 설치하세요."
   },
   "zh": {
     "language": "语言",
@@ -1069,6 +1069,6 @@
     "identity_limit": "新重置提醒需要已知的账户 ID。如果 Codex 未提供该信息，WUPHF 仍可发送到期提醒，但可能无法检测账户切换。",
     "legacy_ntfy": "旧版 ntfy 通知",
     "legacy_ntfy_note": "现有 ntfy 通知已启用。要停止通知，请取消勾选此选项并保存设置。",
-    "mac_protected_location": "请将 WUPHF 和它的 Python 环境移出“文稿”、“桌面”或“下载”文件夹，例如移至 ~/Library/Application Support/WUPHF。重新打开后启用检查。"
+    "mac_protected_location": "请将 WUPHF 和它的 Python 环境移出“文稿”、“桌面”或“下载”文件夹，例如移至 ~/Library/Application Support/WUPHF。重新打开后启用检查。 如果 Codex 位于这些文件夹中，请将其移动或重新安装到其他位置。"
   }
 }
