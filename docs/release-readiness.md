@@ -24,7 +24,7 @@ Three fresh agents audited tracking/reminders, security/integrations, and distri
 
 ## Evidence
 
-Latest release-completion local validation: **247 tests passed** in 23.634 seconds on Python 3.14.7, including Node frontend checks. All documentation local links and whitespace checks passed. A fresh frozen macOS build passed asset and isolated background smoke checks; removing its public OAuth registration caused the expected asset-check failure. These results precede the new GitHub integration run; they do not replace it.
+Latest release-completion local validation: **251 tests passed** in 23.881 seconds on Python 3.14.7, including Node frontend checks. All documentation local links and whitespace checks passed. A fresh frozen macOS build passed asset and isolated background smoke checks; removing its public OAuth registration caused the expected asset-check failure. These results precede the new GitHub integration run; they do not replace it.
 
 - Supported local interpreter: Python 3.14.7 on macOS 26.4 arm64.
 - Full suite: **215 tests passed** in 23.412 seconds, including four Node frontend behavior checks. Command: `python -m unittest discover -s tests -v` using the packaging virtual environment.
@@ -40,6 +40,8 @@ Release completion changes add a default Desktop OAuth registration with optiona
 Google Cloud was inspected on November 7: External / In production, verification required, one authorized user against the 100-user unverified cap. Gmail and Calendar APIs are enabled. Google still asks for 24 hours of propagation after homepage ownership verification before retrying branding. The published homepage and privacy policy were updated and fetched successfully. After the Mac was unlocked, a live refresh using the existing Gmail authorization succeeded. This confirms current refresh, not indefinite validity or new message receipt.
 
 Earlier session evidence: the developer's account returned real banked-reset data, and the user confirmed receiving Gmail and Telegram test messages. The original developer Mac background job completed successfully at 21:11 America/Bogota on November 7 with no recorded error or channel failures. That job runs the earlier runtime; it does not prove the newly packaged candidate's scheduled delivery. No real resets were consumed during these checks.
+
+The first release-completion commit (`c650eb6`) passed [all six CI test jobs](https://github.com/Robertzu43/WUPHF-my-banked-resets/actions/runs/42447920340) and [all three package jobs](https://github.com/Robertzu43/WUPHF-my-banked-resets/actions/runs/42447920277). Downloaded artifacts had valid checksums, manifests and notice references. That review identified wheel/framework attribution gaps and Windows UCRT copies from an unrelated build tool. The follow-up links exact distribution/framework provenance and builds for Windows 10+ using OS UCRT, preserving VC runtimes. Its native CI and final inventory verification must pass before binary publication.
 
 ## Remaining public-release conditions
 

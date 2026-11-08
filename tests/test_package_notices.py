@@ -212,3 +212,40 @@ class PackageNoticesTests(unittest.TestCase):
             self.download.side_effect=None;self.download.return_value=response
             with self.assertRaisesRegex(RuntimeError,'Cannot collect required CPython'):self.collect()
             self.assertFalse(self.output.exists())
+
+    def test_native_wheel_notices_require_exact_distribution_file_ownership(self):
+        dist=Distribution(self.root,'cryptography',{
+            'cryptography/hazmat/bindings/_rust.abi3.so':b'\x7fELFwheel original',
+            'cryptography.dist-info/licenses/LICENSE.APACHE':b'Apache notice',
+            'cryptography.dist-info/licenses/LICENSE.BSD':b'BSD notice',
+        })
+        package=self.root/'WUPHF';package.mkdir()
+        internal=package/'_internal';internal.mkdir()
+        (internal/'owned.so').write_bytes(b'\x7fELFtransformed wheel binary')
+        (internal/'unowned.so').write_bytes(b'\x7fELFunowned binary')
+        owned=self.root/'cryptography/hazmat/bindings/_rust.abi3.so'
+        other=self.root/'other/_rust.abi3.so';other.parent.mkdir();other.write_bytes(owned.read_bytes())
+        toc=self.root/'COLLECT-00.toc'
+        toc.write_text(repr(([('owned.so',str(owned),'EXTENSION'),('unowned.so',str(other),'EXTENSION')],)))
+        with patch.object(package_notices.metadata,'distributions',return_value=[self.pyinstaller,dist]),patch.object(package_notices.shutil,'which',return_value=None):
+            index=package_notices.collect_notices(self.output,package,toc)
+        entries={entry['binary']:entry for entry in index['native_binaries']}
+        self.assertEqual(entries['_internal/owned.so']['distribution'],{'name':'cryptography','version':'1.2.3'})
+        self.assertEqual({(self.output/path).read_text() for path in entries['_internal/owned.so']['notices']},{'Apache notice','BSD notice'})
+        self.assertEqual(index['uncollected_native_binaries'],['_internal/unowned.so'])
+
+    def test_framework_openssl_uses_actual_linked_version_and_official_python_notice(self):
+        package=self.root/'WUPHF';package.mkdir();binary=package/'libcrypto.3.dylib';binary.write_bytes(b'\xfe\xed\xfa\xcfOpenSSL')
+        source=(self.root/'base/lib/libcrypto.3.dylib').resolve()
+        notice='python/source/Doc/license.rst'
+        copies={notice:b'For the OpenSSL 3.0 release, and later releases derived from that, the Apache License v2 applies.'}
+        sources={binary.resolve():(source,'BINARY')}
+        with patch.object(package_notices.sys,'platform','darwin'),patch.object(package_notices.ssl,'OPENSSL_VERSION','OpenSSL 3.0.13 30 Jan 2024'):
+            entries=package_notices.native_notices(package,copies,sources)
+            self.assertEqual(entries[0]['notices'],[notice])
+            self.assertEqual(entries[0]['linked_openssl_version'],'OpenSSL 3.0.13 30 Jan 2024')
+            unrelated=package_notices.native_notices(package,copies,{binary.resolve():((self.root/'other/libcrypto.3.dylib').resolve(),'BINARY')})
+            self.assertEqual(unrelated[0]['notices'],[])
+            self.assertEqual(package_notices.native_notices(package,{},sources)[0]['notices'],[])
+        with patch.object(package_notices.sys,'platform','darwin'),patch.object(package_notices.ssl,'OPENSSL_VERSION','LibreSSL 3.3.6'):
+            self.assertEqual(package_notices.native_notices(package,copies,sources)[0]['notices'],[])

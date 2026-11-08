@@ -8,6 +8,7 @@ from pathlib import Path
 import platform
 import re
 import shutil
+import ssl
 import subprocess
 import sys
 import sysconfig
@@ -60,9 +61,9 @@ def python_source_notices(copies):
     return {'url':url,'sha256':hashlib.sha256(body).hexdigest(),'notices':sorted(notices)}
 
 
-def native_notices(package,copies,sources=None,python_notices=(),bootloader_notices=()):
+def native_notices(package,copies,sources=None,python_notices=(),bootloader_notices=(),distribution_sources=None):
     inventory=[]
-    sources=sources or {};stdlib=Path(sysconfig.get_path('stdlib')).resolve();base=Path(sys.base_prefix).resolve()
+    sources=sources or {};distribution_sources=distribution_sources or {};stdlib=Path(sysconfig.get_path('stdlib')).resolve();base=Path(sys.base_prefix).resolve()
     for binary in sorted(Path(package).rglob('*')):
         if not binary.is_file():continue
         with binary.open('rb') as stream:magic=stream.read(4)
@@ -72,13 +73,23 @@ def native_notices(package,copies,sources=None,python_notices=(),bootloader_noti
         original=sources.get(binary.resolve())
         if original:
             source,kind=original;entry['build_source']=str(source)
+            owner=distribution_sources.get(source)
             if kind=='EXECUTABLE' and binary.parent==Path(package):entry['notices'].extend(bootloader_notices)
+            elif owner and owner['notices']:
+                entry['notices'].extend(owner['notices'])
+                entry['distribution']={'name':owner['name'],'version':owner['version']}
             elif (source.is_relative_to(stdlib/'lib-dynload') or
                   source.is_relative_to(base/'DLLs') and source.suffix=='.pyd' or
                   source.is_relative_to(base) and re.fullmatch(r'(?:lib)?python(?:3[.0-9]*)?(?:\.dll|\.dylib|\.so(?:\.[0-9]+)*)?',source.name,re.I)):
                 entry['notices'].extend(python_notices)
             elif sys.platform=='win32' and source.is_relative_to(base) and source.name.lower().startswith(('libcrypto','libssl','libffi','vcruntime')) and 'python/distribution-LICENSE.txt' in copies:
                 entry['notices'].append('python/distribution-LICENSE.txt')
+            elif (sys.platform=='darwin' and source.is_relative_to(base/'lib')
+                  and source.name in ('libcrypto.3.dylib','libssl.3.dylib')
+                  and re.match(r'OpenSSL 3\.[0-9]+\.[0-9]+(?: |$)',ssl.OPENSSL_VERSION)
+                  and b'For the OpenSSL 3.0 release' in copies.get('python/source/Doc/license.rst',b'')):
+                entry['notices'].append('python/source/Doc/license.rst')
+                entry['linked_openssl_version']=ssl.OPENSSL_VERSION
             if sys.platform=='darwin' and not entry['notices']:
                 for cellar in HOMEBREW_CELLARS:
                     cellar=cellar.resolve()
@@ -122,14 +133,15 @@ def collect_notices(destination,package=None,collect_toc=None):
     python_license=next((p for p in (Path(sysconfig.get_path('stdlib'))/'LICENSE.txt',
                                     Path(sys.base_prefix)/'LICENSE.txt') if p.is_file()),None)
     if python_license is None:raise RuntimeError('Python runtime LICENSE.txt is missing.')
-    copies={'python/LICENSE.txt':python_license.read_bytes()};inventory=[]
+    copies={'python/LICENSE.txt':python_license.read_bytes()};inventory=[];distribution_sources={}
     distribution_license=Path(sys.base_prefix)/'LICENSE.txt'
     if distribution_license.is_file():copies['python/distribution-LICENSE.txt']=distribution_license.read_bytes()
     for dist in sorted(metadata.distributions(),key=lambda d:d.metadata['Name'].lower()):
         name=dist.metadata['Name'];version=dist.version
         label=re.sub(r'[^A-Za-z0-9._-]','_',name+'-'+version)
         notices=[]
-        for file in dist.files or ():
+        files=list(dist.files or ())
+        for file in files:
             path=Path(file)
             if (not path.parts or not path.parts[0].endswith(('.dist-info','.egg-info'))
                     or '..' in path.parts or not re.match(r'^(license|licence|notice|copying)(?:[._-]|$)',path.name,re.I)
@@ -144,6 +156,10 @@ def collect_notices(destination,package=None,collect_toc=None):
             copies[target]=body;notices.append(target)
         inventory.append({'name':name,'version':version,'requires':list(dist.requires or ()),
                           'notices':notices})
+        for file in files:
+            path=Path(file)
+            if not path.is_absolute() and '..' not in path.parts:
+                distribution_sources[Path(dist.locate_file(file)).resolve()]=inventory[-1]
     if not any(d['name'].lower()=='pyinstaller' and d['notices'] for d in inventory):
         raise RuntimeError('PyInstaller license/exception notice is missing.')
     python_sources=python_source_notices(copies)
@@ -157,10 +173,10 @@ def collect_notices(destination,package=None,collect_toc=None):
             sources[target.resolve()]=(Path(original).resolve(),kind)
     python_notices=[name for name in copies if name.startswith('python/')]
     bootloader_notices=next(d['notices'] for d in inventory if d['name'].lower()=='pyinstaller')
-    native=native_notices(package,copies,sources,python_notices,bootloader_notices) if package is not None else []
+    native=native_notices(package,copies,sources,python_notices,bootloader_notices,distribution_sources) if package is not None else []
     index={'scope':'Inventory of all installed distributions in the build environment; some may not be bundled.',
-           'limitations':'This is not an exhaustive native binary license audit. OS-specific libraries may need additional notices and manual review.',
-           'native_scope':'ELF, PE and Mach-O inventory. Runtime/bootloader and Homebrew notices use original paths from the local PyInstaller build record; Debian copyright requires matching bytes. Collected notices are not certification of component coverage.',
+           'limitations':'This is not an exhaustive native binary license audit. A mapped notice does not establish coverage of statically linked or nested dependencies. OS-specific libraries may need additional notices and manual review.',
+           'native_scope':'ELF, PE and Mach-O inventory. Runtime/bootloader and Homebrew notices use original paths from the local PyInstaller build record; wheel notices require exact installed distribution file ownership; Python-framework OpenSSL 3 uses its interpreter-linked version and CPython source notice; Debian copyright requires matching bytes. Collected notices are not certification of component coverage.',
            'python':{'version':platform.python_version(),'notice':'python/LICENSE.txt','notices':python_notices,'source':python_sources},
            'native_binaries':native,'uncollected_native_binaries':[b['binary'] for b in native if not b['notices']],
            'distributions':inventory,'missing_notices':[d['name'] for d in inventory if not d['notices']]}

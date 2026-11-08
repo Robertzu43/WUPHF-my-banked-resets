@@ -25,6 +25,8 @@ No version tag or public binary release has been published for this candidate. T
 - Improve scheduler failure recovery, Windows battery operation and packaged Codex discovery.
 - Clear stale reset status after refresh errors, including when changing language.
 - Include candidate version, documentation, platform metadata and archive checksums.
+- Keep Windows 10+ packages on the OS Universal C Runtime and exclude unrelated DLLs from build-tool PATH entries.
+- Attribute native wheel binaries by exact distribution ownership and Python-framework OpenSSL libraries by build provenance.
 
 ### Known limits
 
