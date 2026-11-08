@@ -5,19 +5,44 @@ from .reminders import message, pending
 from .storage import load, save
 from .i18n import translate
 
+# Back off from ten minutes to one hour; urgent expiries can shorten the wait.
+RETRY_INITIAL=600
+RETRY_MAX=3600
+
 
 def check(snap, settings, state_path, now=None, deliver=send):
     now=time.time() if now is None else now
     state=load(state_path, {'ledger':{}, 'snapshot':None, 'failures':{}})
     state.setdefault('ledger',{});state.setdefault('failures',{})
     state.setdefault('ledger_expiry',{})
+    state.setdefault('retry',{})
     failed_channels=set()
+    for channel in list(state['retry']):
+        if channel not in settings.get('channels',{}):del state['retry'][channel]
     for channel in list(state['failures']):
         if channel != 'google' and channel not in settings.get('channels',{}):
             del state['failures'][channel]
     language=settings.get('language','en')
     def expiry_message(credit):return message(credit) if language=='en' else message(credit,language)
     def channel_config(channel):return {**settings['channels'][channel], 'language':language}
+    expiries=[c['expiresAt'] for c in snap.get('credits') or []
+              if c.get('status','available')=='available' and valid_expiry(c.get('expiresAt')) and c['expiresAt']>now]
+    nearest=min(expiries) if expiries else None
+    def may_send(channel):
+        if channel in failed_channels:return False
+        next_attempt=state['retry'].get(channel,{}).get('next_attempt',0)
+        return now>=next_attempt or next_attempt-now>RETRY_MAX or (nearest is not None and nearest<=next_attempt)
+    def failed(channel):
+        failed_channels.add(channel)
+        state['failures'][channel]='Delivery failed; check settings and connection.'
+        previous=state['retry'].get(channel,{}).get('delay',0)
+        delay=min(RETRY_MAX,max(RETRY_INITIAL,previous*2))
+        next_attempt=now+delay
+        if nearest is not None:next_attempt=min(next_attempt,now+(nearest-now)/2)
+        state['retry'][channel]={'delay':delay,'next_attempt':next_attempt}
+    def succeeded(channel):
+        state['retry'].pop(channel,None)
+        state['failures'].pop(channel,None)
     state.setdefault('new_queue', [])
     previous=state.get('snapshot')
     changes=compare(previous,snap)
@@ -49,16 +74,16 @@ def check(snap, settings, state_path, now=None, deliver=send):
         channel=entry['channel']; credit=entry['credit']
         if channel not in settings.get('channels',{}):
             state['new_queue'].remove(entry); continue
+        if not may_send(channel):continue
         try:
             deliver(channel, channel_config(channel), translate('reminder_new',language)+' '+(expiry_message(credit) if valid_expiry(credit.get('expiresAt')) else translate('reminder_unknown',language)))
             state['new_queue'].remove(entry)
             if valid_expiry(credit.get('expiresAt')):
                 key=credit['id']+':'+channel
                 state['ledger'][key]=now;state['ledger_expiry'][key]=credit['expiresAt']
-            if channel not in failed_channels:state['failures'].pop(channel,None)
+            succeeded(channel)
         except Exception:
-            failed_channels.add(channel)
-            state['failures'][channel]='Delivery failed; check settings and connection.'
+            failed(channel)
         save(state_path,state)
 
     queued={(entry['credit']['id'],entry['channel']) for entry in state['new_queue']}
@@ -73,15 +98,14 @@ def check(snap, settings, state_path, now=None, deliver=send):
     for credit, channel in pending(snap, settings.get('channels',{}), effective_ledger, now,
                                    float(settings.get('advance_days',7))*86400,
                                    float(settings.get('repeat_hours',24))*3600):
-        if (credit['id'],channel) in queued:continue
+        if (credit['id'],channel) in queued or not may_send(channel):continue
         try:
             deliver(channel, channel_config(channel), expiry_message(credit))
             key=credit['id']+':'+channel
             state['ledger'][key]=now;state['ledger_expiry'][key]=credit['expiresAt']
-            if channel not in failed_channels:state['failures'].pop(channel,None)
+            succeeded(channel)
         except Exception:
-            failed_channels.add(channel)
-            state['failures'][channel]='Delivery failed; check settings and connection.'
+            failed(channel)
         save(state_path,state)
     if changes is not None:
         for credit_id in changes[1]:
