@@ -90,13 +90,15 @@ Already using the Codex CLI? You can keep your existing sign-in. The Codex deskt
 
 **The packages below include Python. You do not need to install Python separately.**
 
+Before opening WUPHF or running its installer, [check the archive against the release’s SHA256SUMS](docs/user-guide.md#download-extract-and-open-wuphf).
+
 | Computer | Download | Open after extracting |
 | --- | --- | --- |
 | Mac with Apple silicon (M1 or newer) | [Download for macOS](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.2/wuphf-0.1.0-beta.2-macos-arm64-unsigned.tar.gz) | Open `Start WUPHF.command` in the complete extracted folder. |
 | Windows 10 or newer, x64 | [Download for Windows](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.2/wuphf-0.1.0-beta.2-windows-x86_64-unsigned.zip) | Extract all files, then double-click `WUPHF.exe`. |
 | Linux x64 desktop (Ubuntu 24.04 build) | [Download for Linux](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.2/wuphf-0.1.0-beta.2-linux-x86_64-unsigned.tar.gz) | Extract with `tar -xzf ARCHIVE_NAME.tar.gz`, then use `Start WUPHF.sh` in the complete folder. |
 
-**Optional permanent install:** from the extracted folder run `./WUPHF --install` on Mac/Linux, or `.\WUPHF.exe --install` in Windows PowerShell. It copies the verified bundle into your user installation folder and prints how to reopen it. An identical installation is left alone; a different existing installation is refused with upgrade guidance. It does not configure accounts or enable jobs.
+**Optional permanent install:** from the verified, extracted folder run `./WUPHF --install` on Mac/Linux, or `.\WUPHF.exe --install` in Windows PowerShell. It copies the verified bundle into your user installation folder and prints how to reopen it. An identical installation is left alone; a different existing installation is refused with upgrade guidance. It does not configure accounts or enable jobs.
 
 Keep the **whole extracted folder** together, including `_internal`, in a permanent location. Background checks use that location. On macOS, put the folder under `~/Library/Application Support/` before opening it; keep both WUPHF and Codex outside Documents, Desktop and Downloads for background operation. In Finder, **Go → Go to Folder** lets you open `~/Library/Application Support/`.
 
@@ -110,9 +112,11 @@ WUPHF opens a setup page in your browser on **this computer**. Choose a language
 
 Set **Start reminders, days before** and **Repeat every, hours**, click **Save settings**, and use **Send test** for each notification channel. Confirm the test arrives before relying on reminders.
 
+For Google Calendar alone, save settings, use **Sync now** and check the calendar events. For ICS alone, [export and import the file](#any-calendar-ics-export); no notification channel is required.
+
 ### 4. Turn on background checks
 
-Click **Enable checks** under **Background checks**. Confirm the status is enabled and the last successful check updates. You can then close the setup page and its window.
+For email, Telegram or automatic Google Calendar sync, click **Enable checks** under **Background checks**. Confirm the status is enabled and the last successful check updates. You can then close the setup page and its window.
 
 Your computer must stay **awake, online, and logged in**. WUPHF checks approximately every 10 minutes; reminders follow the frequency you selected. Reopen WUPHF to change settings, inspect errors, or disable checks. For a one-time calendar export, background checks are not needed.
 
@@ -190,7 +194,7 @@ Google Calendar sync requires a stable Codex account identifier. Missing identit
 
 **Stop reminders:** Click **Disable** under Background checks. Settings and credentials remain saved; a check already in progress may finish.
 
-**Remove WUPHF:** Disable checks first, disconnect Google integrations if used, and delete the app folder. To erase local data too, remove WUPHF entries from macOS Keychain, Windows Credential Manager, or Linux Secret Service, then delete `~/.local/share/wuphf-resets/` (inside your user profile on Windows). Remove WUPHF's calendar separately if desired. To revoke Google access remotely, use your [Google account connections](https://myaccount.google.com/connections).
+**Remove WUPHF:** Disable checks first, disconnect Google integrations if used, and delete the app folder. To erase local data too, remove entries under **WUPHF My Resets** from macOS Keychain, Windows Credential Manager, or Linux Secret Service, then delete `~/.local/share/wuphf-resets/` (inside your user profile on Windows). Remove WUPHF's calendar separately if desired. To revoke Google access remotely, use your [Google account connections](https://myaccount.google.com/connections).
 
 ## Run from source
 
