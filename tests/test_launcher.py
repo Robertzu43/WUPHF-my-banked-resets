@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import sys
@@ -139,9 +140,13 @@ class WindowsSourceLauncherTests(unittest.TestCase):
         commands=root/'commands';commands.mkdir()
         (commands/'codex.cmd').write_text('@exit /b 0\n')
         (source/'requirements.txt').write_text('')
-        (root/'fake_python.py').write_text("""import os, pathlib, shutil, sys
+        (root/'fake_python.py').write_text("""import json, os, pathlib, shutil, sys
 
 def main():
+    if os.environ.get('RUNTIME_ENV_LOG'):
+        flags=('PYLAUNCHER_ALLOW_INSTALL','PYLAUNCHER_ALWAYS_INSTALL','PYTHON_MANAGER_AUTOMATIC_INSTALL')
+        with open(os.environ['RUNTIME_ENV_LOG'],'a') as log:
+            log.write(json.dumps({key:os.environ[key] for key in flags if key in os.environ})+'\\n')
     args=sys.argv[1:]
     executable=pathlib.Path(sys.argv[0])
     if executable.suffix!='.exe': executable=pathlib.Path(str(executable)+'.exe')
@@ -172,11 +177,11 @@ def main():
         self.maker.target_dir=str(commands)
         self.maker.make(name+' = fake_python:main')
 
-    def run_launcher(self, source, commands, **environment):
+    def run_launcher(self, source, commands, entrypoint=None, **environment):
         env={**os.environ,'PATH':str(commands)+';'+os.path.join(os.environ['SystemRoot'],'System32'),
              'WUPHF_PYTHON':'','PYTHONPATH':str(source.parent)}
         env.update(environment)
-        return subprocess.run([os.environ.get('COMSPEC','cmd.exe'),'/d','/c',str(source/'Start WUPHF.bat')],
+        return subprocess.run([os.environ.get('COMSPEC','cmd.exe'),'/d','/c',str(entrypoint or source/'Start WUPHF.bat')],
                               cwd=commands,input='\n',text=True,capture_output=True,env=env,timeout=15)
 
     def test_old_default_uses_modern_versioned_command_or_py_selector(self):
@@ -188,6 +193,32 @@ def main():
                 self.assertEqual(result.returncode,0,result.stdout+result.stderr)
                 self.assertIn('WUPHF_STARTED',result.stdout)
                 self.assertEqual((source/'created-at').read_text(),str(source))
+
+    def test_inherited_install_flags_are_cleared_only_inside_launcher(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source,commands=self.make_source(root);self.interpreter(commands,'py')
+            audit=root/'runtime-environment.jsonl';after=root/'caller-environment.txt'
+            caller=root/'caller.cmd'
+            caller.write_text('@echo off\ncall "'+str(source/'Start WUPHF.bat')+'"\n'
+                              'set "launch_result=%errorlevel%"\n'
+                              'set PYLAUNCHER_ > "'+str(after)+'"\n'
+                              'set PYTHON_MANAGER_ >> "'+str(after)+'"\n'
+                              'exit /b %launch_result%\n')
+            inherited={'PYLAUNCHER_ALLOW_INSTALL':'false','PYLAUNCHER_ALWAYS_INSTALL':'1',
+                       'PYTHON_MANAGER_AUTOMATIC_INSTALL':'true'}
+            with patch.dict(os.environ,inherited):
+                result=self.run_launcher(source,commands,entrypoint=caller,OLD_PYTHONS='py',RUNTIME_ENV_LOG=str(audit))
+                self.assertEqual({key:os.environ[key] for key in inherited},inherited)
+            self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+            self.assertIn('WUPHF_STARTED',result.stdout)
+            observed=[json.loads(line) for line in audit.read_text().splitlines()]
+            self.assertGreater(len(observed),1)
+            for flags in observed:
+                self.assertNotIn('PYLAUNCHER_ALLOW_INSTALL',flags)
+                self.assertNotIn('PYLAUNCHER_ALWAYS_INSTALL',flags)
+                self.assertEqual(flags['PYTHON_MANAGER_AUTOMATIC_INSTALL'],'false')
+            restored=dict(line.split('=',1) for line in after.read_text().splitlines())
+            self.assertEqual({key:restored[key] for key in inherited},inherited)
 
     def test_explicit_runtime_path_with_spaces(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -3,6 +3,8 @@ setlocal DisableDelayedExpansion
 cd /d "%~dp0" || exit /b 1
 rem Discovery must never acquire a runtime through Python's install manager.
 set "PYTHON_MANAGER_AUTOMATIC_INSTALL=false"
+set "PYLAUNCHER_ALLOW_INSTALL="
+set "PYLAUNCHER_ALWAYS_INSTALL="
 set "WUPHF_RUNTIME="
 set "WUPHF_RUNTIME_ARG="
 if not defined WUPHF_PYTHON goto environment
