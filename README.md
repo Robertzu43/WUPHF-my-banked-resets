@@ -19,8 +19,6 @@
 
 WUPHF checks your available **banked Codex resets** and reminds you before known expiry dates. It never uses a reset for you. Choose **Gmail, other email, Telegram, calendar dates, or any combination**. There is no WUPHF account or hosted reminder service to sign up for.
 
-> **Public beta:** All listed options are included. Google verification is pending, so the bundled Google connection can show warnings or encounter access limits. Packages are unsigned/unnotarized. Keep a backup reminder while testing WUPHF with your account. These limitations do not require you to use the maintainer's accounts or wait to try another channel.
-
 ## Install and get started
 
 ### 1. Sign in to Codex
