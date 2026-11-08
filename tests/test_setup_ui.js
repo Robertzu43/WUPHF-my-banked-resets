@@ -2,7 +2,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const html=fs.readFileSync('wuphf/web.html','utf8');
 const elements={}, tests=[], timers=[], downloads=[];
-function element(id){return elements[id]||(elements[id]={value:'',checked:false,disabled:false,hidden:false,textContent:'',files:[],children:[],click(){downloads.push(this.download)},listeners:{},dataset:{},classList:{add(){},remove(){}},focus(){},select(){},replaceChildren(...children){this.children=children},addEventListener(type,fn){(this.listeners[type]??=[]).push(fn)},async dispatch(type){for(const fn of this.listeners[type]||[])await fn({preventDefault(){},target:this})}})}
+function element(id){return elements[id]||(elements[id]={value:'',checked:false,disabled:false,hidden:false,textContent:'',files:[],children:[],attributes:{},setAttribute(name,value){this.attributes[name]=value},getAttribute(name){return this.attributes[name]},click(){downloads.push(this.download)},listeners:{},dataset:{},classList:{add(){},remove(){}},focus(){},select(){},replaceChildren(...children){this.children=children},addEventListener(type,fn){(this.listeners[type]??=[]).push(fn)},async dispatch(type){for(const fn of this.listeners[type]||[])await fn({preventDefault(){},target:this})}})}
 for(const tag of html.matchAll(/<[^>]+\bid="([^"]+)"[^>]*>/g)){element(tag[1]).disabled=/\bdisabled\b/.test(tag[0]);}
 for(const tag of html.matchAll(/<button[^>]+class="[^"]*\btest\b[^"]*"[^>]*>/g)){const b=element('test-'+tag[0].match(/data-channel="([^"]+)"/)[1]);b.disabled=/\bdisabled\b/.test(tag[0]);b.dataset.channel=tag[0].match(/data-channel="([^"]+)"/)[1];tests.push(b)}
 const ctx={console,Date,Intl,Number,AbortController,setTimeout:(fn,ms)=>(timers.push({fn,ms}),timers.length),clearTimeout(){},setInterval:()=>1,confirm:()=>true,window:{confirm:()=>true},NodeFilter:{SHOW_TEXT:4},document:{body:{},documentElement:{},getElementById:element,querySelector:s=>element(s),querySelectorAll:s=>s==='.test'?tests:[],createTreeWalker:()=>({nextNode:()=>null}),createElement:()=>element('created-'+Math.random())}};
@@ -10,6 +10,10 @@ vm.createContext(ctx);vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)
 const originalBackgroundStatus=ctx.backgroundStatus;
 const catalog=JSON.parse(fs.readFileSync('wuphf/translations.json'));
 ctx.catalog=catalog;vm.runInContext('translations=catalog',ctx);
+for(const [language,strings] of Object.entries(catalog))assert(!/OAuth|JSON/.test(strings.google_restriction),language+' normal Google setup must not require developer client files');
+const googleWarnings=[...html.matchAll(/<p class="warning" data-i18n="google_restriction">([^<]+)<\/p>/g)];
+assert.equal(googleWarnings.length,2);for(const warning of googleWarnings)assert.equal(warning[1],catalog.en.google_restriction,'Inline Google guidance must match the simplified English translation');
+
 const calls=[];let failSave=false,failTest=false;
 ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api/settings'&&method==='POST'){if(failSave)throw Error('save failed');return {ok:true}}if(path==='/api/test'){if(failTest)throw Error('test failed');return {ok:true}}if(path==='/api/settings')return {advance_days:7,repeat_hours:24,language:'en',channels:{telegram:{chat_id:'123'}}};throw Error('Unexpected '+path)};
 (async()=>{
@@ -22,9 +26,9 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  element('telegram-chat').value='456';await element('settings').dispatch('input');
  assert(element('test-telegram').disabled,'Editing must block tests of the stale saved destination');
  const before=calls.length;await element('test-telegram').dispatch('click');assert.equal(calls.length,before,'Guard must prevent stale requests even when invoked programmatically');
- failSave=true;await element('settings').dispatch('submit');assert(element('test-telegram').disabled);assert.equal(element('settings-state').textContent,catalog.en.setup_unsaved);
- failSave=false;await element('settings').dispatch('submit');assert.equal(calls.at(-1)[2].channels.telegram.chat_id,'456');assert(!element('test-telegram').disabled);
- failTest=true;await element('test-telegram').dispatch('click');assert(element('install').disabled);assert.equal(element('test-state-telegram').textContent,catalog.en.test_failed);
+ failSave=true;await element('settings').dispatch('submit');assert(element('test-telegram').disabled);assert.equal(element('settings-state').textContent,catalog.en.setup_unsaved);assert.equal(element('flash').dataset.error,'true');assert.equal(element('flash').getAttribute('role'),'alert');assert.equal(element('flash').getAttribute('aria-live'),'assertive');
+ failSave=false;await element('settings').dispatch('submit');assert.equal(calls.at(-1)[2].channels.telegram.chat_id,'456');assert.equal(element('flash').dataset.error,'false');assert.equal(element('flash').getAttribute('role'),'status');assert.equal(element('flash').getAttribute('aria-live'),'polite');assert(/\.flash\[data-error="false"\]\s*\{[^}]*color:\s*var\(--accent\)/.test(html),'Successful status must use the existing blue accent');assert(!element('test-telegram').disabled);
+ failTest=true;await element('test-telegram').dispatch('click');assert(element('install').disabled);assert.equal(element('test-state-telegram').textContent,catalog.en.test_failed);assert.equal(element('flash').dataset.error,'true');
  failTest=false;await element('test-telegram').dispatch('click');assert(!element('install').disabled);assert(element('test-state-telegram').textContent.includes('accepted'));assert(!element('test-state-telegram').textContent.includes('received'));
  element('telegram-token').value='new-secret';await element('settings').dispatch('input');assert(element('install').disabled);assert.equal(element('test-state-telegram').textContent,catalog.en.test_not_checked);
  await element('settings').dispatch('submit');
@@ -96,7 +100,7 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  ctx.api=async()=>({scheduler:'disabled',last_check:null,check_status:'never',last_error:false,failures:[]});await ctx.backgroundStatus();
  assert(!element('install').disabled);assert(element('uninstall').disabled,'Disabled scheduler has no active job to disable');
  let scheduler='disabled';ctx.api=async(path)=>{if(path==='/api/install'){scheduler='enabled';return {ok:true}}if(path==='/api/uninstall'){scheduler='disabled';return {ok:true}}assert.equal(path,'/api/background');return {scheduler,last_check:null,check_status:'never',last_error:false,failures:[]}};
- await element('install').onclick();await Promise.resolve();assert(element('install').disabled,'Enabled scheduler must not offer Enable again');assert(!element('uninstall').disabled);assert.equal(element('setup-next').textContent,catalog.en.setup_checks_on);
+ await element('install').onclick();await Promise.resolve();assert(element('install').disabled,'Enabled scheduler must not offer Enable again');assert(!element('uninstall').disabled);assert.equal(element('setup-next').textContent,catalog.en.setup_checks_on);assert.equal(element('flash').dataset.error,'false','Enabling checks must be presented as success');
  await element('uninstall').onclick();await Promise.resolve();assert(!element('install').disabled);assert(element('uninstall').disabled);
  ctx.api=async()=>{throw Error('background unavailable')};await ctx.backgroundStatus();assert(!element('uninstall').disabled,'Unknown scheduler must still allow disabling an existing job');
  for(const action of ['install','uninstall'])for(const oldFails of [false,true])for(const freshFails of [false,true]){
@@ -124,7 +128,7 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  ctx.URL={createObjectURL:()=> 'blob:calendar',revokeObjectURL(){}};
  ctx.fetch=async()=>({ok:true,blob:async()=>({})});await element('calendar-download').onclick();assert.deepEqual(downloads,['wuphf-resets.ics']);
  ctx.fetch=async()=>({ok:false,json:async()=>({error:'Reset details are incomplete; refresh before exporting.'})});await element('calendar-download').onclick();assert.equal(element('flash').textContent,catalog.en.api_incomplete_error);assert.equal(downloads.length,1,'Server rejection must not download raw JSON or navigate away');
- ctx.fetch=async()=>{throw Error('offline')};await element('calendar-download').onclick();assert.equal(element('flash').textContent,catalog.en.api_error);assert(!element('calendar-download').disabled,'Download transport errors allow retry');
+ ctx.fetch=async()=>{throw Error('offline')};await element('calendar-download').onclick();assert.equal(element('flash').textContent,catalog.en.api_error);assert.equal(element('flash').dataset.error,'true','Download errors must retain the error announcement');assert(!element('calendar-download').disabled,'Download transport errors allow retry');
  ctx.renderStatus({count:null,complete:false,credits:[]});assert(element('calendar-download').disabled);await element('calendar-download').onclick();assert.equal(downloads.length,1);
  ctx.api=async()=>{throw Error('Codex unavailable')};await ctx.status();assert(element('calendar-download').disabled,'Failed Codex refresh must disable export');
  const unavailable=new Set(),calendarSaved=new Set();
