@@ -56,12 +56,12 @@ class ChannelsTests(unittest.TestCase):
     def test_telegram_discovery_finds_one_private_chat_without_confirming_updates(self):
         import io,json,urllib.parse
         from wuphf import channels
-        data={'ok':True,'result':[{'message':{'chat':{'id':12345,'type':'private'}}},{'message':{'chat':{'id':-55,'type':'group'}}}]}
+        data={'ok':True,'result':[{'message':{'chat':{'id':12345,'type':'private'},'text':'WUPHF-proof'}},{'message':{'chat':{'id':-55,'type':'group'}}}]}
         class Response(io.BytesIO):
             def __enter__(self):return self
             def __exit__(self,*args):self.close()
         with patch('wuphf.channels.urllib.request.urlopen',return_value=Response(json.dumps(data).encode())) as http:
-            result=getattr(channels,'telegram_chat_id',lambda token:None)('123:secret')
+            result=getattr(channels,'telegram_chat_id',lambda token,phrase:None)('123:secret','WUPHF-proof')
         self.assertEqual(result,'12345')
         req=http.call_args.args[0]
         self.assertTrue(req.full_url.endswith('/getUpdates'))
@@ -70,23 +70,23 @@ class ChannelsTests(unittest.TestCase):
     def test_telegram_discovery_rejects_ambiguous_private_chats(self):
         import io,json
         from wuphf import channels
-        data={'ok':True,'result':[{'message':{'chat':{'id':1,'type':'private'}}},{'message':{'chat':{'id':2,'type':'private'}}}]}
+        data={'ok':True,'result':[{'message':{'chat':{'id':1,'type':'private'},'text':'WUPHF-proof'}},{'message':{'chat':{'id':2,'type':'private'},'text':'WUPHF-proof'}}]}
         class Response(io.BytesIO):
             def __enter__(self):return self
             def __exit__(self,*args):self.close()
         with patch('wuphf.channels.urllib.request.urlopen',return_value=Response(json.dumps(data).encode())):
-            with self.assertRaises(Exception) as error:getattr(channels,'telegram_chat_id',lambda token:None)('123:secret')
+            with self.assertRaises(Exception) as error:getattr(channels,'telegram_chat_id',lambda token,phrase:None)('123:secret','WUPHF-proof')
         self.assertEqual(str(error.exception),'telegram_ambiguous')
 
     def test_telegram_discovery_handles_webhook_and_redacts_network_errors(self):
         from urllib.error import HTTPError
         from wuphf import channels
         with patch('wuphf.channels.urllib.request.urlopen',side_effect=HTTPError('https://private-token',409,'Conflict',{},None)):
-            with self.assertRaises(Exception) as error:getattr(channels,'telegram_chat_id',lambda token:None)('123:secret')
+            with self.assertRaises(Exception) as error:getattr(channels,'telegram_chat_id',lambda token,phrase:None)('123:secret','WUPHF-proof')
             self.assertEqual(str(error.exception),'telegram_webhook')
             self.assertNotIn('secret',str(error.exception))
         with patch('wuphf.channels.urllib.request.urlopen',side_effect=OSError('secret token URL')):
-            with self.assertRaises(Exception) as error:getattr(channels,'telegram_chat_id',lambda token:None)('123:secret')
+            with self.assertRaises(Exception) as error:getattr(channels,'telegram_chat_id',lambda token,phrase:None)('123:secret','WUPHF-proof')
             self.assertEqual(str(error.exception),'telegram_unavailable')
             self.assertTrue(error.exception.__suppress_context__)
 
@@ -98,12 +98,39 @@ class ChannelsTests(unittest.TestCase):
             def __exit__(self,*args):self.close()
         for updates,expected in (([],'telegram_no_messages'),([{'message':{'chat':{'id':1,'type':'private'}}}]*100,'telegram_ambiguous')):
             with self.subTest(expected=expected),patch('wuphf.channels.urllib.request.urlopen',return_value=Response(json.dumps({'ok':True,'result':updates}).encode())):
-                with self.assertRaises(ChannelError) as error:telegram_chat_id('123:secret')
+                with self.assertRaises(ChannelError) as error:telegram_chat_id('123:secret','WUPHF-proof')
                 self.assertEqual(str(error.exception),expected)
 
     def test_telegram_discovery_rejects_invalid_token_without_network(self):
         from wuphf.channels import telegram_chat_id
         with patch('wuphf.channels.urllib.request.urlopen') as http:
-            with self.assertRaises(ChannelError) as error:telegram_chat_id('bad secret')
+            with self.assertRaises(ChannelError) as error:telegram_chat_id('bad secret','WUPHF-proof')
             self.assertEqual(str(error.exception),'telegram_invalid')
             http.assert_not_called()
+
+    def test_telegram_pairing_requires_matching_phrase_among_unrelated_chats(self):
+        import io,json
+        from wuphf.channels import telegram_chat_id
+        class Response(io.BytesIO):
+            def __enter__(self):return self
+            def __exit__(self,*args):self.close()
+        unrelated={'message':{'chat':{'id':1,'type':'private'},'text':'hello'}}
+        match={'message':{'chat':{'id':2,'type':'private'},'text':'WUPHF-proof'}}
+        with patch('wuphf.channels.urllib.request.urlopen',return_value=Response(json.dumps({'ok':True,'result':[unrelated,match]}).encode())):
+            try:result=telegram_chat_id('123:secret','WUPHF-proof')
+            except TypeError:self.fail('lookup must require a pairing phrase')
+        self.assertEqual(result,'2')
+
+    def test_telegram_pairing_rejects_unrelated_and_multiple_matches(self):
+        import io,json
+        from wuphf.channels import telegram_chat_id
+        class Response(io.BytesIO):
+            def __enter__(self):return self
+            def __exit__(self,*args):self.close()
+        for updates,expected in (([{'message':{'chat':{'id':1,'type':'private'},'text':'hello'}}],'telegram_no_messages'),
+                ([{'message':{'chat':{'id':1,'type':'private'},'text':'WUPHF-proof'}},{'message':{'chat':{'id':2,'type':'private'},'text':'WUPHF-proof'}}],'telegram_ambiguous')):
+            with self.subTest(expected=expected),patch('wuphf.channels.urllib.request.urlopen',return_value=Response(json.dumps({'ok':True,'result':updates}).encode())):
+                try:telegram_chat_id('123:secret','WUPHF-proof')
+                except TypeError:self.fail('lookup must require a pairing phrase')
+                except ChannelError as error:self.assertEqual(str(error),expected)
+                else:self.fail('expected a rejected pairing')

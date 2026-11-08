@@ -147,9 +147,11 @@ class WebTests(unittest.TestCase):
         with patch('wuphf.channels.telegram_chat_id',return_value='12345',create=True) as lookup,patch('wuphf.web.load',return_value={'channels':{'telegram':{}}}):
             res,_=self.request('POST','/api/telegram/discover',{'token':'123:secret'})
             self.assertEqual(res.status,403);lookup.assert_not_called()
+            res,body=self.request('POST','/api/telegram/pair',{},headers)
+            self.assertEqual(res.status,200);phrase=json.loads(body)['phrase']
             res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
             self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['chat_id'],'12345')
-            self.assertNotIn(b'secret',body);lookup.assert_called_once_with('123:secret')
+            self.assertNotIn(b'secret',body);lookup.assert_called_once_with('123:secret',phrase)
 
     def test_telegram_discovery_button_behaviour(self):
         import shutil, subprocess
@@ -162,9 +164,48 @@ class WebTests(unittest.TestCase):
     def test_telegram_discovery_uses_saved_token_and_redacts_errors(self):
         from wuphf.channels import ChannelError
         headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        res,body=self.request('POST','/api/telegram/pair',{},headers)
+        phrase=json.loads(body)['phrase']
         with patch('wuphf.cli.get_secret',return_value='123:saved-secret') as secret,patch('wuphf.channels.telegram_chat_id',side_effect=ChannelError('token or id: saved-secret')) as lookup:
             res,body=self.request('POST','/api/telegram/discover',{},headers)
         self.assertEqual(res.status,400)
         self.assertEqual(json.loads(body)['error'],'telegram_unavailable')
         self.assertNotIn(b'saved-secret',body)
-        secret.assert_called_once_with('telegram.token');lookup.assert_called_once_with('123:saved-secret')
+        secret.assert_called_once_with('telegram.token');lookup.assert_called_once_with('123:saved-secret',phrase)
+
+    def test_telegram_pairing_rotates_and_expires_before_lookup(self):
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        with patch('wuphf.web.time.monotonic',return_value=100),patch('wuphf.web.secrets.token_urlsafe',side_effect=['first','second']):
+            res,body=self.request('POST','/api/telegram/pair',{},headers)
+            self.assertEqual(res.status,200);first=json.loads(body)['phrase']
+            res,body=self.request('POST','/api/telegram/pair',{},headers)
+            self.assertEqual(res.status,200);second=json.loads(body)['phrase']
+        self.assertNotEqual(first,second)
+        with patch('wuphf.web.time.monotonic',return_value=701),patch('wuphf.channels.telegram_chat_id') as lookup:
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+        self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'telegram_pair_expired')
+        lookup.assert_not_called()
+
+    def test_telegram_pairing_is_single_use(self):
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        res,body=self.request('POST','/api/telegram/pair',{},headers)
+        self.assertEqual(res.status,200);phrase=json.loads(body)['phrase']
+        self.assertTrue(phrase.startswith('WUPHF-'))
+        with patch('wuphf.channels.telegram_chat_id',return_value='12345') as lookup:
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+            self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['chat_id'],'12345')
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+            self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'telegram_pair_expired')
+            lookup.assert_called_once_with('123:secret',phrase)
+
+    def test_telegram_replaced_pairing_during_lookup_never_returns_old_chat(self):
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        self.request('POST','/api/telegram/pair',{},headers)
+        def replace(*args):
+            res,_=self.request('POST','/api/telegram/pair',{},headers)
+            self.assertEqual(res.status,200)
+            return '98765'
+        with patch('wuphf.channels.telegram_chat_id',side_effect=replace):
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+        self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'telegram_pair_expired')
+        self.assertNotIn(b'98765',body)

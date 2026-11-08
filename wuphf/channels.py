@@ -13,9 +13,10 @@ class ChannelError(Exception):
     pass
 
 
-def telegram_chat_id(token):
+def telegram_chat_id(token,phrase):
     if not isinstance(token,str) or not re.fullmatch(r'[0-9]+:[A-Za-z0-9_-]+',token):
         raise ChannelError('telegram_invalid')
+    if not isinstance(phrase,str) or not phrase:raise ChannelError('telegram_pair_expired')
     request=urllib.request.Request('https://api.telegram.org/bot'+token+'/getUpdates',
                                    data=b'limit=100&timeout=0',method='POST')
     try:
@@ -33,7 +34,7 @@ def telegram_chat_id(token):
         for update in updates:
             message=update.get('message') if isinstance(update,dict) else None
             chat=message.get('chat') if isinstance(message,dict) else None
-            if isinstance(chat,dict) and chat.get('type')=='private':
+            if isinstance(chat,dict) and chat.get('type')=='private' and message.get('text')==phrase:
                 ident=chat.get('id')
                 if isinstance(ident,int) and not isinstance(ident,bool) and ident>0:ids.add(str(ident))
         if len(ids)>1:raise ChannelError('telegram_ambiguous')

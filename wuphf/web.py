@@ -67,6 +67,7 @@ def background_check_status(state,now=None):
 
 def create_server(port=0,token=None):
     token=token or secrets.token_urlsafe(32)
+    pairing={};pair_lock=threading.Lock()
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*args): pass
         def write(self,status,body,content='application/json',headers=None):
@@ -135,15 +136,28 @@ def create_server(port=0,token=None):
                     name=payload.get('channel');settings=load(cli.SETTINGS,{})
                     if name not in settings.get('channels',{}):raise ValueError('Save this channel first')
                     cli.send_with_secrets(name,{**settings['channels'][name],'language':settings.get('language','en')},translate('test_message',settings.get('language','en')))
+                elif self.path=='/api/telegram/pair':
+                    with pair_lock:
+                        pairing.update(phrase='WUPHF-'+secrets.token_urlsafe(16),expires=time.monotonic()+600)
+                        phrase=pairing['phrase']
+                    return self.write(200,{'phrase':phrase})
                 elif self.path=='/api/telegram/discover':
                     from .channels import telegram_chat_id, ChannelError
                     supplied=payload.get('token','')
                     if not isinstance(supplied,str) or len(supplied)>2048:raise ValueError('Invalid token')
-                    try:chat_id=telegram_chat_id(supplied or cli.get_secret('telegram.token'))
+                    with pair_lock:
+                        if not pairing or time.monotonic()>=pairing['expires']:
+                            return self.write(400,{'error':'telegram_pair_expired'})
+                        phrase=pairing['phrase']
+                    try:chat_id=telegram_chat_id(supplied or cli.get_secret('telegram.token'),phrase)
                     except ChannelError as exc:
                         code=str(exc)
-                        if code not in ('telegram_invalid','telegram_no_messages','telegram_ambiguous','telegram_webhook','telegram_unavailable'):code='telegram_unavailable'
+                        if code not in ('telegram_invalid','telegram_no_messages','telegram_ambiguous','telegram_webhook','telegram_unavailable','telegram_pair_expired'):code='telegram_unavailable'
                         return self.write(400,{'error':code})
+                    with pair_lock:
+                        if not pairing or pairing['phrase']!=phrase or time.monotonic()>=pairing['expires']:
+                            return self.write(400,{'error':'telegram_pair_expired'})
+                        pairing.clear()
                     return self.write(200,{'chat_id':chat_id})
                 elif self.path=='/api/gmail/connect':
                     from . import gmail_auth
