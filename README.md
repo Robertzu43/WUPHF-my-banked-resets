@@ -53,7 +53,7 @@ Enable **Email** and enter your provider's SMTP SSL server and port, username, s
 ### Telegram
 
 1. In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and follow its prompts to create your own bot. Keep the resulting bot token private.
-2. Enable Telegram in WUPHF and paste the bot token. Click **Generate pairing phrase**, then send that entire phrase to your bot in a private chat within 10 minutes.
+2. Enable Telegram in WUPHF and paste the bot token. Open your bot in Telegram and tap **Start**. In WUPHF, click **Generate pairing phrase**, then send that entire phrase to your bot in a private chat within 10 minutes.
 3. Click **Find my chat ID**, then **Save settings**. Send a test. You can enter your private chat ID manually instead.
 
 The optional lookup checks pending updates only when you click the button and does not confirm those updates. It accepts only an exact match for the current single-use pairing phrase in a private message. If multiple chats match, too many updates are pending, or a webhook or another bot client prevents polling, enter your private chat ID manually. Telegram was tested on the developer's Mac; broader delivery testing is still needed.

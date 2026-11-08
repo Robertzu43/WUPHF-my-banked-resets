@@ -61,3 +61,9 @@ class LanguageTests(unittest.TestCase):
         from wuphf.reminders import ics
         output=ics({'credits':[],'complete':True},'es').decode()
         self.assertIn('X-WR-CALNAME:WUPHF · reinicios guardados de Codex',output)
+    def test_telegram_guidance_says_to_start_the_bot_before_pairing(self):
+        from wuphf.web import PAGE
+        expected={'en':'press Start','es':'pulsa Iniciar','de':'drücke Start','pt':'pressione Iniciar','fr':'appuyez sur Démarrer','ja':'開始を押して','ko':'시작을 누르고','zh':'点击开始'}
+        for language,phrase in expected.items():
+            with self.subTest(language=language):self.assertIn(phrase,catalog(language)['telegram_help'])
+        self.assertIn(catalog('en')['telegram_help'],PAGE.read_text(encoding='utf-8'))
