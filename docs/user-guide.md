@@ -2,7 +2,7 @@
 
 **WUPHF helps you remember to use an available banked Codex reset before it expires.** It runs on your computer and can notify your own email, Telegram, or calendar. Pick one option or combine several. WUPHF never redeems a reset for you.
 
-This guide describes **v0.1.0-beta.1**. Button names below use the English interface. The app also includes Spanish, German, Portuguese, French, Japanese, Korean and Simplified Chinese.
+This guide describes **v0.1.0-beta.2**. Button names below use the English interface. The app also includes Spanish, German, Portuguese, French, Japanese, Korean and Simplified Chinese.
 
 **Start here:** [Let Codex help install it](../README.md#let-codex-set-it-up-for-you), or follow [manual installation](#2-install-on-your-computer). Already installed? Jump to [connect your accounts](#4-connect-only-the-options-you-want) or [fix a problem](#9-fix-a-problem).
 
@@ -54,13 +54,21 @@ Do not copy your ChatGPT password or Codex authentication files into WUPHF or an
 
 ### Download, extract and open WUPHF
 
-Get your archive and `SHA256SUMS` from the [official beta release](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.1). Keep the **entire extracted WUPHF folder**, including `_internal`. Moving only the executable breaks the package.
+Get your archive and `SHA256SUMS` from the [official beta release](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.2). Keep the **entire extracted WUPHF folder**, including `_internal`. Moving only the executable breaks the package.
 
 | Computer | Release archive | Where to put it and how to open it |
 | --- | --- | --- |
-| Apple silicon Mac, M1 or newer | `wuphf-0.1.0-beta.1-macos-arm64-unsigned.tar.gz` | Extract it. In Finder, choose **Go → Go to Folder**, enter `~/Library/Application Support/`, and move the extracted `WUPHF` folder there. Then run the command below. |
-| Windows 10 or newer, x64 | `wuphf-0.1.0-beta.1-windows-x86_64-unsigned.zip` | Use **Extract All**, put the whole `WUPHF` folder in a permanent location you own, then double-click `WUPHF.exe`. Do not run it inside the ZIP. |
-| Linux x64 desktop, Ubuntu 24.04 build | `wuphf-0.1.0-beta.1-linux-x86_64-unsigned.tar.gz` | Extract it into a permanent folder. Open a terminal inside the extracted `WUPHF` folder and run `./WUPHF`. |
+| Apple silicon Mac, M1 or newer | `wuphf-0.1.0-beta.2-macos-arm64-unsigned.tar.gz` | Extract it. In Finder, choose **Go → Go to Folder**, enter `~/Library/Application Support/`, and move the extracted `WUPHF` folder there. Open `Start WUPHF.command`, or use the Terminal command below. |
+| Windows 10 or newer, x64 | `wuphf-0.1.0-beta.2-windows-x86_64-unsigned.zip` | Use **Extract All**, put the whole `WUPHF` folder in a permanent location you own, then double-click `WUPHF.exe`. Do not run it inside the ZIP. |
+| Linux x64 desktop, Ubuntu 24.04 build | `wuphf-0.1.0-beta.2-linux-x86_64-unsigned.tar.gz` | Extract it into a permanent folder. Use `Start WUPHF.sh` from a terminal in that folder; your file manager may also offer Run. If needed, run `sh "Start WUPHF.sh"`. |
+
+### Optional automatic placement
+
+Instead of moving the extracted folder yourself, open a terminal in that folder and run `./WUPHF --install` on Mac/Linux, or `.\WUPHF.exe --install` in Windows PowerShell. This local command uses the Python already in the package. It makes a complete copy in your user installation folder, then prints the installed version and reopen path. It does not sign you in, connect accounts or start background jobs.
+
+The defaults are `~/Library/Application Support/WUPHF` on Mac, `%LOCALAPPDATA%\WUPHF` on Windows, and `~/.local/opt/WUPHF` on Linux. Launch the installed copy using its `Start WUPHF.command`, `WUPHF.exe`, or `Start WUPHF.sh` entry. The original extracted folder can be removed after you verify the installed copy opens.
+
+An identical existing installation is a safe no-op. A different existing folder is preserved and the command stops: follow the [upgrade steps](#8-change-upgrade-or-remove-your-installation) before replacing it. OS approval may still be required for an unsigned download. Source installs use the separate [Python setup](../README.md#run-from-source); `--install` is for complete binary packages.
 
 On macOS, open Terminal and paste:
 
@@ -100,7 +108,7 @@ The full hash must match (letter case does not matter). If it differs, stop and 
 
 Click **Refresh** and check that Codex is signed into the account you intended.
 
-The dates on this page use your browser's local time zone; their numeric format follows the selected language. Check the date and time against Codex before relying on an expiry, especially after travel or a time-zone change.
+The dates on this page use your browser's local time zone; their display format follows the selected language. Check the date and time against Codex before relying on an expiry, especially after travel or a time-zone change.
 
 <details>
 <summary>See the setup screen and where the controls are</summary>
@@ -125,7 +133,7 @@ Choose your interface language, then set:
 | **Start reminders, days before** | How far ahead of a known expiry email/Telegram reminders begin. | `7` days |
 | **Repeat every, hours** | Minimum interval between repeat expiry reminders for a reset on a channel. | `24` hours |
 
-Click **Save settings** after changing these values or channel details. Use positive values; the UI accepts fractional days and hours. Calendar alarms have their own behavior described below—these two fields do not change them.
+Click **Save settings** after changing these values or channel details. Tests are unavailable while changes are unsaved; a failed save keeps that protection in place. Use positive values; the UI accepts fractional days and hours. Calendar alarms have their own behavior described below—these two fields do not change them.
 
 **Where to save:** the **Save settings** button is below the notification channel forms. If you expanded several channels, scroll past those forms to find it. **Send test uses saved settings**, so save first, then return to your selected channel's test button.
 
@@ -143,7 +151,7 @@ Click **Save settings** after changing these values or channel details. Use posi
 | [Other email (SMTP)](#other-email-smtp) | Your provider supports SMTP over SSL. | Enter the provider's settings and an app password/supported credential. |
 | [Google Calendar sync](#google-calendar-sync) | You want WUPHF to add/update expiry dates automatically. | Authorize Google separately and enable background checks. |
 
-In the app, **Gmail** means Google sign-in; **Email** means manual SMTP settings. Choose one for your email reminders unless you intentionally want both to send. The Email form's example `smtp.gmail.com` is not a requirement to use Gmail—replace it with your provider's server.
+In the app, **Gmail** means Google sign-in; **Email via SMTP (SSL only)** means manual SMTP settings. Choose one for your email reminders unless you intentionally want both to send. The Email form's example `smtp.gmail.com` is not a requirement to use Gmail—replace it with your provider's server.
 
 ### Telegram
 
@@ -154,7 +162,7 @@ In the app, **Gmail** means Google sign-in; **Email** means manual SMTP settings
 5. In WUPHF, click **Generate pairing phrase**. Send the exact phrase to your bot's private chat within 10 minutes. Send it to your bot, **not BotFather**.
 6. Click **Find my chat ID**, then **Save settings** and **Send test** for Telegram.
 
-**Success looks like:** a WUPHF test message appears in your bot's chat. Enable Telegram notifications on your phone if you want a phone alert. Repeat messages come from your own bot; the maintainer has no access to it.
+**Success looks like:** a WUPHF test message appears in your bot's chat. The on-screen test status records provider acceptance for this session; check the actual chat to confirm receipt. Enable Telegram notifications on your phone if you want a phone alert. Repeat messages come from your own bot; the maintainer has no access to it.
 
 If pairing expires, generate a new phrase. A bot already used by another service or webhook can prevent lookup; a dedicated bot is simpler. The manual chat-ID field is an advanced fallback, not your `@username`. Never paste your token into a public URL, issue or assistant chat.
 
@@ -184,7 +192,7 @@ SMTP is your email provider's outgoing mail service. Get the values below from t
 | Recipient / To | Your destination for reminders. |
 | Password | The provider's app password or supported SMTP credential, entered directly in WUPHF. |
 
-Enable **Email**, enter these details, **Save settings**, then **Send test**. Confirm receipt. A normal account password may not work, especially with two-factor authentication; follow your provider's rules. WUPHF cannot create an app password for you. If these settings are unfamiliar, Telegram or ICS avoids SMTP setup.
+Enable **Email via SMTP (SSL only)**, enter these details, **Save settings**, then **Send test**. Confirm receipt. A normal account password may not work, especially with two-factor authentication; follow your provider's rules. WUPHF cannot create an app password for you. If these settings are unfamiliar, Telegram or ICS avoids SMTP setup.
 
 ### Calendar file (ICS)
 
@@ -207,6 +215,8 @@ You can close WUPHF after importing. Your calendar handles imported alerts; WUPH
 
 ### Google Calendar sync
 
+Sync requires Codex to supply a stable account identifier. If that information is unavailable, WUPHF pauses sync; email, Telegram and ICS remain available. A Calendar connection made before account binding must be disconnected and reconnected once, creating a separate WUPHF calendar while keeping the old remote calendar and its events. Switching Codex accounts also requires a new Calendar connection.
+
 1. In the calendar section, click **Connect Google**, select your Google account on the same computer, and review the separate calendar permission.
 2. Return to WUPHF, confirm the saved connection, and click **Sync now**.
 3. Open Google Calendar and look for WUPHF's separate calendar. Check an expiry event against the available reset dates. With no future known expiry, there may be no events to display.
@@ -225,7 +235,7 @@ Existing ntfy configurations remain supported for their owners. This beta's new-
 For email, Telegram or automatic Google Calendar sync:
 
 1. Save settings and complete the relevant test/sync first.
-2. Under **Background checks**, click **Enable checks**.
+2. Under **Background checks**, follow the displayed next step and click **Enable checks**. If you already verified delivery or Calendar sync with these saved settings, you can acknowledge that instead of sending another test. This acknowledgement is your confirmation, not a new provider check.
 3. Confirm the scheduler is enabled and that the **last successful check** updates. Allow about 10 minutes for the regular cycle. Inspect any displayed error or failed channel.
 4. Once verified, you can close the setup page and its process/window. Reopen WUPHF when you need it.
 
@@ -267,6 +277,8 @@ You do not need to connect every channel. A test checks the connection, not futu
 | Uninstall | Disable checks first, disconnect integrations if desired, close WUPHF and delete its application folder. |
 | Erase saved data too | Remove WUPHF credential entries in macOS Keychain, Windows Credential Manager or Linux Secret Service. Delete `~/.local/share/wuphf-resets/`; on Windows this is `%USERPROFILE%\.local\share\wuphf-resets\`. Remove remote calendar events separately. |
 
+If you used `--install`, a different installed version is preserved rather than overwritten. Disable checks and close the old app, retain its complete folder as a backup outside the final `WUPHF` destination, then run the new verified bundle's `--install` again. Test the new installed copy before removing the backup. Keep the existing local data and OS credentials; do not move a source virtual environment as if it were a binary bundle.
+
 Disabling a channel or deleting the application does not automatically erase its saved credentials. Removing local files also does not revoke a provider's grant or delete messages already delivered.
 
 ## 9. Fix a problem
@@ -294,6 +306,8 @@ For help, [open an issue](https://github.com/Robertzu43/WUPHF-my-banked-resets/i
 Close and reopen your terminal, then try `codex --version` again. If the command is still missing, complete the [official CLI installation instructions](https://developers.openai.com/codex/cli/) for your system. Once it works, close and reopen WUPHF so it can pick up the updated environment.
 
 To locate the CLI, run `command -v codex` on macOS/Linux or `Get-Command codex` in PowerShell. On Mac, if that installation (or the target of a symbolic link) lives in Documents, Desktop or Downloads, reinstall it in a supported location outside those folders using its installer/package manager. Moving a single executable can break its dependencies. After relocating either app, disable and re-enable WUPHF background checks from the new installation.
+
+For source installation only, the launchers check available Python versions and any existing `.venv`. If an old or broken environment is reported, retain it as a backup in place under a different name, then restart the launcher to create a fresh environment in the final source folder. You can set `WUPHF_PYTHON` to an already installed 3.11+ executable path; it must be one executable, not a command with extra arguments. WUPHF does not install a new Python runtime or replace system Python for you.
 
 On Linux, run WUPHF from your logged-in graphical desktop with its credential store unlocked. A remote shell or headless session may not provide the keyring and user services the desktop package needs.
 

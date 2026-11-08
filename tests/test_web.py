@@ -3,6 +3,15 @@ from unittest.mock import patch
 from wuphf.web import create_server
 
 class WebTests(unittest.TestCase):
+    def test_calendar_sync_returns_actionable_account_error_code_without_identity(self):
+        from wuphf.google import CalendarAccountError
+        from pathlib import Path
+        import tempfile
+        with tempfile.TemporaryDirectory() as d,patch('wuphf.web.cli.DATA',Path(d)),patch('wuphf.web.read_snapshot',return_value={'complete':True}),patch('wuphf.google_auth.sync',side_effect=CalendarAccountError('calendar_account_mismatch')):
+            res,body=self.request('POST','/api/google/sync',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,409)
+        self.assertEqual(json.loads(body),{'error':'calendar_account_mismatch'})
+
     def setUp(self):
         self.server=create_server(port=0, token='test-token')
         self.thread=threading.Thread(target=self.server.serve_forever,daemon=True);self.thread.start()
@@ -56,11 +65,19 @@ class WebTests(unittest.TestCase):
         with patch('wuphf.google_auth.start_connect') as start:
             res,data=self.request('POST','/api/google/connect',client,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
         self.assertEqual(res.status,200);start.assert_called_once_with(client);self.assertNotIn(b'secret',data)
-    def test_direct_google_connect_explains_missing_client_setup(self):
+    def test_google_connect_failure_does_not_require_a_personal_oauth_registration(self):
         with patch('wuphf.google_auth.default_client',return_value={}):
             res,data=self.request('POST','/api/google/connect',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
         self.assertEqual(res.status,400)
-        self.assertIn(b'OAuth',data)
+        self.assertEqual(json.loads(data),{'error':'Could not start Google sign-in. Check the connection status and try again.'})
+    def test_provider_connect_validation_errors_use_generic_sign_in_guidance(self):
+        for provider in ('gmail','google'):
+            with self.subTest(provider=provider):
+                res,body=self.request('POST','/api/'+provider+'/connect',{'invalid':'private-client-path'}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+                self.assertEqual(res.status,400)
+                self.assertEqual(json.loads(body),{'error':'Could not start Google sign-in. Check the connection status and try again.'})
+                self.assertNotIn(b'private-client-path',body)
+
     def test_incomplete_snapshot_refuses_calendar_export(self):
         with patch('wuphf.web.read_snapshot',return_value={'count':2,'credits':None,'complete':False}):
             res,body=self.request('GET','/api/calendar',headers={'Cookie':'wuphf_session=test-token'})
@@ -106,11 +123,48 @@ class WebTests(unittest.TestCase):
             self.assertEqual(res.status,200);start.assert_called_once_with(client);self.assertNotIn(b'secret',data)
 
     def test_gmail_status_and_disconnect_use_separate_authorization(self):
-        with patch('wuphf.gmail_auth.status',{'state':'disconnected','message':'Not connected'}), patch('wuphf.gmail_auth.connected',return_value=True),patch('wuphf.gmail_auth.disconnect') as disconnect,patch('wuphf.google_auth.disconnect') as calendar_disconnect,patch('wuphf.web.check_lock') as lock:
+        with patch('wuphf.gmail_auth.status',{'state':'disconnected','message':'Not connected'}), patch('wuphf.web.load',return_value={'client_id':'saved'}),patch('wuphf.gmail_auth.disconnect') as disconnect,patch('wuphf.google_auth.disconnect') as calendar_disconnect,patch('wuphf.web.check_lock') as lock:
             res,body=self.request('GET','/api/gmail/status',headers={'Cookie':'wuphf_session=test-token'})
             self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['state'],'saved')
             res,_=self.request('POST','/api/gmail/disconnect',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
             self.assertEqual(res.status,200);disconnect.assert_called_once_with();calendar_disconnect.assert_not_called()
+
+    def test_gmail_saved_configuration_without_keychain_credentials_can_be_disconnected(self):
+        import tempfile
+        from pathlib import Path
+        from wuphf import gmail_auth
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);config=root/'gmail.json'
+            config.write_text(json.dumps({'client_id':'saved-private-id.apps.googleusercontent.com'}),encoding='utf-8')
+            public={'installed':{'client_id':'public.apps.googleusercontent.com','client_secret':'public-client-value'}}
+            with patch.object(gmail_auth,'GMAIL',config),patch.object(gmail_auth,'status',{'state':'disconnected','message':'Not connected'}),patch.object(gmail_auth,'get_secret',return_value=None) as get_secret,patch.object(gmail_auth,'delete_secret') as delete_secret,patch.object(gmail_auth,'default_client',return_value=public),patch('wuphf.web.cli.DATA',root):
+                res,body=self.request('GET','/api/gmail/status',headers=headers)
+                self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['state'],'saved')
+                self.assertIn('test',json.loads(body)['message'].lower())
+                self.assertIn('disconnect',json.loads(body)['message'].lower())
+                self.assertNotIn(b'saved-private-id',body);get_secret.assert_not_called()
+                res,_=self.request('POST','/api/gmail/connect',{},headers)
+                self.assertEqual(res.status,503,'An existing config still requires local disconnect before a new connection')
+                self.assertTrue(config.exists())
+                res,body=self.request('GET','/api/gmail/status',headers=headers)
+                self.assertEqual(json.loads(body)['state'],'saved','A refused duplicate connection must not hide saved config')
+                res,_=self.request('POST','/api/gmail/disconnect',{},headers)
+                self.assertEqual(res.status,200);self.assertFalse(config.exists())
+                self.assertEqual([call.args[0] for call in delete_secret.call_args_list],['gmail.refresh_token','gmail.client_secret'])
+                res,body=self.request('GET','/api/gmail/status',headers=headers)
+                self.assertEqual(json.loads(body)['state'],'disconnected')
+
+    def test_gmail_saved_status_does_not_query_an_unavailable_keychain(self):
+        import tempfile
+        from pathlib import Path
+        from wuphf import gmail_auth
+        with tempfile.TemporaryDirectory() as tmp:
+            config=Path(tmp)/'gmail.json';config.write_text(json.dumps({'client_id':'saved-private-id'}),encoding='utf-8')
+            with patch.object(gmail_auth,'GMAIL',config),patch.object(gmail_auth,'status',{'state':'disconnected','message':'Not connected'}),patch.object(gmail_auth,'get_secret',side_effect=RuntimeError('private keychain error')) as get_secret:
+                res,body=self.request('GET','/api/gmail/status',headers={'Cookie':'wuphf_session=test-token'})
+                self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['state'],'saved')
+                self.assertNotIn(b'private',body);get_secret.assert_not_called()
 
     def test_background_status_is_independent_of_live_codex_read(self):
         with patch('wuphf.web.read_snapshot',side_effect=RuntimeError('offline')),patch('wuphf.web.load',return_value={'last_check':100,'last_error':'check failed','failures':{'gmail':'private provider error','telegram':'private token'}}),patch('wuphf.platform_jobs.monitoring_status',return_value='enabled',create=True):
@@ -142,6 +196,12 @@ class WebTests(unittest.TestCase):
         import shutil, subprocess
         if not shutil.which('node'):self.skipTest('Node is unavailable')
         result=subprocess.run(['node','tests/test_background_ui.js'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_guided_setup_prevents_stale_tests_and_reports_truthful_readiness(self):
+        import shutil, subprocess
+        if not shutil.which('node'):self.skipTest('Node is unavailable')
+        result=subprocess.run(['node','tests/test_setup_ui.js'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
 
     def test_legacy_ntfy_is_hidden_for_new_users_and_existing_settings_can_be_disabled(self):

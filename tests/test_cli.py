@@ -114,6 +114,20 @@ class CliTests(unittest.TestCase):
             with patch('wuphf.cli.PLIST',p),patch('wuphf.cli.ROOT',Path(d)),patch('wuphf.cli.sys.platform','darwin'),patch('wuphf.cli.os.getuid',return_value=100,create=True),patch('wuphf.cli.shutil.which',return_value='/bin/codex'),patch('wuphf.cli.subprocess.run',return_value=SimpleNamespace(returncode=1)):
                 with self.assertRaises(RuntimeError):install_agent()
             self.assertFalse(p.exists())
+    def test_calendar_account_errors_are_actionable_but_other_errors_are_redacted(self):
+        import tempfile
+        from pathlib import Path
+        from wuphf.google import CalendarAccountError
+        from wuphf.storage import load
+        for error in (CalendarAccountError('calendar_identity_required'),RuntimeError('PRIVATE-SECRET')):
+            with self.subTest(error=type(error).__name__),tempfile.TemporaryDirectory() as d:
+                p=Path(d)/'state.json';snap={'count':0,'complete':True,'credits':[]}
+                with patch('wuphf.cli.DATA',Path(d)),patch('wuphf.cli.STATE',p),patch('wuphf.cli.SETTINGS',Path(d)/'settings.json'),patch('wuphf.cli.read_snapshot',return_value=snap),patch('wuphf.google_auth.sync',side_effect=error),patch('builtins.print'):
+                    main(['run'])
+                text=load(p,{})['failures']['google']
+                self.assertNotIn('PRIVATE-SECRET',text)
+                if isinstance(error,CalendarAccountError):self.assertIn('stable account identity',text)
+
     def test_google_sync_failure_is_recorded_after_successful_read(self):
         import tempfile
         from pathlib import Path

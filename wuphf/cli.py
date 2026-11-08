@@ -15,6 +15,7 @@ from .core import read_snapshot
 from .keychain import get_secret, set_secret
 from .reminders import ics
 from .i18n import translate
+from .google import CalendarAccountError
 from .runner import check
 from .storage import load, save, check_lock
 
@@ -137,6 +138,8 @@ def main(argv=None):
                     from . import google_auth
                     synced=google_auth.sync(snap)
                     if snap.get('complete') or synced:state['failures'].pop('google',None)
+                except CalendarAccountError as exc:
+                    state['failures']['google']=str(exc)
                 except Exception:
                     state['failures']['google']='Google Calendar sync failed; reconnect or check your connection.'
                 if snap.get('complete'):state.pop('last_error',None)

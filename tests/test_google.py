@@ -7,34 +7,108 @@ class FakeCalendar:
     def delete(self,event_id):self.events.pop(event_id,None);self.calls.append(('delete',event_id))
 
 class CalendarTests(unittest.TestCase):
+    def test_reconcile_refuses_cross_account_and_unknown_ownership_before_writes(self):
+        from wuphf.google import CalendarAccountError
+        for identity in ('b'*64,None):
+            with self.subTest(identity=identity):
+                api=FakeCalendar();api.events['owned-by-a']=2000
+                snap={'complete':True,'account_fingerprint':identity,'credits':[{'id':'same','expiresAt':3000}]}
+                with self.assertRaises(CalendarAccountError):
+                    reconcile(snap,{'same':{'event_id':'owned-by-a'}},api,account_fingerprint='a'*64)
+                self.assertEqual(api.events,{'owned-by-a':2000});self.assertEqual(api.calls,[])
+
+    def test_sync_binds_stable_account_and_refuses_legacy_or_changed_account(self):
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        from wuphf import google_auth
+        from wuphf.google import CalendarAccountError
+        from wuphf.storage import save,load
+        with tempfile.TemporaryDirectory() as d:
+            config=Path(d)/'google.json';mapping=Path(d)/'events.json'
+            snap={'complete':True,'count':0,'credits':[],'account_fingerprint':'a'*64}
+            with patch.object(google_auth,'GOOGLE',config),patch.object(google_auth,'MAPPING',mapping),patch.object(google_auth,'get_secret',return_value='fake'),patch.object(google_auth,'token_request',return_value={'access_token':'fake'}) as token,patch.object(google_auth,'create_calendar',return_value='new-calendar') as create:
+                save(config,{'client_id':'public'})
+                self.assertTrue(google_auth.sync(snap))
+                self.assertEqual(load(config,{})['account_fingerprint'],'a'*64)
+                create.assert_called_once()
+                for data in ({'client_id':'public','calendar_id':'legacy'}, {'client_id':'public','calendar_id':'old','account_fingerprint':'b'*64}):
+                    save(config,data);token.reset_mock()
+                    with self.assertRaisesRegex(CalendarAccountError,'Reconnect'):
+                        google_auth.sync(snap)
+                    token.assert_not_called();self.assertEqual(load(config,{}),data)
+                save(config,{'client_id':'public'});save(mapping,{'same':{'event_id':'legacy'}})
+                with self.assertRaises(CalendarAccountError):google_auth.sync(snap)
+
+    def test_zero_reset_sync_requires_identity_and_failed_first_binding_is_retryable(self):
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        from wuphf import google_auth
+        from wuphf.google import CalendarAccountError
+        from wuphf.storage import save,load
+        with tempfile.TemporaryDirectory() as d:
+            config=Path(d)/'google.json';mapping=Path(d)/'events.json'
+            snap={'complete':True,'count':0,'credits':[],'account_fingerprint':None}
+            save(config,{'client_id':'public'})
+            with patch.object(google_auth,'GOOGLE',config),patch.object(google_auth,'MAPPING',mapping),patch.object(google_auth,'get_secret',return_value='fake'),patch.object(google_auth,'token_request',return_value={'access_token':'fake'}) as token,patch.object(google_auth,'create_calendar',return_value='new-calendar') as create:
+                with self.assertRaisesRegex(CalendarAccountError,'Codex'):
+                    google_auth.sync(snap)
+                token.assert_not_called();create.assert_not_called()
+                snap['account_fingerprint']='a'*64
+                with patch.object(google_auth,'save',side_effect=OSError('disk full')):
+                    with self.assertRaises(OSError):google_auth.sync(snap)
+                create.assert_not_called();self.assertNotIn('account_fingerprint',load(config,{}))
+                self.assertTrue(google_auth.sync(snap));create.assert_called_once()
+
+    def test_refresh_failure_preserves_binding_and_mapping_for_restart_recovery(self):
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        from wuphf import google_auth
+        from wuphf.storage import save,load
+        with tempfile.TemporaryDirectory() as d:
+            config=Path(d)/'google.json';mapping=Path(d)/'events.json'
+            saved={'client_id':'public','calendar_id':'owned','account_fingerprint':'a'*64}
+            history={'same':{'event_id':'owned-event','expiresAt':2000}}
+            save(config,saved);save(mapping,history)
+            snap={'complete':True,'count':1,'credits':[{'id':'same','expiresAt':3000}],'account_fingerprint':'a'*64}
+            api=FakeCalendar();api.events['unrelated']=123
+            with patch.object(google_auth,'GOOGLE',config),patch.object(google_auth,'MAPPING',mapping),patch.object(google_auth,'get_secret',return_value='fake'),patch.object(google_auth,'token_request',side_effect=[RuntimeError('offline'),{'access_token':'fake'}]),patch.object(google_auth,'GoogleCalendar',return_value=api),patch.object(google_auth,'create_calendar') as create:
+                with self.assertRaises(RuntimeError):google_auth.sync(snap)
+                self.assertEqual(load(config,{}),saved);self.assertEqual(load(mapping,{}),history)
+                self.assertTrue(google_auth.sync(snap));create.assert_not_called()
+            self.assertEqual(api.events,{'unrelated':123,'owned-event':3000})
+            self.assertEqual(load(mapping,{})['same']['event_id'],'owned-event')
+
     def test_oversized_expiry_is_unknown_for_calendar_sync(self):
         from wuphf.google import valid_expiry
         self.assertFalse(valid_expiry(10**1000))
 
-    def test_create_update_preserves_old_events_when_account_changes(self):
+    def test_same_account_create_update_preserves_old_and_unrelated_events(self):
         api=FakeCalendar();api.events['unrelated']=123;mapping={}
-        a={'count':1,'complete':True,'credits':[{'id':'private-a','status':'available','expiresAt':2000}]}
-        mapping=reconcile(a,mapping,api)
+        a={'account_fingerprint':'a'*64,'count':1,'complete':True,'credits':[{'id':'private-a','status':'available','expiresAt':2000}]}
+        mapping=reconcile(a,mapping,api,account_fingerprint='a'*64)
         self.assertEqual(len(api.events),2)
         event=next(x for x in api.events if x!='unrelated')
         self.assertNotIn('private-a',event)
         a['credits'][0]['expiresAt']=3000
-        mapping=reconcile(a,mapping,api);self.assertEqual(api.events[event],3000)
-        mapping=reconcile({'count':0,'complete':True,'credits':[]},mapping,api)
+        mapping=reconcile(a,mapping,api,account_fingerprint='a'*64);self.assertEqual(api.events[event],3000)
+        mapping=reconcile({'account_fingerprint':'a'*64,'count':0,'complete':True,'credits':[]},mapping,api,account_fingerprint='a'*64)
         self.assertEqual(api.events,{'unrelated':123,event:3000})
         self.assertIn('private-a',mapping)
     def test_incomplete_read_never_removes_or_changes_events(self):
         api=FakeCalendar();mapping={'a':{'event_id':'abc','expiresAt':2000}}
-        result=reconcile({'count':2,'complete':False,'credits':None},mapping,api)
+        result=reconcile({'count':2,'complete':False,'credits':None},mapping,api,account_fingerprint='a'*64)
         self.assertEqual(result,mapping);self.assertEqual(api.calls,[])
     def test_unknown_expiry_keeps_existing_event(self):
         api=FakeCalendar();mapping={'a':{'event_id':'abc','expiresAt':2000}}
-        result=reconcile({'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':None}]},mapping,api)
+        result=reconcile({'account_fingerprint':'a'*64,'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':None}]},mapping,api,account_fingerprint='a'*64)
         self.assertEqual(result,mapping);self.assertEqual(api.calls,[])
     def test_restart_can_recreate_deleted_event(self):
         api=FakeCalendar();mapping={'a':{'event_id':'abc','expiresAt':2000}}
-        s={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':2000}]}
-        reconcile(s,mapping,api);self.assertEqual(api.events['abc'],2000)
+        s={'account_fingerprint':'a'*64,'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':2000}]}
+        reconcile(s,mapping,api,account_fingerprint='a'*64);self.assertEqual(api.events['abc'],2000)
     def test_only_desktop_client_credentials_are_accepted(self):
         from wuphf.google_auth import parse_client
         good={'installed':{'client_id':'a.apps.googleusercontent.com','client_secret':'abc'}}

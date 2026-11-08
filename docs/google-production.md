@@ -14,6 +14,12 @@ WUPHF uses the system browser, a loopback callback, a random state value and PKC
 
 For a fork or an optional personal registration, create a Desktop app client in your own Google project, enable the relevant APIs, and configure its consent screen. Select the downloaded JSON in **Developer setup** before connecting. A local root `google-client.json` also overrides the distributed registration for source installations; it is ignored by Git and excluded from packages. Existing connections retain their original client until disconnected and reconnected.
 
+## Beta.2 account binding and recovery
+
+Calendar sync now requires a stable Codex account identifier. Unknown, changed or legacy ownership pauses sync before remote writes. Connections created before this binding require disconnect/reconnect once, preserving existing remote calendars/events. Gmail, other email, Telegram and ICS remain independent.
+
+Saved Gmail configuration is shown without probing the OS credential store on each status poll. A saved state is not proof that credentials remain available or usable: send a test to verify, or disconnect/reconnect to repair missing authorization. Normal setup uses the bundled registration; users are not required to create their own Cloud project.
+
 ## Requested permissions
 
 | Integration | Scope | Purpose |
