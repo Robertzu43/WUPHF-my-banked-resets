@@ -56,7 +56,11 @@ In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and foll
 
 ### ntfy
 
-Install an ntfy client, subscribe to a topic, then enter the HTTPS server and the same topic in WUPHF. If your server uses an access token, enter it too. Save and send a test to verify receipt on your device. Public topics can be read by anyone who knows their name: use access controls for private notifications. Live phone delivery still needs testing.
+1. Install an ntfy client on your device. Enable **ntfy push** in WUPHF and enter your HTTPS server (the default is `https://ntfy.sh`).
+2. Click **Generate a topic** or enter your own. Subscribe to the same topic in the ntfy app. If your server uses an access token, enter it in WUPHF too.
+3. Save settings and send a test. Confirm it arrives on your device.
+
+Anyone who knows an unprotected topic can read its notifications. A random topic name is not access control: use an authenticated topic for privacy. Live phone delivery still needs testing.
 
 ## Calendar
 

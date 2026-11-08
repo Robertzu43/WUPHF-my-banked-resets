@@ -132,3 +132,12 @@ class WebTests(unittest.TestCase):
         if not shutil.which('node'):self.skipTest('Node is unavailable')
         result=subprocess.run(['node','tests/test_background_ui.js'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_ntfy_topic_generation_is_safe_and_accessible(self):
+        import shutil, subprocess
+        res,body=self.request('GET','/',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertIn(b'id="ntfy-generate"',body)
+        self.assertIn(b'aria-describedby="ntfy-steps"',body)
+        if not shutil.which('node'):self.skipTest('Node is unavailable')
+        result=subprocess.run(['node','tests/test_ntfy_ui.js'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)

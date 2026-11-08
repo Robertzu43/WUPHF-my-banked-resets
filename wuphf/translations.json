@@ -33,7 +33,7 @@
     "ntfy_server": "HTTPS server",
     "topic": "Topic",
     "ntfy_token": "Access token, optional",
-    "ntfy_help": "Public topics can be read by others. Use access control for private notifications.",
+    "ntfy_help": "Anyone who knows an unprotected topic can read its notifications. Random names do not provide access control; use an authenticated topic for privacy.",
     "save": "Save settings",
     "save_help": "Save settings before sending a test. The provider's acceptance does not guarantee delivery.",
     "calendar": "Calendar",
@@ -117,7 +117,12 @@
     "check_recent": "Last successful background check: {date}",
     "check_stale": "Last successful background check: {date} (more than 30 minutes ago).",
     "check_unknown": "Background check time is unavailable.",
-    "check_error": "The last background check failed or returned incomplete data."
+    "check_error": "The last background check failed or returned incomplete data.",
+    "ntfy_generate": "Generate a topic",
+    "ntfy_steps": "1. Generate or enter a topic. 2. Subscribe to the same topic in the ntfy app. 3. Save settings and send a test.",
+    "ntfy_replace_confirm": "Replace the topic you entered? You will need to subscribe to the new topic.",
+    "ntfy_generated": "Topic generated. Subscribe to it in ntfy, then save settings.",
+    "ntfy_crypto_error": "Secure random generation is unavailable. Enter a topic yourself."
   },
   "es": {
     "language": "Idioma",
@@ -153,7 +158,7 @@
     "ntfy_server": "servidor HTTPS",
     "topic": "Tema",
     "ntfy_token": "Token de acceso, opcional",
-    "ntfy_help": "Los temas públicos pueden ser leídos por otras personas. Usa control de acceso para notificaciones privadas.",
+    "ntfy_help": "Cualquiera que conozca un tema sin protección puede leer sus notificaciones. Un nombre aleatorio no controla el acceso; usa un tema autenticado para mayor privacidad.",
     "save": "Guardar configuración",
     "save_help": "Guarda la configuración antes de enviar una prueba. Que el proveedor la acepte no garantiza la entrega.",
     "calendar": "Calendario",
@@ -237,7 +242,12 @@
     "check_recent": "Última comprobación correcta en segundo plano: {date}",
     "check_stale": "Última comprobación correcta en segundo plano: {date} (hace más de 30 minutos).",
     "check_unknown": "La hora de la comprobación no está disponible.",
-    "check_error": "La última comprobación en segundo plano falló o devolvió datos incompletos."
+    "check_error": "La última comprobación en segundo plano falló o devolvió datos incompletos.",
+    "ntfy_generate": "Generar un tema",
+    "ntfy_steps": "1. Genera o escribe un tema. 2. Suscríbete al mismo tema en la aplicación ntfy. 3. Guarda los ajustes y envía una prueba.",
+    "ntfy_replace_confirm": "¿Reemplazar el tema escrito? Tendrás que suscribirte al nuevo tema.",
+    "ntfy_generated": "Tema generado. Suscríbete en ntfy y guarda los ajustes.",
+    "ntfy_crypto_error": "No se puede generar un valor aleatorio seguro. Escribe un tema."
   },
   "de": {
     "language": "Sprache",
@@ -273,7 +283,7 @@
     "ntfy_server": "HTTPS-Server",
     "topic": "Thema",
     "ntfy_token": "Zugriffstoken, optional",
-    "ntfy_help": "Öffentliche Themen können von anderen gelesen werden. Verwenden Sie die Zugriffskontrolle für private Benachrichtigungen.",
+    "ntfy_help": "Wer ein ungeschütztes Thema kennt, kann dessen Benachrichtigungen lesen. Zufällige Namen sind keine Zugriffskontrolle; nutze für Datenschutz ein authentifiziertes Thema.",
     "save": "Einstellungen speichern",
     "save_help": "Speichern Sie die Einstellungen, bevor Sie einen Test senden. Die Annahme des Anbieters stellt keine Garantie für die Lieferung dar.",
     "calendar": "Kalender",
@@ -357,7 +367,12 @@
     "check_recent": "Letzte erfolgreiche Hintergrundprüfung: {date}",
     "check_stale": "Letzte erfolgreiche Hintergrundprüfung: {date} (vor mehr als 30 Minuten).",
     "check_unknown": "Der Zeitpunkt der Hintergrundprüfung ist nicht verfügbar.",
-    "check_error": "Die letzte Hintergrundprüfung ist fehlgeschlagen oder hat unvollständige Daten geliefert."
+    "check_error": "Die letzte Hintergrundprüfung ist fehlgeschlagen oder hat unvollständige Daten geliefert.",
+    "ntfy_generate": "Thema erzeugen",
+    "ntfy_steps": "1. Erzeuge ein Thema oder gib eines ein. 2. Abonniere dasselbe Thema in der ntfy-App. 3. Speichere die Einstellungen und sende einen Test.",
+    "ntfy_replace_confirm": "Eingegebenes Thema ersetzen? Du musst das neue Thema abonnieren.",
+    "ntfy_generated": "Thema erzeugt. Abonniere es in ntfy und speichere die Einstellungen.",
+    "ntfy_crypto_error": "Sichere Zufallserzeugung ist nicht verfügbar. Gib ein Thema ein."
   },
   "pt": {
     "language": "Idioma",
@@ -393,7 +408,7 @@
     "ntfy_server": "Servidor HTTPS",
     "topic": "Tópico",
     "ntfy_token": "Token de acesso, opcional",
-    "ntfy_help": "Tópicos públicos podem ser lidos por outras pessoas. Use o controle de acesso para notificações privadas.",
+    "ntfy_help": "Quem conhece um tópico sem proteção pode ler suas notificações. Nomes aleatórios não controlam o acesso; use um tópico autenticado para privacidade.",
     "save": "Salvar configurações",
     "save_help": "Salve as configurações antes de enviar um teste. A aceitação do fornecedor não garante a entrega.",
     "calendar": "Calendário",
@@ -477,7 +492,12 @@
     "check_recent": "Última verificação bem-sucedida em segundo plano: {date}",
     "check_stale": "Última verificação bem-sucedida em segundo plano: {date} (há mais de 30 minutos).",
     "check_unknown": "O horário da verificação em segundo plano não está disponível.",
-    "check_error": "A última verificação em segundo plano falhou ou retornou dados incompletos."
+    "check_error": "A última verificação em segundo plano falhou ou retornou dados incompletos.",
+    "ntfy_generate": "Gerar um tópico",
+    "ntfy_steps": "1. Gere ou digite um tópico. 2. Assine o mesmo tópico no aplicativo ntfy. 3. Salve as configurações e envie um teste.",
+    "ntfy_replace_confirm": "Substituir o tópico digitado? Você precisará assinar o novo tópico.",
+    "ntfy_generated": "Tópico gerado. Assine-o no ntfy e salve as configurações.",
+    "ntfy_crypto_error": "A geração aleatória segura não está disponível. Digite um tópico."
   },
   "fr": {
     "language": "Langue",
@@ -513,7 +533,7 @@
     "ntfy_server": "Serveur HTTPS",
     "topic": "Sujet",
     "ntfy_token": "Jeton d'accès, facultatif",
-    "ntfy_help": "Les sujets publics peuvent être lus par d’autres. Utilisez le contrôle d'accès pour les notifications privées.",
+    "ntfy_help": "Toute personne connaissant un sujet non protégé peut lire ses notifications. Un nom aléatoire ne contrôle pas l’accès ; utilisez un sujet authentifié pour la confidentialité.",
     "save": "Enregistrer les paramètres",
     "save_help": "Enregistrez les paramètres avant d’envoyer un test. L'acceptation du fournisseur ne garantit pas la livraison.",
     "calendar": "Calendrier",
@@ -597,7 +617,12 @@
     "check_recent": "Dernière vérification réussie en arrière-plan : {date}",
     "check_stale": "Dernière vérification réussie en arrière-plan : {date} (il y a plus de 30 minutes).",
     "check_unknown": "L’heure de la vérification en arrière-plan est indisponible.",
-    "check_error": "La dernière vérification en arrière-plan a échoué ou renvoyé des données incomplètes."
+    "check_error": "La dernière vérification en arrière-plan a échoué ou renvoyé des données incomplètes.",
+    "ntfy_generate": "Générer un sujet",
+    "ntfy_steps": "1. Générez ou saisissez un sujet. 2. Abonnez-vous au même sujet dans l’application ntfy. 3. Enregistrez les paramètres et envoyez un test.",
+    "ntfy_replace_confirm": "Remplacer le sujet saisi ? Vous devrez vous abonner au nouveau sujet.",
+    "ntfy_generated": "Sujet généré. Abonnez-vous dans ntfy, puis enregistrez les paramètres.",
+    "ntfy_crypto_error": "La génération aléatoire sécurisée est indisponible. Saisissez un sujet."
   },
   "ja": {
     "language": "言語",
@@ -633,7 +658,7 @@
     "ntfy_server": "HTTPSサーバー",
     "topic": "トピック",
     "ntfy_token": "アクセストークン、オプション",
-    "ntfy_help": "公開トピックは他の人も読むことができます。プライベート通知にはアクセス制御を使用します。",
+    "ntfy_help": "保護されていないトピックは、名前を知っていれば誰でも通知を読めます。ランダムな名前はアクセス制御ではありません。プライバシーのため認証付きトピックを使用してください。",
     "save": "設定を保存する",
     "save_help": "テストを送信する前に設定を保存します。プロバイダーの承諾は配信を保証するものではありません。",
     "calendar": "カレンダー",
@@ -717,7 +742,12 @@
     "check_recent": "最後に成功したバックグラウンド確認：{date}",
     "check_stale": "最後に成功したバックグラウンド確認：{date}（30分以上前）。",
     "check_unknown": "バックグラウンド確認の時刻を取得できません。",
-    "check_error": "前回のバックグラウンド確認は失敗したか、不完全なデータを返しました。"
+    "check_error": "前回のバックグラウンド確認は失敗したか、不完全なデータを返しました。",
+    "ntfy_generate": "トピックを生成",
+    "ntfy_steps": "1. トピックを生成するか入力します。2. ntfy アプリで同じトピックを購読します。3. 設定を保存してテストを送信します。",
+    "ntfy_replace_confirm": "入力済みのトピックを置き換えますか？新しいトピックを購読する必要があります。",
+    "ntfy_generated": "トピックを生成しました。ntfy で購読し、設定を保存してください。",
+    "ntfy_crypto_error": "安全な乱数を生成できません。トピックを入力してください。"
   },
   "ko": {
     "language": "언어",
@@ -753,7 +783,7 @@
     "ntfy_server": "HTTPS 서버",
     "topic": "주제",
     "ntfy_token": "액세스 토큰, 선택사항",
-    "ntfy_help": "공개 주제는 다른 사람이 읽을 수 있습니다. 비공개 알림에 액세스 제어를 사용합니다.",
+    "ntfy_help": "보호되지 않은 토픽은 이름을 아는 누구나 알림을 읽을 수 있습니다. 무작위 이름은 접근 제어가 아닙니다. 개인정보 보호를 위해 인증된 토픽을 사용하세요.",
     "save": "설정 저장",
     "save_help": "테스트를 보내기 전에 설정을 저장하십시오. 공급자의 승인이 배송을 보장하는 것은 아닙니다.",
     "calendar": "달력",
@@ -837,7 +867,12 @@
     "check_recent": "마지막으로 성공한 백그라운드 확인: {date}",
     "check_stale": "마지막으로 성공한 백그라운드 확인: {date} (30분 이상 지남).",
     "check_unknown": "백그라운드 확인 시간을 알 수 없습니다.",
-    "check_error": "마지막 백그라운드 확인이 실패했거나 불완전한 데이터를 반환했습니다."
+    "check_error": "마지막 백그라운드 확인이 실패했거나 불완전한 데이터를 반환했습니다.",
+    "ntfy_generate": "토픽 생성",
+    "ntfy_steps": "1. 토픽을 생성하거나 입력합니다. 2. ntfy 앱에서 같은 토픽을 구독합니다. 3. 설정을 저장하고 테스트를 보냅니다.",
+    "ntfy_replace_confirm": "입력한 토픽을 바꾸시겠습니까? 새 토픽을 구독해야 합니다.",
+    "ntfy_generated": "토픽을 생성했습니다. ntfy에서 구독한 다음 설정을 저장하세요.",
+    "ntfy_crypto_error": "안전한 난수를 생성할 수 없습니다. 토픽을 직접 입력하세요."
   },
   "zh": {
     "language": "语言",
@@ -873,7 +908,7 @@
     "ntfy_server": "HTTPS服务器",
     "topic": "主题",
     "ntfy_token": "访问令牌，可选",
-    "ntfy_help": "公共主题可供其他人阅读。对私人通知使用访问控制。",
+    "ntfy_help": "任何知道未受保护主题的人都可以读取通知。随机名称不能控制访问；请使用需要身份验证的主题来保护隐私。",
     "save": "保存设置",
     "save_help": "发送测试前保存设置。提供商的接受并不保证交付。",
     "calendar": "日历",
@@ -957,6 +992,11 @@
     "check_recent": "上次成功的后台检查：{date}",
     "check_stale": "上次成功的后台检查：{date}（超过 30 分钟前）。",
     "check_unknown": "无法获取后台检查时间。",
-    "check_error": "上次后台检查失败或返回的数据不完整。"
+    "check_error": "上次后台检查失败或返回的数据不完整。",
+    "ntfy_generate": "生成主题",
+    "ntfy_steps": "1. 生成或输入主题。2. 在 ntfy 应用中订阅相同的主题。3. 保存设置并发送测试。",
+    "ntfy_replace_confirm": "替换已输入的主题？您需要订阅新主题。",
+    "ntfy_generated": "主题已生成。请在 ntfy 中订阅，然后保存设置。",
+    "ntfy_crypto_error": "无法生成安全随机数，请自行输入主题。"
   }
 }
