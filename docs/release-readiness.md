@@ -1,6 +1,12 @@
 # Release readiness — 0.1.0-beta.2
 
-Updated November 8, 2026. This candidate improves the existing local, independent-account beta. Publication and the final release-archive audit are separate gates; the published tag, build-info.json and SHA256SUMS identify the exact artifacts.
+Updated November 8, 2026. [Beta.2 is published](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.2), built from `95925e1e5ac35bc5080a1366803f8b46f6cb78da`. This release improves the existing local, independent-account beta. Publication and the final release-archive audit are separate gates; the published tag, build-info.json and SHA256SUMS identify the exact artifacts.
+
+## Published artifact verification
+
+The [final six-job release workflow](https://github.com/Robertzu43/WUPHF-my-banked-resets/actions/runs/42457381734) passed. All three uploaded archives match their combined checksums and source/version manifests. The [public audit record](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/docs/releases/0.1.0-beta.2-audit.json) records safe paths/internal links, absent user configuration, matching packaged help, and complete collected native notices (Linux 65, Mac 53, Windows 18; none missing/uncollected). Windows OS-UCRT policy passed. Final Mac archive install/repeat/asset/synthetic-background smoke passed; read-only real Codex access returned complete details without changing WUPHF settings/state/job files or consuming a reset.
+
+Publication occurred November 8, 2026 at 07:12:20 UTC. Anonymous HTTP checks passed for the release, source ZIP, guide and all four assets; the public checksum file matched audited bytes. The homepage deploy passed with setup/download/guide links and preserved Google ownership verification metadata. Prior beta.1 tag/assets remain unchanged; its guide link is pinned to its archived instructions. These checks do not establish clean-user setup, live beta.2 notification receipt or a 10/10 score.
 
 ## Completed implementation and review
 

@@ -73,6 +73,18 @@ Files: wuphf/runner.py, wuphf/google.py/google_auth.py, tests/test_runner.py/tes
 ### Task 6: Merge, version and publish
 Files: VERSION, CHANGELOG.md, docs/release-readiness.md, release workflows only as required.
 - [x] Bump next prerelease after integration, update screenshots/guide and precise evidence.
-- [ ] Commit reviewed changes, open PR, verify checks, merge under user's existing authorization.
-- [ ] Build candidate from immutable commit, inspect archives/checksums/notices, publish next beta with all options and documentation.
-- [ ] Verify public downloads and final independent assessment; audit every spec requirement before marking goal complete.
+- [x] Commit reviewed changes, open PR, verify checks, merge under user's existing authorization.
+- [x] Build candidate from immutable commit, inspect archives/checksums/notices, publish next beta with all options and documentation.
+- [x] Verify public downloads and final independent assessment; audit every spec requirement before marking goal complete.
+
+## Quality target remains open after beta publication
+
+Beta.2 is merged and public. Final independent simulated-browser review scored purpose 9/10, installation 7.5/10, channel setup 9/10, daily use 8.5/10, documentation 9/10 and overall 8.5/10. Publication is an authorized beta milestone, not proof of the full 10/10 goal.
+
+- [ ] Collect first-time-user setup/reopen/stop evidence using the published local-Codex prompt; fix observed assistance points, then re-review independently.
+- [ ] Verify actual fresh beta.2 channel receipt and calendar imports/alarms with the owner's chosen accounts; record native installed-job restart/sleep/offline recovery and later credential refresh. Provider acceptance alone does not prove receipt.
+- [ ] Complete available Google verification steps and obtain actual provider approval; retain disclosed access limits until Google changes the status.
+- [ ] Resolve signing/trust-onboarding evidence with real resources where available; no purchases or security bypass.
+- [ ] Obtain native-speaker/assistive-technology feedback where available, retaining unverified scope rather than inventing validation.
+
+The owner waived real Windows/Linux-device tests; the native CI evidence does not rename that waiver as a test pass. Keep the original goal active until its requirements are actually proved, or report a genuine external block under the goal's audit rules.
