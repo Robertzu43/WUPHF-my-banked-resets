@@ -15,6 +15,7 @@ from pathlib import Path
 from . import cli
 from .config import validate
 from .google_auth import CallbackServer
+from .google import CalendarAccountError
 from .core import read_snapshot
 from .keychain import set_secret
 from .storage import load, save, check_lock
@@ -200,6 +201,7 @@ def create_server(port=0,token=None):
                 elif self.path=='/api/uninstall':cli.main(['uninstall'])
                 else:return self.write(404,{'error':'Not found'})
                 return self.write(200,{'ok':True})
+            except CalendarAccountError as exc:return self.write(409,{'error':exc.code})
             except cli.ProtectedMacLocation:return self.write(400,{'error':'mac_protected_location'})
             except (ValueError,KeyError,TypeError):
                 message='This build needs a Google desktop OAuth client in Developer setup before it can connect.' if self.path in ('/api/google/connect','/api/gmail/connect') else 'Please check your settings and try again.'

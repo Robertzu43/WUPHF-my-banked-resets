@@ -10,7 +10,8 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from . import cli
-from .google import SCOPE, GoogleCalendar, create_calendar, reconcile, token_request
+from .google import SCOPE, GoogleCalendar, create_calendar, reconcile, token_request, check_account, CalendarAccountError
+from .core import valid_identity
 from .keychain import get_secret,set_secret,delete_secret
 from .storage import load,save
 
@@ -115,6 +116,13 @@ def sync(snap):
     if not snap.get('complete'):return False
     config=load(GOOGLE,{})
     if not config.get('client_id'):return False
+    identity=snap.get('account_fingerprint')
+    if not valid_identity(identity):raise CalendarAccountError('calendar_identity_required')
+    mapping=load(MAPPING,{})
+    if not config.get('account_fingerprint') and not config.get('calendar_id') and not mapping:
+        config['account_fingerprint']=identity
+        save(GOOGLE,config)
+    check_account(snap,config.get('account_fingerprint'))
     secret=get_secret('google.client_secret');refresh=get_secret('google.refresh_token')
     if not secret or not refresh:raise RuntimeError('Google Calendar credentials are missing.')
     tokens=token_request({'client_id':config['client_id'],'client_secret':secret,'refresh_token':refresh,'grant_type':'refresh_token'})
@@ -123,8 +131,8 @@ def sync(snap):
     language=load(cli.SETTINGS,{}).get('language','en')
     if not config.get('calendar_id'):
         config['calendar_id']=create_calendar(access,language);save(GOOGLE,config)
-    api=GoogleCalendar(access,config['calendar_id'],language);mapping=load(MAPPING,{})
-    reconcile(snap,mapping,api,lambda m:save(MAPPING,m))
+    api=GoogleCalendar(access,config['calendar_id'],language)
+    reconcile(snap,mapping,api,lambda m:save(MAPPING,m),account_fingerprint=config['account_fingerprint'])
     return True
 
 

@@ -3,6 +3,15 @@ from unittest.mock import patch
 from wuphf.web import create_server
 
 class WebTests(unittest.TestCase):
+    def test_calendar_sync_returns_actionable_account_error_code_without_identity(self):
+        from wuphf.google import CalendarAccountError
+        from pathlib import Path
+        import tempfile
+        with tempfile.TemporaryDirectory() as d,patch('wuphf.web.cli.DATA',Path(d)),patch('wuphf.web.read_snapshot',return_value={'complete':True}),patch('wuphf.google_auth.sync',side_effect=CalendarAccountError('calendar_account_mismatch')):
+            res,body=self.request('POST','/api/google/sync',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,409)
+        self.assertEqual(json.loads(body),{'error':'calendar_account_mismatch'})
+
     def setUp(self):
         self.server=create_server(port=0, token='test-token')
         self.thread=threading.Thread(target=self.server.serve_forever,daemon=True);self.thread.start()
@@ -142,6 +151,12 @@ class WebTests(unittest.TestCase):
         import shutil, subprocess
         if not shutil.which('node'):self.skipTest('Node is unavailable')
         result=subprocess.run(['node','tests/test_background_ui.js'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_guided_setup_prevents_stale_tests_and_reports_truthful_readiness(self):
+        import shutil, subprocess
+        if not shutil.which('node'):self.skipTest('Node is unavailable')
+        result=subprocess.run(['node','tests/test_setup_ui.js'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
 
     def test_legacy_ntfy_is_hidden_for_new_users_and_existing_settings_can_be_disabled(self):

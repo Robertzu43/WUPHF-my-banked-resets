@@ -7,19 +7,34 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from .i18n import translate
-from .core import valid_expiry
+from .core import valid_expiry, valid_identity
 
 SCOPE='https://www.googleapis.com/auth/calendar.app.created'
 BASE='https://www.googleapis.com/calendar/v3'
+
+
+class CalendarAccountError(RuntimeError):
+    def __init__(self,code):
+        self.code=code
+        super().__init__('Codex must provide a stable account identity before Calendar sync can run. Check your Codex sign-in and refresh.'
+                         if code=='calendar_identity_required' else
+                         'Reconnect Google Calendar for the current Codex account. Existing calendar events will be preserved.')
+
+
+def check_account(snap,account_fingerprint):
+    identity=snap.get('account_fingerprint')
+    if not valid_identity(identity):raise CalendarAccountError('calendar_identity_required')
+    if account_fingerprint!=identity:raise CalendarAccountError('calendar_account_mismatch')
 
 
 def event_id(credit_id):
     return hashlib.sha256(('wuphf:'+credit_id).encode()).hexdigest()[:48]
 
 
-def reconcile(snap, mapping, api, save_mapping=lambda _:None):
+def reconcile(snap, mapping, api, save_mapping=lambda _:None, *, account_fingerprint=None):
     mapping=dict(mapping)
     if not snap.get('complete'):return mapping
+    check_account(snap,account_fingerprint)
     active={x['id']:x for x in snap.get('credits') or [] if x.get('status','available')=='available'}
     for ident,credit in active.items():
         expiry=credit.get('expiresAt')
@@ -28,7 +43,7 @@ def reconcile(snap, mapping, api, save_mapping=lambda _:None):
         api.put(eid,expiry)
         mapping[ident]={'event_id':eid,'expiresAt':expiry}
         save_mapping(mapping)
-    # shortcut: account/workspace changes cannot be detected reliably; keep old events until stable identity is available.
+    # Keep old events; automatic removal needs explicit remote ownership and lifecycle rules.
     return mapping
 
 
