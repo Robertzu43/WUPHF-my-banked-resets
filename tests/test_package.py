@@ -3,6 +3,21 @@ from pathlib import Path
 from unittest.mock import patch
 
 class PackageTests(unittest.TestCase):
+    def test_smoke_reports_only_synthetic_child_diagnostics_on_failure(self):
+        import io, subprocess
+        from scripts import smoke_package
+        def run(command,**kwargs):
+            if command[-1]=='--background':
+                root=Path(kwargs['env']['HOME']).parent
+                (root/'codex-was-run').write_text('synthetic marker')
+                (root/'synthetic-child-stderr.txt').write_text('synthetic failure')
+                raise subprocess.CalledProcessError(1,command)
+            return subprocess.CompletedProcess(command,0,stdout='',stderr='')
+        with tempfile.TemporaryDirectory() as tmp,patch.object(sys,'argv',['smoke_package',tmp]),patch('scripts.smoke_package.subprocess.run',side_effect=run),patch('sys.stdout',new_callable=io.StringIO) as output:
+            with self.assertRaises(subprocess.CalledProcessError):smoke_package.main()
+        self.assertIn('Synthetic child marker: synthetic marker',output.getvalue())
+        self.assertIn('Synthetic child stderr: synthetic failure',output.getvalue())
+
     def test_build_bundles_only_explicit_asset_files(self):
         from scripts import build_package
         with tempfile.TemporaryDirectory() as tmp:

@@ -37,7 +37,7 @@ print('Windows Codex launcher round trip passed')
 installed=False
 try:
     platform_jobs.install();installed=True
-    result=subprocess.run(['schtasks','/Query','/TN',platform_jobs.TASK,'/XML'],capture_output=True,check=True)
+    result=subprocess.run(['schtasks','/Query','/TN',platform_jobs.TASK,'/XML'],capture_output=True,text=True,check=True)
     assert result.returncode==0,'Windows task was not registered'
     task=ET.fromstring(result.stdout)
     for name in ('DisallowStartIfOnBatteries','StopIfGoingOnBatteries'):
