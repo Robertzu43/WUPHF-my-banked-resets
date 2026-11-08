@@ -45,9 +45,10 @@ def _run(args):
 
 
 def install():
+    frozen=getattr(sys,'frozen',False)
+    command=[sys.executable,'--background'] if frozen else [sys.executable,str(ROOT/'start_background.py')]
     if sys.platform=='win32':
-        command=subprocess.list2cmdline([sys.executable,str(ROOT/'start_background.py')])
-        if not _run(['schtasks','/Create','/TN',TASK,'/TR',command,'/SC','MINUTE','/MO','10','/IT']):
+        if not _run(['schtasks','/Create','/TN',TASK,'/TR',subprocess.list2cmdline(command),'/SC','MINUTE','/MO','10','/IT']):
             raise RuntimeError('Could not create the Windows task; it may already exist.')
         return
     if sys.platform!='linux':raise RuntimeError('Background installation is unsupported on this platform.')
@@ -55,7 +56,8 @@ def install():
     if service.exists() or timer.exists():raise RuntimeError('A WUPHF background job already exists.')
     UNITS.mkdir(parents=True,exist_ok=True)
     path=os.environ.get('PATH','/usr/bin:/bin')
-    service_text='[Unit]\nDescription=WUPHF reset reminders\n[Service]\nType=oneshot\nWorkingDirectory='+_quote(ROOT)+'\nEnvironment='+_quote('PATH='+path)+'\nExecStart='+_quote(sys.executable)+' '+_quote(ROOT/'start_background.py')+'\n'
+    directory=Path(sys.executable).parent if frozen else ROOT
+    service_text='[Unit]\nDescription=WUPHF reset reminders\n[Service]\nType=oneshot\nWorkingDirectory='+_quote(directory)+'\nEnvironment='+_quote('PATH='+path)+'\nExecStart='+' '.join(_quote(arg) for arg in command)+'\n'
     timer_text='[Unit]\nDescription=Check WUPHF reset reminders\n[Timer]\nOnStartupSec=1min\nOnUnitActiveSec=10min\nAccuracySec=10s\n[Install]\nWantedBy=timers.target\n'
     created=[]
     try:

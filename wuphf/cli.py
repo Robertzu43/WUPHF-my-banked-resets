@@ -78,7 +78,10 @@ def install_agent():
         return
     if PLIST.exists(): raise RuntimeError('Background job is already installed; uninstall before reinstalling.')
     PLIST.parent.mkdir(parents=True,exist_ok=True)
-    job={'Label':'com.wuphf.resets','ProgramArguments':[sys.executable,'-m','wuphf.cli','run'],'WorkingDirectory':str(ROOT),'RunAtLoad':True,'StartInterval':600,'EnvironmentVariables':{'PATH':os.environ.get('PATH','/usr/bin:/bin')}}
+    frozen=getattr(sys,'frozen',False)
+    arguments=[sys.executable,'--background'] if frozen else [sys.executable,'-m','wuphf.cli','run']
+    directory=Path(sys.executable).parent if frozen else ROOT
+    job={'Label':'com.wuphf.resets','ProgramArguments':arguments,'WorkingDirectory':str(directory),'RunAtLoad':True,'StartInterval':600,'EnvironmentVariables':{'PATH':os.environ.get('PATH','/usr/bin:/bin')}}
     with open(PLIST,'wb') as f: plistlib.dump(job,f)
     os.chmod(PLIST,0o600)
     result=subprocess.run(['launchctl','bootstrap',f'gui/{os.getuid()}',str(PLIST)],capture_output=True,text=True)

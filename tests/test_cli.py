@@ -117,3 +117,30 @@ class CliTests(unittest.TestCase):
             self.assertEqual(state['last_check'],100)
             self.assertIn('last_error',state)
             self.assertIn('ntfy',state['failures'])
+
+    def test_mac_frozen_agent_uses_installed_executable_and_directory(self):
+        import plistlib,tempfile
+        from pathlib import Path
+        from types import SimpleNamespace
+        from wuphf import cli
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);exe=root/'Installed WUPHF'/'WUPHF';plist=root/'agent.plist'
+            with patch.object(cli,'PLIST',plist),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',True,create=True),patch.object(cli.sys,'executable',str(exe)),patch.object(cli.sys,'_MEIPASS',str(root/'temporary bundle'),create=True),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
+                cli.install_agent()
+            job=plistlib.loads(plist.read_bytes())
+            self.assertEqual(job['ProgramArguments'],[str(exe),'--background'])
+            self.assertEqual(job['WorkingDirectory'],str(exe.parent))
+            self.assertNotIn('temporary bundle',str(job))
+
+    def test_mac_source_agent_keeps_python_module_command(self):
+        import plistlib,tempfile
+        from pathlib import Path
+        from types import SimpleNamespace
+        from wuphf import cli
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);plist=root/'agent.plist'
+            with patch.object(cli,'PLIST',plist),patch.object(cli,'ROOT',root),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.sys,'executable','python-example'),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
+                cli.install_agent()
+            job=plistlib.loads(plist.read_bytes())
+            self.assertEqual(job['ProgramArguments'],['python-example','-m','wuphf.cli','run'])
+            self.assertEqual(job['WorkingDirectory'],str(root))

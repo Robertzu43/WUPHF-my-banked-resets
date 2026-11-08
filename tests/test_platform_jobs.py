@@ -79,3 +79,41 @@ class PlatformJobsTests(unittest.TestCase):
             self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'enabled')
             run.return_value=SimpleNamespace(returncode=1,stdout='')
             self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'unknown')
+
+    def test_linux_frozen_scheduler_uses_installed_executable_not_bundle(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);exe=root/'Installed WUPHF'/'WUPHF';units=root/'units'
+            with patch.object(platform_jobs.sys,'platform','linux'),patch.object(platform_jobs.sys,'frozen',True,create=True),patch.object(platform_jobs.sys,'executable',str(exe)),patch.object(platform_jobs.sys,'_MEIPASS',str(root/'temporary bundle'),create=True),patch.object(platform_jobs,'UNITS',units),patch.object(platform_jobs.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
+                platform_jobs.install()
+            service=(units/'wuphf-resets.service').read_text()
+            self.assertIn('WorkingDirectory='+platform_jobs._quote(exe.parent),service)
+            self.assertIn('ExecStart='+platform_jobs._quote(exe)+' "--background"',service)
+            self.assertNotIn('temporary bundle',service);self.assertNotIn('start_background.py',service)
+
+    def test_windows_frozen_scheduler_quotes_installed_executable(self):
+        import subprocess
+        with tempfile.TemporaryDirectory() as d:
+            exe=Path(d)/'Installed WUPHF'/'WUPHF.exe'
+            with patch.object(platform_jobs.sys,'platform','win32'),patch.object(platform_jobs.sys,'frozen',True,create=True),patch.object(platform_jobs.sys,'executable',str(exe)),patch.object(platform_jobs.sys,'_MEIPASS',str(Path(d)/'temporary bundle'),create=True),patch.object(platform_jobs.subprocess,'run',return_value=SimpleNamespace(returncode=0)) as run:
+                platform_jobs.install()
+            args=run.call_args.args[0];command=args[args.index('/TR')+1]
+            self.assertEqual(command,subprocess.list2cmdline([str(exe),'--background']))
+            self.assertNotIn('temporary bundle',command);self.assertNotIn('start_background.py',command)
+
+    def test_linux_source_scheduler_keeps_python_script_and_directory(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)/'Source WUPHF';units=Path(d)/'units';exe=Path(d)/'Python Env'/'python'
+            with patch.object(platform_jobs.sys,'platform','linux'),patch.object(platform_jobs.sys,'frozen',False,create=True),patch.object(platform_jobs.sys,'executable',str(exe)),patch.object(platform_jobs,'ROOT',root),patch.object(platform_jobs,'UNITS',units),patch.object(platform_jobs.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
+                platform_jobs.install()
+            service=(units/'wuphf-resets.service').read_text()
+            self.assertIn('WorkingDirectory='+platform_jobs._quote(root),service)
+            self.assertIn('ExecStart='+platform_jobs._quote(exe)+' '+platform_jobs._quote(root/'start_background.py'),service)
+
+    def test_windows_source_scheduler_keeps_python_script_with_spaces(self):
+        import subprocess
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)/'Source WUPHF';exe=Path(d)/'Python Env'/'python.exe'
+            with patch.object(platform_jobs.sys,'platform','win32'),patch.object(platform_jobs.sys,'frozen',False,create=True),patch.object(platform_jobs.sys,'executable',str(exe)),patch.object(platform_jobs,'ROOT',root),patch.object(platform_jobs.subprocess,'run',return_value=SimpleNamespace(returncode=0)) as run:
+                platform_jobs.install()
+            args=run.call_args.args[0]
+            self.assertEqual(args[args.index('/TR')+1],subprocess.list2cmdline([str(exe),str(root/'start_background.py')]))
