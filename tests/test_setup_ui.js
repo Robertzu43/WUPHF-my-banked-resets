@@ -4,6 +4,10 @@ const html=fs.readFileSync('wuphf/web.html','utf8');
 const elements={}, tests=[], timers=[], downloads=[];
 function element(id){return elements[id]||(elements[id]={value:'',checked:false,disabled:false,hidden:false,textContent:'',files:[],children:[],attributes:{},setAttribute(name,value){this.attributes[name]=value},getAttribute(name){return this.attributes[name]},click(){downloads.push(this.download)},listeners:{},dataset:{},classList:{add(){},remove(){}},focus(){},select(){},replaceChildren(...children){this.children=children},addEventListener(type,fn){(this.listeners[type]??=[]).push(fn)},async dispatch(type){for(const fn of this.listeners[type]||[])await fn({preventDefault(){},target:this})}})}
 for(const tag of html.matchAll(/<[^>]+\bid="([^"]+)"[^>]*>/g)){element(tag[1]).disabled=/\bdisabled\b/.test(tag[0]);}
+for(const section of html.matchAll(/<div class="channel-fields" id="fields-([^"]+)" hidden>([\s\S]*?)(?=<div class="channel")/g)){
+ const inputs=[...section[2].matchAll(/<input\b[^>]*\bid="([^"]+)"[^>]*>/g)].map(tag=>element(tag[1]));
+ element('fields-'+section[1]).querySelectorAll=selector=>{assert.equal(selector,'input');return inputs};
+}
 for(const tag of html.matchAll(/<button[^>]+class="[^"]*\btest\b[^"]*"[^>]*>/g)){const b=element('test-'+tag[0].match(/data-channel="([^"]+)"/)[1]);b.disabled=/\bdisabled\b/.test(tag[0]);b.dataset.channel=tag[0].match(/data-channel="([^"]+)"/)[1];tests.push(b)}
 const ctx={console,Date,Intl,Number,AbortController,setTimeout:(fn,ms)=>(timers.push({fn,ms}),timers.length),clearTimeout(){},setInterval:()=>1,confirm:()=>true,window:{confirm:()=>true},NodeFilter:{SHOW_TEXT:4},document:{body:{},documentElement:{},getElementById:element,querySelector:s=>element(s),querySelectorAll:s=>s==='.test'?tests:[],createTreeWalker:()=>({nextNode:()=>null}),createElement:()=>element('created-'+Math.random())}};
 vm.createContext(ctx);vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)[1].replace(/boot\(\);\s*$/,''),ctx);
@@ -29,6 +33,23 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  assert(element('install').disabled,'Enable must start disabled');
  assert(element('calendar-download').disabled,'Calendar export starts unavailable until Codex data is complete');
  await ctx.settings();
+ // Known-invalid email controls model the native validation boundary; Chrome checks actual validity separately.
+ const nativeSave=async(invalidInputs)=>{if(!element('telegram-save').disabled&&!invalidInputs.some(input=>!input.disabled))await element('settings').dispatch('submit')};
+ for(const [channel,ids] of [['gmail',['gmail-to']],['email',['email-from','email-to']]]){
+  const inputs=ids.map(element);for(const input of inputs)input.value='not-an-email';
+  element('use-'+channel).checked=true;await element('use-'+channel).dispatch('change');await element('settings').dispatch('change');
+  assert(inputs.every(input=>!input.disabled),'Selected '+channel+' inputs must retain native validation');
+  const before=calls.length;await nativeSave(inputs);assert.equal(calls.length,before,'Selected invalid '+channel+' must block a native Save');
+  element('use-'+channel).checked=false;await element('use-'+channel).dispatch('change');await element('settings').dispatch('change');
+  assert(inputs.every(input=>input.disabled),'Deselected '+channel+' inputs must stop participating in native validation');
+  await nativeSave(inputs);assert.equal(calls.length,before+1,'Invalid deselected '+channel+' must not block saving Telegram');
+  assert.deepEqual(Object.keys(calls.at(-1)[2].channels),['telegram'],'Deselected channel values must not enter the settings payload');
+  element('use-'+channel).checked=true;await element('use-'+channel).dispatch('change');await element('settings').dispatch('change');
+  assert(inputs.every(input=>!input.disabled&&input.value==='not-an-email'),'Reselecting '+channel+' must preserve typed values and restore validation');
+  await nativeSave(inputs);assert.equal(calls.length,before+1,'Reselected invalid '+channel+' must block native Save again');
+  element('use-'+channel).checked=false;await element('use-'+channel).dispatch('change');await element('settings').dispatch('change');
+ }
+ await element('settings').dispatch('submit');
  assert(saveIds.every(id=>!element(id).disabled),'Every Save must become reachable after settings load');
  assert.equal(element('test-telegram').disabled,false);
  assert.equal(element('install').disabled,true,'Saved configuration is not evidence of an accepted test');

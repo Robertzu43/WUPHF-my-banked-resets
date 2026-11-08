@@ -176,7 +176,7 @@ function showLegacyNtfy(channel){
 function retainLegacyNtfy(channels){
   if(legacyNtfy!==undefined&&$('use-ntfy').checked)channels.ntfy=legacyNtfy;
 }
-function toggle(name){$('fields-'+name).hidden=!$('use-'+name).checked}
+function toggle(name){const fields=$('fields-'+name);fields.hidden=!$('use-'+name).checked;for(const input of fields.querySelectorAll('input'))input.disabled=fields.hidden}
 for(const n of ['telegram','email','gmail'])$('use-'+n).addEventListener('change',()=>toggle(n));
 function dateTime(value){return new Date(value).toLocaleString(locale(),{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZoneName:'longOffset'})}
 function renderStatus(s){
