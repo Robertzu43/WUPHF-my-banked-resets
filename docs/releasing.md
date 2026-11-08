@@ -10,13 +10,13 @@ The manual **Draft unsigned beta release** workflow builds a reviewed commit on 
 
 ## Create the draft
 
-In GitHub **Actions → Draft unsigned beta release → Run workflow**, select the repository default branch (`wuphf-initial`), enter the version from `VERSION` (currently `0.1.0-beta.2`) and the full reviewed commit SHA.
+In GitHub **Actions → Draft unsigned beta release → Run workflow**, select the repository default branch (`wuphf-initial`), enter the version from `VERSION` (currently `0.1.0-beta.3`) and the full reviewed commit SHA.
 
 The GitHub CLI equivalent is:
 
 ```sh
 gh workflow run draft-release.yml --ref wuphf-initial \
-  -f version=0.1.0-beta.2 -f commit=FULL_40_CHARACTER_MERGED_SHA
+  -f version=0.1.0-beta.3 -f commit=FULL_40_CHARACTER_MERGED_SHA
 ```
 
 The selected commit must belong to the default branch and have the same workflow files as the dispatch commit. Existing releases with the same version and tags pointing elsewhere stop the workflow. If uploads fail, inspect the partial draft before deciding whether to remove it and retry; the workflow will not overwrite it.
@@ -24,9 +24,9 @@ The selected commit must belong to the default branch and have the same workflow
 Each draft contains three versioned archives plus `SHA256SUMS`. Names include OS and the actual build architecture, for example:
 
 ```text
-wuphf-0.1.0-beta.2-macos-arm64-unsigned.tar.gz
-wuphf-0.1.0-beta.2-linux-x86_64-unsigned.tar.gz
-wuphf-0.1.0-beta.2-windows-x86_64-unsigned.zip
+wuphf-0.1.0-beta.3-macos-arm64-unsigned.tar.gz
+wuphf-0.1.0-beta.3-linux-x86_64-unsigned.tar.gz
+wuphf-0.1.0-beta.3-windows-x86_64-unsigned.zip
 SHA256SUMS
 ```
 

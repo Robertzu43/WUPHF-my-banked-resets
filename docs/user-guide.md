@@ -2,7 +2,7 @@
 
 **WUPHF helps you remember to use an available banked Codex reset before it expires.** It runs on your computer and can notify your own email, Telegram, or calendar. Pick one option or combine several. WUPHF never redeems a reset for you.
 
-This guide describes **v0.1.0-beta.2**. Button names below use the English interface. The app also includes Spanish, German, Portuguese, French, Japanese, Korean and Simplified Chinese.
+This guide describes **v0.1.0-beta.3**. Button names below use the English interface. The app also includes Spanish, German, Portuguese, French, Japanese, Korean and Simplified Chinese.
 
 **Start here:** [Let Codex help install it](../README.md#let-codex-set-it-up-for-you), or follow [manual installation](#2-install-on-your-computer). Already installed? Jump to [connect your accounts](#4-connect-only-the-options-you-want) or [fix a problem](#9-fix-a-problem).
 
@@ -58,7 +58,7 @@ Do not copy your ChatGPT password or Codex authentication files into WUPHF or an
 
 ### Download, extract and open WUPHF
 
-Get your archive and `SHA256SUMS` from the [official beta release](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.2). **Check the download before extracting or opening it**, using the steps below. Then keep the **entire extracted WUPHF folder**, including `_internal`. Moving only the executable breaks the package.
+Get your archive and `SHA256SUMS` from the [official beta release](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.3). **Check the download before extracting or opening it**, using the steps below. Then keep the **entire extracted WUPHF folder**, including `_internal`. Moving only the executable breaks the package.
 
 <details>
 <summary>Check the download's SHA-256 checksum</summary>
@@ -83,9 +83,9 @@ The full hash must match (letter case does not matter). If it differs, stop and 
 
 | Computer | Release archive | Where to put it and how to open it |
 | --- | --- | --- |
-| Apple silicon Mac, M1 or newer | `wuphf-0.1.0-beta.2-macos-arm64-unsigned.tar.gz` | Extract it. In Finder, choose **Go → Go to Folder**, enter `~/Library/Application Support/`, and move the extracted `WUPHF` folder there. Open `Start WUPHF.command`, or use the Terminal command below. |
-| Windows 10 or newer, x64 | `wuphf-0.1.0-beta.2-windows-x86_64-unsigned.zip` | Use **Extract All**, put the whole `WUPHF` folder in a permanent location you own, then double-click `WUPHF.exe`. Do not run it inside the ZIP. |
-| Linux x64 desktop, Ubuntu 24.04 build | `wuphf-0.1.0-beta.2-linux-x86_64-unsigned.tar.gz` | Extract it into a permanent folder. Use `Start WUPHF.sh` from a terminal in that folder; your file manager may also offer Run. If needed, run `sh "Start WUPHF.sh"`. |
+| Apple silicon Mac, M1 or newer | `wuphf-0.1.0-beta.3-macos-arm64-unsigned.tar.gz` | Extract it. In Finder, choose **Go → Go to Folder**, enter `~/Library/Application Support/`, and move the extracted `WUPHF` folder there. Open `Start WUPHF.command`, or use the Terminal command below. |
+| Windows 10 or newer, x64 | `wuphf-0.1.0-beta.3-windows-x86_64-unsigned.zip` | Use **Extract All**, put the whole `WUPHF` folder in a permanent location you own, then double-click `WUPHF.exe`. Do not run it inside the ZIP. |
+| Linux x64 desktop, Ubuntu 24.04 build | `wuphf-0.1.0-beta.3-linux-x86_64-unsigned.tar.gz` | Extract it into a permanent folder. Use `Start WUPHF.sh` from a terminal in that folder; your file manager may also offer Run. If needed, run `sh "Start WUPHF.sh"`. |
 
 ### Optional automatic placement
 
@@ -139,7 +139,7 @@ Choose your interface language, then set:
 
 Click **Save settings** after changing these values or channel details. Tests are unavailable while changes are unsaved; a failed save keeps that protection in place. Use positive values; the UI accepts fractional days and hours. Calendar alarms have their own behavior described below—these two fields do not change them.
 
-**Where to save:** the **Save settings** button is below the notification channel forms. If you expanded several channels, scroll past those forms to find it. **Send test uses saved settings**, so save first, then return to your selected channel's test button.
+**Where to save:** each Telegram, Gmail and SMTP section has **Save settings** beside **Send test**. The shared **Save settings** button remains below all channel forms. Each button saves the whole settings form. **Send test uses saved settings**, so save before testing.
 
 **Example:** with a hypothetical expiry of November 20 at 18:00, `7` days starts the reminder window on November 13 at 18:00. An awake, online computer checks approximately every 10 minutes, so delivery is not exact to the minute. `24` hours repeats after a successful reminder while the reset remains available and unexpired. A separate newly detected reset notice can arrive outside this expiry window when account identity and comparison data are available. The first reading establishes a baseline; do not expect an arrival notice just because you installed WUPHF.
 
@@ -228,7 +228,11 @@ Sync requires Codex to supply a stable account identifier. If that information i
 
 WUPHF requests access to calendars it creates, not your unrelated calendars. Gmail and Calendar authorize independently; you may use either one alone. The bundled registration is selected automatically. An optional Desktop client JSON can be selected under **Developer setup**; its project needs the Calendar API enabled. See [Google registration details](google-production.md).
 
-Synced events request a popup **24 hours before expiry**, independent of your email/Telegram reminder frequency. Check Google Calendar and phone notification settings. Events are created or updated, but old events are not automatically removed when a reset disappears or is used. Disconnecting removes local authorization, not the remote calendar; reconnecting can create another WUPHF calendar. Remove stale events/calendars manually if needed. Avoid importing ICS for the same dates into the synced calendar unless you want duplicate entries.
+Synced events request a popup **24 hours before expiry**, independent of your email/Telegram reminder frequency. Check Google Calendar and phone notification settings. Newly created, unchanged WUPHF events update when expiry dates change and are removed when their reset disappears from a complete, valid reading of the same Codex account. Incomplete data, invalid expiry dates or unsupported reset statuses pause all Calendar writes. A present reset with a past expiry is retained; WUPHF does not create new past events. Changing a date cannot cancel an alert already queued on a calendar device.
+
+**Legacy events from earlier versions are preserved, including existing stale reminders.** They require manual review/removal in Google Calendar and are never silently adopted. Deleting legacy events in Google Calendar does not clear their saved local tracking, so the legacy sync warning remains. After reviewing the old calendar, you can **Disconnect**, then **Connect Google** again to start fresh local tracking and create a new managed calendar. This leaves the old remote calendar and any remaining events untouched; remove them manually if needed. Events you edit are also preserved. If sync reports a conflict, review the affected calendar events; reconnecting is not cleanup. If an insert/update succeeded remotely but its response or local save was lost, WUPHF preserves it and requests review rather than guessing its new version. Cancelled events are not restored.
+
+Disconnecting removes local authorization, not the remote calendar; reconnecting can create another WUPHF calendar. Old calendars/events may continue reminding until you remove them manually. Avoid importing ICS for the same dates into the synced calendar unless you want duplicate entries.
 
 ### Existing ntfy installations
 
@@ -244,6 +248,8 @@ For email, Telegram or automatic Google Calendar sync:
 4. Once verified, you can close the setup page and its process/window. Reopen WUPHF when you need it.
 
 WUPHF installs a background job for your user account: launchd on macOS, Task Scheduler on Windows, or systemd on Linux. It checks approximately every 10 minutes. **Enabled** means the job is installed; a recent successful check and your channel tests give separate evidence that it works.
+
+The summary near your reset balance shows WUPHF's background check health and flags channels needing attention. Its **Background checks** link opens the detailed status below. This summary does not confirm message delivery or calendar alarms; imported .ics snapshots work independently of these checks.
 
 The computer must remain **awake, online and logged in**. WUPHF does not keep it awake or change power settings. While it sleeps or is offline, new checks cannot deliver alerts. When checks resume, still-valid reminders can be sent; WUPHF cannot recover an expired reset. Imported/synced calendar events may still alert through your calendar provider or phone.
 

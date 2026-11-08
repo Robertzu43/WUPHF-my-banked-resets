@@ -10,7 +10,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from . import cli
-from .google import SCOPE, GoogleCalendar, create_calendar, reconcile, token_request, check_account, CalendarAccountError
+from .google import SCOPE, GoogleCalendar, create_calendar, reconcile, token_request, check_account, check_data, check_mapping, CalendarAccountError
 from .core import valid_identity
 from .keychain import get_secret,set_secret,delete_secret
 from .storage import load,save
@@ -113,16 +113,21 @@ def connected():
 
 
 def sync(snap):
-    if not snap.get('complete'):return False
     config=load(GOOGLE,{})
-    if not config.get('client_id'):return False
+    if not isinstance(config,dict):raise RuntimeError('Google Calendar configuration is invalid.')
+    if 'client_id' not in config:return False
+    if (not isinstance(config['client_id'],str) or not config['client_id']
+            or ('calendar_id' in config and (not isinstance(config['calendar_id'],str) or not config['calendar_id']))):
+        raise RuntimeError('Google Calendar configuration is invalid.')
     identity=snap.get('account_fingerprint')
     if not valid_identity(identity):raise CalendarAccountError('calendar_identity_required')
+    check_data(snap)
     mapping=load(MAPPING,{})
     if not config.get('account_fingerprint') and not config.get('calendar_id') and not mapping:
         config['account_fingerprint']=identity
         save(GOOGLE,config)
     check_account(snap,config.get('account_fingerprint'))
+    check_mapping(mapping,identity,config.get('calendar_id'))
     secret=get_secret('google.client_secret');refresh=get_secret('google.refresh_token')
     if not secret or not refresh:raise RuntimeError('Google Calendar credentials are missing.')
     tokens=token_request({'client_id':config['client_id'],'client_secret':secret,'refresh_token':refresh,'grant_type':'refresh_token'})

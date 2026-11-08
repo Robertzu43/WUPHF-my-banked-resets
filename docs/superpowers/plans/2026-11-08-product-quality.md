@@ -88,3 +88,37 @@ Beta.2 is merged and public. Final independent simulated-browser review scored p
 - [ ] Obtain native-speaker/assistive-technology feedback where available, retaining unverified scope rather than inventing validation.
 
 The owner waived real Windows/Linux-device tests; the native CI evidence does not rename that waiver as a test pass. Keep the original goal active until its requirements are actually proved, or report a genuine external block under the goal's audit rules.
+
+## Post-beta.2 improvement wave (fresh review and packaged-runtime evidence)
+
+Previous completed tasks remain complete. PR16 published the full guide; a new no-context review rated purpose 9.5, docs 8.5 and first-time usability 7.5. These editorial ratings do not replace the separate earlier review. Continue toward the original quality goal, without prescribing scores.
+
+### Task 7: Use the operating system trust roots in frozen macOS HTTPS
+Files: wuphf_launcher.py, tests/test_entrypoint.py; package/release evidence updated at Task 10.
+Evidence: outputs/WUPHF-frozen-https-verification.md. Exact published Mac binary fails default certificate verification for Telegram and both Google token paths; explicitly loading /etc/ssl/cert.pem makes verified handshakes succeed on the same machine. The diagnostic does not grant accounts or prove delivery.
+Interfaces: main(argv=None) prepares the environment before importing application HTTP/SMTP modules. Source launch and Windows/Linux behavior are unchanged. Existing explicitly configured SSL_CERT_FILE or SSL_CERT_DIR must be preserved, including empty values.
+- [x] Add failing entrypoint tests for frozen Darwin with the OS CA file, absent CA file, explicit file/directory overrides and source/non-Darwin runs.
+- [x] In the existing frozen Darwin environment setup, set SSL_CERT_FILE to /etc/ssl/cert.pem only when neither SSL_CERT_FILE nor SSL_CERT_DIR is present and the OS file exists. Never disable verification, bundle user certificates, make purchases or add a dependency for this.
+- [x] Pass scoped tests; independent spec/code review; then build a candidate and verify the frozen default TLS handshake without an SSL environment override using synthetic requests. Record successful transport separately from rejected fake credentials.
+- [x] Keep published beta.2 assets/tag immutable. Any corrected binary requires a new version.
+
+### Task 8: Safely reconcile obsolete Google Calendar events
+Files: wuphf/google.py, wuphf/google_auth.py, tests/test_google.py, plus UI/localization/docs only where changed behavior needs explanation.
+Design authority: docs/superpowers/specs/2026-11-08-calendar-lifecycle.md, selected alternative A including the orchestrator decision. Read it before coding. Use CalendarSyncError with codes calendar_data_required/calendar_event_conflict; preserve existing CalendarAccountError codes. Validate Calendar-specific semantics before token/calendar creation and before reconciliation. Reserve random IDs/owner tokens and persist before POST. Updates/deletes require matching remote private markers, binding and saved etag, with If-Match; no remote listing, ownership adoption or automatic restoration. Legacy events are preserved without modification; report their manual-review limit. An ambiguous remote-success/local-save-loss is a visible conflict, not an automatic etag refresh.
+Scope: wuphf/google.py, wuphf/google_auth.py, wuphf/cli.py, wuphf/web.py, wuphf/web.html (serverErrors mapping only), wuphf/translations.json (new errors/calendar lifecycle descriptions only), tests/test_google.py/test_cli.py/test_web.py/test_i18n.py, README.md and docs/user-guide.md/google-production.md for lifecycle text. Update connected existing tests when interfaces change. No general frontend redesign; Task9 follows separately.
+- [x] Finalize ownership, legacy preservation, conditional-write and restart rules against complete same-account snapshots; no unrelated or ambiguously owned deletion/update.
+- [x] Reproduce stale expiry events and ownership/failure cases with focused failing tests, implement the smallest safe reconciliation and review independently.
+- [x] Verify incomplete/invalid data, changed account, edited/legacy events, races and failures preserve user data; document migration limits honestly.
+
+### Task 9: Reduce observed setup navigation friction
+Files: wuphf/web.html, wuphf/translations.json, tests/test_setup_ui.js and connected existing UI/i18n tests; README.md/docs/user-guide.md setup wording only if changed controls need it.
+Concrete design: keep the approved pixel layout and global Save. Add an initially disabled native submit Save settings button immediately beside each Telegram/Gmail/SMTP Send test (IDs telegram-save/gmail-save/email-save), all submitting the existing settings form and sharing its validation/dirty/revision/busy rules. Reuse the save translation; no new wizard, fixed overlay, auto-save or implicit test send. Render a concise localized reminder-health summary near the reset balance, with an anchor to the existing Background checks section: off, unknown, enabled awaiting first success/stale/failing, and enabled with recent successful check. Use only actual lastBackground state; do not predict delivery or future reminders. Nonempty lastBackground.failures must produce an attention summary even when the Codex check is recent; distinguish channel attention from a failed check and never show an all-clear delivery implication. Add calendar-only next-step strings for sync/check events/enable, avoiding inbox/device-receipt language when no message channel is selected. All new keys in eight catalogs. Keep disclosure that old/edited/ambiguous Calendar events need manual review.
+- [x] Preserve the approved pixel design while making Save reachable during selected-channel tests; do not bypass validation or test stale settings.
+- [x] Use calendar-specific completion wording for calendar-only setup and make existing check health discoverable near the balance, without inventing a predicted reminder or delivery guarantee.
+- [x] Verify dirty/revision/error guards, keyboard/mobile layout and all eight catalogs; independent code/browser review.
+
+### Task 10: Integrate, re-review and publish corrected binaries
+- [ ] Run relevant/full tests, native CI, package/artifact and frozen transport checks from the integrated immutable candidate.
+- [ ] Obtain whole-branch and fresh first-use review; fix evidenced defects without forcing scores or claiming real users/providers were tested by mocks.
+- [ ] Version next beta, update guide/changelog/evidence, merge under existing authorization, build exact merged commit, verify checksums/notices and publish immutable new assets.
+- [ ] Keep external signing/provider/real-user/long-running evidence gates open until actually proved; no global OS bypass, purchase, secret publication or release blocked solely on Google verification.

@@ -26,6 +26,8 @@ def main(argv=None):
     if sys.platform=='darwin' and getattr(sys,'frozen',False):
         import os
         os.environ['PATH']=os.environ.get('PATH','/usr/bin:/bin')+':/opt/homebrew/bin:/usr/local/bin'
+        if 'SSL_CERT_FILE' not in os.environ and 'SSL_CERT_DIR' not in os.environ and Path('/etc/ssl/cert.pem').is_file():
+            os.environ['SSL_CERT_FILE']='/etc/ssl/cert.pem'
     args=sys.argv[1:] if argv is None else argv
     if args==['--version']:
         print('WUPHF '+(Path(__file__).resolve().parent/'VERSION').read_text(encoding='utf-8').strip())
