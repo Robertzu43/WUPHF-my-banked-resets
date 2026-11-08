@@ -6,7 +6,11 @@ This guide describes **v0.1.0-beta.2**. Button names below use the English inter
 
 **Start here:** [Let Codex help install it](../README.md#let-codex-set-it-up-for-you), or follow [manual installation](#2-install-on-your-computer). Already installed? Jump to [connect your accounts](#4-connect-only-the-options-you-want) or [fix a problem](#9-fix-a-problem).
 
-**Your setup route:** install → check your reset status → choose **one** channel → save → confirm a test arrives → enable background checks. Read only your chosen channel's section. For ICS alone, export → import → check the calendar event; you can skip background checks.
+**Your setup route:** install → check your reset status → choose one or several options below. Read only the sections you need.
+
+- **Gmail, SMTP or Telegram:** connect → save → send a test → confirm receipt → enable background checks.
+- **Google Calendar sync:** connect → save → sync → check the calendar events → enable background checks. No email or Telegram channel is required.
+- **ICS only:** export → import → check the calendar events and alerts. Background checks are unnecessary.
 
 ## Contents
 
@@ -54,7 +58,28 @@ Do not copy your ChatGPT password or Codex authentication files into WUPHF or an
 
 ### Download, extract and open WUPHF
 
-Get your archive and `SHA256SUMS` from the [official beta release](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.2). Keep the **entire extracted WUPHF folder**, including `_internal`. Moving only the executable breaks the package.
+Get your archive and `SHA256SUMS` from the [official beta release](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.2). **Check the download before extracting or opening it**, using the steps below. Then keep the **entire extracted WUPHF folder**, including `_internal`. Moving only the executable breaks the package.
+
+<details>
+<summary>Check the download's SHA-256 checksum</summary>
+
+Before extracting, open a terminal in the folder containing the archive. Run the command for your system, replacing `ARCHIVE_NAME` with the downloaded filename, and compare the resulting hash with that filename's line in the release's `SHA256SUMS`.
+
+```sh
+# macOS
+shasum -a 256 "ARCHIVE_NAME"
+# Linux
+sha256sum "ARCHIVE_NAME"
+```
+
+```powershell
+# Windows PowerShell
+Get-FileHash -Algorithm SHA256 "ARCHIVE_NAME"
+```
+
+The full hash must match (letter case does not matter). If it differs, stop and download the archive again from the official release. A matching checksum checks download integrity; it does not substitute for trusting the publisher.
+
+</details>
 
 | Computer | Release archive | Where to put it and how to open it |
 | --- | --- | --- |
@@ -80,27 +105,6 @@ cd "$HOME/Library/Application Support/WUPHF"
 On macOS, background jobs need WUPHF and Codex outside Documents, Desktop and Downloads. Source installations also need Python outside those protected locations. Linux needs a graphical session, an unlocked Secret Service credential store, and a working systemd user service. The Linux build may not run on older distributions. Intel Macs and other unlisted architectures have no matching packaged download; see [source installation](../README.md#run-from-source) and its compatibility limits.
 
 **If macOS says “WUPHF Not Opened”:** this beta is not Apple-notarized. Select **Done**. If you have checked the source and choose to trust it, use **System Settings → Privacy & Security → Open Anyway**, then follow the confirmation. See [Apple's instructions](https://support.apple.com/en-us/102445). Do not turn off Gatekeeper globally. Windows may also display a warning for this unsigned beta; follow your computer's security policy rather than disabling protections.
-
-<details>
-<summary>Check the download's SHA-256 checksum</summary>
-
-Before extracting, open a terminal in the folder containing the archive. Run the command for your system, replacing `ARCHIVE_NAME` with the downloaded filename, and compare the resulting hash with that filename's line in the release's `SHA256SUMS`.
-
-```sh
-# macOS
-shasum -a 256 "ARCHIVE_NAME"
-# Linux
-sha256sum "ARCHIVE_NAME"
-```
-
-```powershell
-# Windows PowerShell
-Get-FileHash -Algorithm SHA256 "ARCHIVE_NAME"
-```
-
-The full hash must match (letter case does not matter). If it differs, stop and download the archive again from the official release. A matching checksum checks download integrity; it does not substitute for trusting the publisher.
-
-</details>
 
 **You are ready for setup when:** WUPHF opens its local page in your browser. Keep its process/window running while configuring it. The `127.0.0.1` address means the page is on this computer; it is not a public website you can open on your phone.
 
@@ -278,6 +282,8 @@ You do not need to connect every channel. A test checks the connection, not futu
 | Erase saved data too | Remove WUPHF credential entries in macOS Keychain, Windows Credential Manager or Linux Secret Service. Delete `~/.local/share/wuphf-resets/`; on Windows this is `%USERPROFILE%\.local\share\wuphf-resets\`. Remove remote calendar events separately. |
 
 If you used `--install`, a different installed version is preserved rather than overwritten. Disable checks and close the old app, retain its complete folder as a backup outside the final `WUPHF` destination, then run the new verified bundle's `--install` again. Test the new installed copy before removing the backup. Keep the existing local data and OS credentials; do not move a source virtual environment as if it were a binary bundle.
+
+To find saved credentials, search your OS credential manager for the service name **WUPHF My Resets**. Entries can include `telegram.token`, `email.password`, `gmail.refresh_token` and `google.refresh_token`, plus their client-secret entries or a legacy `ntfy.token`. Remove only WUPHF entries; do not delete your Codex sign-in.
 
 Disabling a channel or deleting the application does not automatically erase its saved credentials. Removing local files also does not revoke a provider's grant or delete messages already delivered.
 
