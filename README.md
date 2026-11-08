@@ -74,16 +74,15 @@ WUPHF matches the one-time phrase to a private message. If multiple chats match,
 
 #### Gmail (experimental)
 
-The current preview **does not yet offer a universal one-click Gmail setup**. Google verification is pending, and a fresh installation currently needs its own Google desktop OAuth client. Telegram or the SMTP option below can be used while this is being completed.
+WUPHF includes its own Google Desktop app registration. You do **not** need to create a Google Cloud project or upload a JSON file for normal setup. **Google verification is still pending**, so Google may show a warning or restrict access; Gmail is experimental until that review is complete.
 
-If you already have a suitable Google Cloud project:
+1. Enable **Gmail** and enter the Gmail address you want to receive reminders at. Use the same account when signing in.
+2. Click **Connect Gmail**. On **the same computer running WUPHF**, choose your Google account and review the send-only permission. WUPHF does not request inbox-reading permission.
+3. After approving, return to WUPHF, click **Save settings**, and select **Send test**. Check your inbox to confirm receipt.
 
-1. Enable the **Gmail API** in that project and configure the Google Auth consent screen. If your app is in testing, add your Google account as a test user where required.
-2. In Google Auth Platform, create an OAuth client of type **Desktop app** and download its JSON file. Google's [desktop client setup instructions](https://developers.google.com/workspace/gmail/api/quickstart/python) explain the Google Cloud steps. Keep the JSON file private.
-3. In WUPHF, enable **Gmail** and enter the same Gmail address you will authorize. Under **Developer setup**, select your downloaded desktop OAuth client JSON, then click **Connect Gmail**.
-4. On **the same computer running WUPHF**, choose your Google account and approve the send-only permission if you agree. Return to WUPHF, click **Save settings**, and use **Send test**. Check the inbox to confirm receipt.
+If sign-in times out, return to WUPHF and start again; an old authorization link cannot be reused. If Google blocks access, use Telegram while review is pending. A saved connection alone does not prove delivery, and Google can expire or revoke authorization.
 
-Google may display an unverified-app warning or restrict access depending on the client and consent-screen status. A saved connection alone does not prove delivery. Google verification and an app-owned client for simpler public setup are pending.
+**Advanced, optional:** Developers can select their own **Desktop app** client JSON under **Developer setup** before connecting. Enable the Gmail API and configure that project's consent screen and any required test users first. See Google's [desktop client setup instructions](https://developers.google.com/workspace/gmail/api/quickstart/python) and our [Google setup notes](docs/google-production.md). Never share user access or refresh tokens.
 
 #### Other email (SMTP)
 
@@ -102,7 +101,7 @@ Google may display an unverified-app warning or restrict access depending on the
 
 Select **Download .ics** in WUPHF and import it into Google Calendar, Apple Calendar, Outlook, or another compatible calendar. The imported file is a **one-time snapshot**; it does not update automatically.
 
-Experimental Google Calendar sync requires a Google desktop OAuth client with the Calendar API enabled. Select it under **Developer setup**, click **Connect Google**, authorize if you agree, and click **Sync now**. WUPHF creates a separate calendar; events may remain after a reset is used or expires and need manual cleanup. This integration has not yet been verified end to end with a live account.
+For experimental automatic Google Calendar sync, click **Connect Google**, review the separate calendar permission in the browser on this computer, and click **Sync now** after connecting. WUPHF's bundled Desktop registration is used automatically; you do not need to upload a client file. Developers can optionally select their own Desktop client with the Calendar API enabled under **Developer setup**. WUPHF creates a separate calendar; events may remain after a reset is used or expires and need manual cleanup. Google verification is pending, and this integration has not yet been verified end to end with a live account.
 
 ### Troubleshooting and removal
 
@@ -119,7 +118,7 @@ Before replacing or moving WUPHF, click **Disable** and close its setup process.
 
 ## Privacy and limitations
 
-WUPHF runs locally and never redeems a reset. It stores credentials in macOS Keychain, Windows Credential Manager, or Linux Secret Service; insecure plaintext keyring backends are rejected. Reset identifiers, settings and reminder history stay in `~/.local/share/wuphf-resets/`. Your chosen provider receives the notification contents. There is no central WUPHF account database or telemetry.
+WUPHF runs locally and never redeems a reset. It stores credentials in macOS Keychain, Windows Credential Manager, or Linux Secret Service; insecure plaintext keyring backends are rejected. Reset identifiers, settings and reminder history stay in `~/.local/share/wuphf-resets/`. Your chosen provider receives the notification contents. There is no central WUPHF account database or telemetry. Read the [privacy policy](https://robertzu43.github.io/WUPHF-my-banked-resets/privacy.html).
 
 Gmail and Telegram test messages were received on the developer’s Mac. Generic SMTP delivery, live Google Calendar sync and imports into calendar applications remain unverified. Google Calendar sync is experimental: disconnecting removes local credentials and mappings, but leaves the calendar and its events in Google. Reconnecting can create a new WUPHF calendar.
 
@@ -141,7 +140,7 @@ Install Node.js to include the frontend behavioral checks. CI requires Node and 
 
 ### Build an experimental package
 
-Build on the operating system you want to target. Use Python 3.11+ in an isolated virtual environment, install `requirements.txt` and `pyinstaller>=6.17,<7`, then run:
+Build on the operating system you want to target. Use Python 3.11+ in an isolated virtual environment, install `requirements.txt` and `pyinstaller>=6.17,<7`. Building also needs internet access to download the exact CPython version's official source notices; a missing required notice stops the build. This adds no runtime download to the app. Run:
 
 ```sh
 python scripts/build_package.py --output /path/to/empty/dist --work /path/to/empty/build
@@ -150,6 +149,6 @@ python scripts/smoke_package.py /path/to/empty/dist/WUPHF
 
 Linux also requires `objdump` (usually from `binutils`). The one-folder package includes Python but still requires the signed-in Codex CLI; Linux also needs an unlocked Secret Service keyring and a systemd user session. Keep the whole package folder together. Run `WUPHF` (`WUPHF.exe` on Windows) inside it to open setup. `--version` shows its candidate version; `--check-codex` performs a read-only account check without sending messages.
 
-These packages are **unsigned and unnotarized**. They are development artifacts, not universal installers. CI builds for its runner’s architecture; support for other architectures or older OS versions is not established. POSIX packages must use an archive format that preserves symbolic links, such as `tar.gz`; Windows packages use ZIP. A packaging smoke check uses temporary data and a synthetic Codex process. See the readiness report for exact build evidence and limitations. Packages include `third-party-notices/` with Python and build-environment distribution notices and an inventory; this is not an exhaustive native-library audit. Each CI artifact includes `SHA256SUMS` for its archive and `build-info.json` inside the package. On macOS verify with `shasum -a 256 -c SHA256SUMS`; on Linux use `sha256sum -c SHA256SUMS`; on Windows compare `Get-FileHash .\wuphf-beta.zip -Algorithm SHA256` with `SHA256SUMS`. Public release downloads will only appear when a release is actually published.
+These packages are **unsigned and unnotarized**. They are development artifacts, not universal installers. CI builds for its runner’s architecture; support for other architectures or older OS versions is not established. POSIX packages must use an archive format that preserves symbolic links, such as `tar.gz`; Windows packages use ZIP. A packaging smoke check uses temporary data and a synthetic Codex process. See the readiness report for exact build evidence and limitations. Packages include `third-party-notices/` with Python and build-environment distribution notices and an inventory; this is not an exhaustive native-library audit. Each CI artifact includes `SHA256SUMS` for its archive and `build-info.json` inside the package. On macOS verify with `shasum -a 256 -c SHA256SUMS`; on Linux use `sha256sum -c SHA256SUMS`; on Windows compare `Get-FileHash .\ARCHIVE_NAME.zip -Algorithm SHA256` with `SHA256SUMS`. Public release downloads will only appear when a release is actually published. Maintainers can prepare validated draft assets with the [release procedure](docs/releasing.md).
 
 WUPHF is free and open source under the [MIT License](LICENSE). The bundled Geist Pixel font uses the [SIL Open Font License](wuphf/assets/geist-pixel-OFL.txt). WUPHF is an independent project inspired by *The Office* and is not affiliated with OpenAI or the show.

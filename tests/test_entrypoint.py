@@ -94,3 +94,37 @@ class EntrypointTests(unittest.TestCase):
             except SystemExit:self.fail('read-only Codex check is missing')
         read.assert_called_once_with();cli.assert_not_called();web.assert_not_called()
         self.assertNotIn('private-identity',output.getvalue());self.assertNotIn('private-credit',output.getvalue())
+
+    def test_asset_check_requires_public_client_even_when_personal_override_exists(self):
+        import json, os, tempfile
+        from pathlib import Path
+        import wuphf_launcher as launcher
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);personal=root/'google-client.json'
+            personal.write_text(json.dumps({'installed':{'client_id':'own.apps.googleusercontent.com','client_secret':'public-parameter'}}))
+            for frozen in (False,True):
+                with self.subTest(frozen=frozen),patch.object(launcher.sys,'frozen',frozen,create=True),patch.object(launcher,'_prepare_windows_dlls'),patch.dict(os.environ),patch('wuphf.google_auth.PUBLIC_CLIENT',root/'missing-public.json'),patch('wuphf.google_auth.BUNDLED_CLIENT',personal):
+                    with self.assertRaises(ValueError):launcher.main(['--check-assets'])
+
+    def test_asset_check_parses_public_client_registration(self):
+        import json, tempfile
+        from pathlib import Path
+        import wuphf_launcher as launcher
+        with tempfile.TemporaryDirectory() as tmp:
+            public=Path(tmp)/'oauth-client.json'
+            for raw in ({'installed':{}},{'installed':{'client_id':'invalid','client_secret':'value'}}):
+                public.write_text(json.dumps(raw))
+                with self.subTest(raw=raw),patch('wuphf.google_auth.PUBLIC_CLIENT',public):
+                    with self.assertRaises(ValueError):launcher.main(['--check-assets'])
+
+    def test_asset_check_needs_no_personal_client_override(self):
+        import json, tempfile
+        from io import StringIO
+        from pathlib import Path
+        import wuphf_launcher as launcher
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);public=root/'oauth-client.json'
+            public.write_text(json.dumps({'installed':{'client_id':'public.apps.googleusercontent.com','client_secret':'public-parameter'}}))
+            with patch('wuphf.google_auth.PUBLIC_CLIENT',public),patch('wuphf.google_auth.BUNDLED_CLIENT',root/'missing-personal.json'),patch('wuphf.google_auth.default_client',side_effect=AssertionError('Asset check must use PUBLIC_CLIENT')),patch('sys.stdout',new_callable=StringIO) as output:
+                launcher.main(['--check-assets'])
+            self.assertIn('assets OK',output.getvalue())

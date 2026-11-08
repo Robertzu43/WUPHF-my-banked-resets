@@ -37,12 +37,15 @@ def main(argv=None):
         snap=read_snapshot()
         print('Codex responded; reset details '+('complete.' if snap.get('complete') else 'unavailable or incomplete.'))
     elif args==['--check-assets']:
+        from wuphf.google_auth import PUBLIC_CLIENT, parse_client
         from wuphf.i18n import languages
+        from wuphf.storage import load
         from wuphf.web import PAGE, PIXEL_FONT
         if (b'WUPHF' not in PAGE.read_bytes() or PIXEL_FONT.read_bytes()[:4]!=b'wOF2'
                 or len(languages())!=8 or not (PAGE.parent/'assets'/'geist-pixel-OFL.txt').is_file()
                 or not all((PAGE.parent.parent/name).is_file() for name in ('LICENSE','VERSION','README.md','CHANGELOG.md'))):
             raise SystemExit('Packaged assets are incomplete.')
+        parse_client(load(PUBLIC_CLIENT,{}))
         if getattr(sys,'frozen',False) and sys.platform in ('win32','linux'):
             from importlib import import_module
             module='keyring.backends.Windows' if sys.platform=='win32' else 'keyring.backends.SecretService'

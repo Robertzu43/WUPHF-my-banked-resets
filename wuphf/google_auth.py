@@ -15,6 +15,7 @@ from .keychain import get_secret,set_secret,delete_secret
 from .storage import load,save
 
 BUNDLED_CLIENT=cli.ROOT/'google-client.json'
+PUBLIC_CLIENT=cli.ROOT/'wuphf'/'oauth-client.json'
 GOOGLE=cli.DATA/'google.json'
 MAPPING=cli.DATA/'google-events.json'
 status={'state':'disconnected','message':'Not connected'}
@@ -46,8 +47,13 @@ def parse_client(raw):
     return ident,secret
 
 
+def default_client():
+    # Desktop app registration is public; user tokens remain in the OS credential store.
+    return load(BUNDLED_CLIENT,{}) if BUNDLED_CLIENT.is_file() else load(PUBLIC_CLIENT,{})
+
+
 def start_connect(raw):
-    if not raw:raw=load(BUNDLED_CLIENT,{})
+    if not raw:raw=default_client()
     ident,secret=parse_client(raw)
     if load(GOOGLE,{}).get('client_id'):raise RuntimeError('A Google account is already connected.')
     with _lock:

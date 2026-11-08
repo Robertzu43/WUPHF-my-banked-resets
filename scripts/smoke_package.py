@@ -8,6 +8,11 @@ import subprocess
 import sys
 import tempfile
 
+if __package__:
+    from .build_package import validate_public_client
+else:
+    from build_package import validate_public_client
+
 
 def main():
     parser=argparse.ArgumentParser()
@@ -16,6 +21,7 @@ def main():
     executable=package/('WUPHF.exe' if os.name=='nt' else 'WUPHF')
     forbidden={'google-client.json','settings.json','state.json','gmail.json','google.json','google-events.json','auth.json','.env','.env.local','credentials.json','client_secret.json'}
     for path in package.rglob('*'):
+        if path.name=='oauth-client.json':validate_public_client(path)
         if path.name in forbidden:raise SystemExit('User configuration found in package.')
         if path.is_symlink() and not path.resolve().is_relative_to(package):
             raise SystemExit('Package contains a symlink outside the package.')

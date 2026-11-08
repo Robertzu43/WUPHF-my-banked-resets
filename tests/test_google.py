@@ -7,6 +7,10 @@ class FakeCalendar:
     def delete(self,event_id):self.events.pop(event_id,None);self.calls.append(('delete',event_id))
 
 class CalendarTests(unittest.TestCase):
+    def test_oversized_expiry_is_unknown_for_calendar_sync(self):
+        from wuphf.google import valid_expiry
+        self.assertFalse(valid_expiry(10**1000))
+
     def test_create_update_preserves_old_events_when_account_changes(self):
         api=FakeCalendar();api.events['unrelated']=123;mapping={}
         a={'count':1,'complete':True,'credits':[{'id':'private-a','status':'available','expiresAt':2000}]}

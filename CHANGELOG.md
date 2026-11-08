@@ -13,6 +13,9 @@ No version tag or public binary release has been published for this candidate. T
 - Pixel-art interface with eight languages, keyboard focus and reduced-motion support.
 - User-level background jobs for macOS, Windows and Linux; OS credential storage.
 - Source launchers, experimental one-folder packages and automated CI.
+- Bundled public Desktop app registration for Gmail and Calendar; normal setup no longer requires users to create a Google Cloud project.
+- Draft-only release workflow with versioned OS/architecture archives, exact-commit checks and combined SHA-256 checksums.
+- Public privacy policy linked in the app, with Google review status disclosed in eight languages.
 
 ### Reliability fixes
 
@@ -25,7 +28,7 @@ No version tag or public binary release has been published for this candidate. T
 
 ### Known limits
 
-- Google verification and a distributor-provided OAuth client remain pending. Gmail and Calendar require a separately configured desktop client.
+- Google verification remains pending. Gmail and Calendar use the bundled registration but Google can warn or restrict access until approval.
 - Computers must be awake, online and logged in. Missing account identifiers limit switch detection and new-reset alerts; incomplete details pause reminders.
 - Real Windows/Linux account and background-delivery tests were skipped by the project owner's decision. Generic SMTP and live Google Calendar delivery are not confirmed.
 - Calendar imports are static snapshots; Google events can remain after a reset disappears. Disconnecting does not remove remote calendars.

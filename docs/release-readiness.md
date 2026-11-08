@@ -4,7 +4,7 @@ Prepared November 7, 2026. This file is an evidence record, not a claim that a p
 
 ## Decision
 
-Prepare an unpublished beta candidate. The user explicitly waived Windows and Linux real-device, real-account and clean-machine tests; automated tests and package checks remain required. Gmail verification and a distributor-provided OAuth client are still external requirements for the promised simple public Gmail setup. Until those are resolved, Gmail and Google Calendar remain experimental, with a user-provided desktop OAuth client.
+Prepare an unpublished beta candidate with Telegram as the primary tested route and Gmail as an experimental route while Google review is pending. Generic SMTP, Google Calendar sync and calendar-app imports are optional, not part of the verified beta claims. The user explicitly waived Windows and Linux real-device, real-account and clean-machine tests; automated tests and package checks remain required. WUPHF now bundles its registered public Desktop OAuth client, so ordinary Gmail setup no longer requires users to create a Cloud project. Google approval remains external.
 
 ## Fresh independent review
 
@@ -24,6 +24,8 @@ Three fresh agents audited tracking/reminders, security/integrations, and distri
 
 ## Evidence
 
+Latest release-completion local validation: **247 tests passed** in 23.634 seconds on Python 3.14.7, including Node frontend checks. All documentation local links and whitespace checks passed. A fresh frozen macOS build passed asset and isolated background smoke checks; removing its public OAuth registration caused the expected asset-check failure. These results precede the new GitHub integration run; they do not replace it.
+
 - Supported local interpreter: Python 3.14.7 on macOS 26.4 arm64.
 - Full suite: **215 tests passed** in 23.412 seconds, including four Node frontend behavior checks. Command: `python -m unittest discover -s tests -v` using the packaging virtual environment.
 - Fresh PyInstaller one-folder build completed successfully; packaged asset/version checks and isolated background smoke check passed.
@@ -33,6 +35,10 @@ Three fresh agents audited tracking/reminders, security/integrations, and distri
 - Documentation file links and `git diff --check` passed.
 - GitHub matrix verification and final integration are recorded in PR #5. Local evidence does not substitute for those checks.
 
+Release completion changes add a default Desktop OAuth registration with optional own-client override, exact-commit draft-only release automation, versioned archives and combined checksums, native binary notice inventories, and translated privacy/review disclosures. Calendar now uses the same bounded expiry validator as reminders. Independent auth and packaging reviews found no blocking defects; the asset-check coverage gap they identified was closed with a missing-registration regression test and actual frozen-build check. See [Google production setup](google-production.md) and the [release procedure](releasing.md).
+
+Google Cloud was inspected on November 7: External / In production, verification required, one authorized user against the 100-user unverified cap. Gmail and Calendar APIs are enabled. Google still asks for 24 hours of propagation after homepage ownership verification before retrying branding. The published homepage and privacy policy were updated and fetched successfully. After the Mac was unlocked, a live refresh using the existing Gmail authorization succeeded. This confirms current refresh, not indefinite validity or new message receipt.
+
 Earlier session evidence: the developer's account returned real banked-reset data, and the user confirmed receiving Gmail and Telegram test messages. The original developer Mac background job completed successfully at 21:11 America/Bogota on November 7 with no recorded error or channel failures. That job runs the earlier runtime; it does not prove the newly packaged candidate's scheduled delivery. No real resets were consumed during these checks.
 
 ## Remaining public-release conditions
@@ -40,16 +46,16 @@ Earlier session evidence: the developer's account returned real banked-reset dat
 | Condition | Status |
 | --- | --- |
 | Google branding/domain verification and scope review | Pending external Google review; the earlier ownership check requires time to propagate. Production OAuth status alone is not verification. |
-| Simple public Gmail sign-in | No reviewed distributor OAuth client is bundled; fresh users still need a desktop client. |
-| Current production authorization and refresh longevity | Test email receipt was confirmed earlier; durable refresh across time is not established by that receipt. |
+| Simple public Gmail sign-in | Implemented with WUPHF's registered Desktop client in source and packages; own-client upload is optional. Google approval/warnings and unverified-user restrictions remain. |
+| Current production authorization and refresh longevity | Earlier test email receipt plus a successful live refresh on November 7; indefinite token validity is not guaranteed. |
 | Generic SMTP | Automated provider coverage only; no real SMTP-provider receipt claimed. |
-| Google Calendar and ICS imports | Automated coverage; live create/update/reconnect and calendar-app import not established. Calendar sync stays experimental and stale events need manual removal. |
+| Google Calendar and ICS imports | Calendar API activated with owner approval. Bundled-client/own-client paths and ICS export are available. Automated coverage; live create/update/reconnect and calendar-app import not established. Stale events need manual removal. |
 | New packaged Mac scheduled delivery and clean installation | Package/read-only checks are separate from installed scheduling; login, restart, sleep/wake and clean-machine coverage remain incomplete. |
 | Windows/Linux real devices | Skipped by owner decision; not a release gate and not represented as passing. |
-| Binary third-party notices | Builds now include Python and installed-distribution license notices, including PyInstaller and keyring dependency metadata. The index flags missing distribution notices. OS-specific native binary notice coverage still needs review before public binaries. |
+| Binary third-party notices | Exact-version CPython incorporated-software/hash-library notices, installed distribution notices, source-mapped Homebrew notices and byte-matched Debian copyright collection implemented. Fresh local Mac bundle: 53 native entries, zero unmatched entries, direct/extracted smoke and checksum verification passed. This is notice provenance, not legal certification; all three CI bundle inventories still need review before public binaries. |
 | OS signing and compatibility | Packages are unsigned/unnotarized; build-info.json records the actual build platform. Older OS and alternate architecture compatibility is not established. |
 | Language review | Eight catalogs and placeholder checks; native-speaker review pending. |
-| Public release and downloads | No public version tag, release assets or permanent download checksums published for this candidate. |
+| Public release and downloads | Draft-only automation implemented: all three builds/tests/extraction checks and combined checksum verification precede draft creation. No automatic public publication. See release procedure and integration evidence for actual run status. |
 
 ## Known operating limits
 

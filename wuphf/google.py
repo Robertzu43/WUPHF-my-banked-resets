@@ -1,13 +1,13 @@
-"""Google Calendar access for a user-supplied desktop OAuth client."""
+"""Google Calendar access through a desktop OAuth client."""
 import base64
 import datetime
 import hashlib
 import json
-import math
 import urllib.error
 import urllib.parse
 import urllib.request
 from .i18n import translate
+from .core import valid_expiry
 
 SCOPE='https://www.googleapis.com/auth/calendar.app.created'
 BASE='https://www.googleapis.com/calendar/v3'
@@ -15,10 +15,6 @@ BASE='https://www.googleapis.com/calendar/v3'
 
 def event_id(credit_id):
     return hashlib.sha256(('wuphf:'+credit_id).encode()).hexdigest()[:48]
-
-
-def valid_expiry(value):
-    return isinstance(value,(int,float)) and not isinstance(value,bool) and math.isfinite(value) and 0<=value<=253402300739
 
 
 def reconcile(snap, mapping, api, save_mapping=lambda _:None):
