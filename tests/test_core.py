@@ -25,3 +25,13 @@ class TrackingTests(unittest.TestCase):
     def test_invalid_expiry_is_not_due(self):
         self.assertFalse(due({'expiresAt':float('inf')}, 900, 1000, 50, None))
         self.assertFalse(due({'expiresAt':'soon'}, 900, 1000, 50, None))
+
+    def test_app_server_uses_resolved_codex_launcher(self):
+        from unittest.mock import MagicMock, patch
+        from wuphf.core import read_snapshot
+        process=MagicMock()
+        process.stdout=iter(['{"id":1,"result":{}}\n','{"id":2,"result":{"rateLimitResetCredits":{"availableCount":0,"credits":[]}}}\n'])
+        with patch('wuphf.core.shutil.which',return_value='C:/example/codex.cmd'),patch('wuphf.core.subprocess.Popen',return_value=process) as launch:
+            result=read_snapshot()
+        self.assertTrue(result['complete'])
+        self.assertEqual(launch.call_args.args[0],['C:/example/codex.cmd','app-server'])

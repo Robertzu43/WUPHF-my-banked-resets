@@ -54,7 +54,7 @@ class CliTests(unittest.TestCase):
         from wuphf.cli import install_agent
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'agent.plist'
-            with patch('wuphf.cli.PLIST',p),patch('wuphf.cli.sys.platform','darwin'),patch('wuphf.cli.shutil.which',return_value='/bin/codex'),patch('wuphf.cli.subprocess.run',return_value=SimpleNamespace(returncode=1)):
+            with patch('wuphf.cli.PLIST',p),patch('wuphf.cli.sys.platform','darwin'),patch('wuphf.cli.os.getuid',return_value=100,create=True),patch('wuphf.cli.shutil.which',return_value='/bin/codex'),patch('wuphf.cli.subprocess.run',return_value=SimpleNamespace(returncode=1)):
                 with self.assertRaises(RuntimeError):install_agent()
             self.assertFalse(p.exists())
     def test_google_sync_failure_is_recorded_after_successful_read(self):
@@ -72,7 +72,7 @@ class CliTests(unittest.TestCase):
         from types import SimpleNamespace
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'agent.plist';p.write_text('agent')
-            with patch('wuphf.cli.PLIST',p),patch('wuphf.cli.subprocess.run',side_effect=[SimpleNamespace(returncode=1),SimpleNamespace(returncode=0)]):
+            with patch('wuphf.cli.PLIST',p),patch('wuphf.cli.sys.platform','darwin'),patch('wuphf.cli.os.getuid',return_value=100,create=True),patch('wuphf.cli.subprocess.run',side_effect=[SimpleNamespace(returncode=1),SimpleNamespace(returncode=0)]):
                 with self.assertRaises(RuntimeError):main(['uninstall'])
             self.assertTrue(p.exists())
     def test_failure_in_reminder_engine_records_redacted_background_error(self):

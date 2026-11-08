@@ -70,8 +70,12 @@ def send_with_secrets(name, config, text):
 
 
 def install_agent():
-    if sys.platform!='darwin': raise RuntimeError('Background installation is supported on macOS only.')
     if not shutil.which('codex'): raise RuntimeError('Codex CLI was not found in PATH.')
+    if sys.platform!='darwin':
+        from . import platform_jobs
+        platform_jobs.install()
+        print('Background job installed. Keep your computer awake, online, and logged in.')
+        return
     if PLIST.exists(): raise RuntimeError('Background job is already installed; uninstall before reinstalling.')
     PLIST.parent.mkdir(parents=True,exist_ok=True)
     job={'Label':'com.wuphf.resets','ProgramArguments':[sys.executable,'-m','wuphf.cli','run'],'WorkingDirectory':str(ROOT),'RunAtLoad':True,'StartInterval':600,'EnvironmentVariables':{'PATH':os.environ.get('PATH','/usr/bin:/bin')}}
@@ -135,6 +139,11 @@ def main(argv=None):
         target.write_bytes(ics(snap,load(SETTINGS,{}).get('language','en')));print('Calendar snapshot saved to',target)
     elif args.command=='install':install_agent()
     elif args.command=='uninstall':
+        if sys.platform!='darwin':
+            from . import platform_jobs
+            platform_jobs.uninstall()
+            print('Background job removed. Settings and credentials remain.')
+            return
         if PLIST.exists():
             result=subprocess.run(['launchctl','bootout',f'gui/{os.getuid()}',str(PLIST)],capture_output=True)
             if result.returncode:

@@ -1,0 +1,2 @@
+# OS-backed credential storage for Windows and common Linux desktops.
+keyring>=25,<26; sys_platform == 'win32' or sys_platform == 'linux'

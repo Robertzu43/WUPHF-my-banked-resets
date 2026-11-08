@@ -1,6 +1,7 @@
 import json
 import math
 import queue
+import shutil
 import subprocess
 import threading
 
@@ -35,7 +36,7 @@ def due(credit, now, advance, repeat, last):
 
 
 def read_snapshot(timeout=20):
-    p = subprocess.Popen(['codex', 'app-server'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+    p = subprocess.Popen([shutil.which('codex') or 'codex', 'app-server'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          stderr=subprocess.DEVNULL, text=True, bufsize=1)
     messages = queue.Queue()
     def reader():
