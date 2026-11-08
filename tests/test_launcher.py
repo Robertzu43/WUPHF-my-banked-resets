@@ -198,8 +198,9 @@ def main():
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);source,commands=self.make_source(root);self.interpreter(commands,'py')
             audit=root/'runtime-environment.jsonl';after=root/'caller-environment.txt'
-            caller=root/'caller.cmd'
-            caller.write_text('@echo off\ncall "'+str(source/'Start WUPHF.bat')+'"\n'
+            caller=source/'caller.cmd'
+            # CALL reparses percent signs; enter the folder before calling its plain filename.
+            caller.write_text('@echo off\ncd /d "%~dp0" || exit /b 41\ncall "Start WUPHF.bat"\n'
                               'set "launch_result=%errorlevel%"\n'
                               'set PYLAUNCHER_ > "'+str(after)+'"\n'
                               'set PYTHON_MANAGER_ >> "'+str(after)+'"\n'
