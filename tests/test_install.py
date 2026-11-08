@@ -88,6 +88,92 @@ class InstallTests(unittest.TestCase):
             # macOS may normalize the quarantine record while retaining its restrictions.
             self.assertEqual(int(actual.split(';')[0],16)&0x83,0x83)
 
+
+    def test_windows_native_copy_boundary_retains_streams_and_directory_link_type(self):
+        import ctypes
+        from unittest.mock import Mock
+        source=self.root/'native-source';source.mkdir()
+        (source/'library').mkdir();(source/'library'/'fixture').write_bytes(b'never executed')
+        try:(source/'current').symlink_to('library',target_is_directory=True)
+        except OSError:self.skipTest('symlinks unavailable for this Windows account')
+        candidate=self.root/'native-copy';streams={str(source/'library'/'fixture'):b'ZoneId=3'}
+        original_symlink=os.symlink;link_types=[]
+        def copy_file(old,new,progress,data,cancel,flags):
+            self.assertEqual((progress,data,cancel,flags),(None,None,None,1))
+            if Path(new).exists():return 0
+            shutil.copy2(old,new)
+            if old in streams:streams[new]=streams[old]
+            return 1
+        def symlink(target,path,target_is_directory=False,**kwargs):
+            link_types.append(target_is_directory)
+            return original_symlink(target,path,target_is_directory=target_is_directory,**kwargs)
+        kernel=Mock();kernel.CopyFileExW.side_effect=copy_file
+        with patch.object(sys,'platform','win32'),patch.object(ctypes,'WinDLL',return_value=kernel,create=True),patch.object(os,'symlink',side_effect=symlink):
+            self.install._copy_bundle(source,candidate)
+        self.assertEqual((candidate/'current'/'fixture').read_bytes(),b'never executed')
+        self.assertEqual(streams.get(str(candidate/'library'/'fixture')),b'ZoneId=3')
+        self.assertEqual(link_types,[True])
+
+    def test_windows_native_copy_failure_leaves_no_installed_app(self):
+        import ctypes
+        from unittest.mock import Mock
+        metadata=self.source/'build-info.json';raw=json.loads(metadata.read_text());raw['os']='windows';metadata.write_text(json.dumps(raw))
+        (self.source/'WUPHF.exe').chmod(0o755)
+        kernel=Mock();kernel.CopyFileExW.return_value=0
+        with patch.object(sys,'platform','win32'),patch.object(ctypes,'WinDLL',return_value=kernel,create=True),patch.object(ctypes,'WinError',return_value=OSError('native stream copy denied'),create=True):
+            with self.assertRaisesRegex(OSError,'native stream copy denied'):
+                self.install.install_bundle(self.source,self.destination)
+        self.assertFalse(self.destination.exists())
+        self.assertEqual(list(self.destination.parent.iterdir()),[])
+
+    def test_root_reparse_attributes_are_rejected_before_source_resolution(self):
+        from types import SimpleNamespace
+        original=Path.lstat
+        def lstat(path,*args,**kwargs):
+            info=original(path,*args,**kwargs)
+            if path==self.source:return SimpleNamespace(st_mode=info.st_mode,st_file_attributes=0x400)
+            return info
+        with patch.object(stat,'FILE_ATTRIBUTE_REPARSE_POINT',0x400,create=True),patch.object(Path,'lstat',lstat):
+            with self.assertRaisesRegex(ValueError,'[Ll]ink|[Jj]unction|[Rr]eparse'):
+                self.install.install_bundle(self.source,self.destination)
+        self.assertFalse(self.destination.exists())
+
+    def test_existing_destination_root_reparse_is_not_an_identical_install(self):
+        from types import SimpleNamespace
+        self.destination.parent.mkdir(parents=True)
+        try:self.destination.symlink_to(self.source,target_is_directory=True)
+        except OSError:self.skipTest('symlinks unavailable for this Windows account')
+        original=Path.lstat
+        def lstat(path,*args,**kwargs):
+            info=original(path,*args,**kwargs)
+            if path==self.destination:return SimpleNamespace(st_mode=stat.S_IFDIR|0o755,st_file_attributes=0x400)
+            return info
+        is_symlink=Path.is_symlink
+        with patch.object(stat,'FILE_ATTRIBUTE_REPARSE_POINT',0x400,create=True),patch.object(Path,'lstat',lstat),patch.object(Path,'is_symlink',lambda path:False if path==self.destination else is_symlink(path)):
+            with self.assertRaises(ValueError):self.install.install_bundle(self.source,self.destination)
+        self.assertTrue(self.destination.is_symlink())
+        self.assertEqual((self.source/'WUPHF').read_bytes(),b'not an executable')
+
+    @unittest.skipUnless(sys.platform=='win32','native Windows NTFS alternate-stream test')
+    def test_windows_copy_preserves_download_zone_stream_without_executing_fixture(self):
+        value=b'[ZoneTransfer]\r\nZoneId=3\r\n'
+        Path(str(self.source/'WUPHF.exe')+':Zone.Identifier').write_bytes(value)
+        self.install.install_bundle(self.source,self.destination)
+        self.assertEqual(Path(str(self.destination/'WUPHF.exe')+':Zone.Identifier').read_bytes(),value)
+
+    @unittest.skipUnless(sys.platform=='win32','native Windows directory junction test')
+    def test_windows_source_and_destination_root_junctions_are_rejected(self):
+        import _winapi
+        source_junction=self.root/'source-junction'
+        _winapi.CreateJunction(str(self.source),str(source_junction))
+        with self.assertRaisesRegex(ValueError,'[Ll]ink|[Jj]unction|[Rr]eparse'):
+            self.install.install_bundle(source_junction,self.destination)
+        self.destination.parent.mkdir(parents=True)
+        _winapi.CreateJunction(str(self.source),str(self.destination))
+        with self.assertRaises(ValueError):self.install.install_bundle(self.source,self.destination)
+        self.assertEqual((self.destination/'WUPHF.exe').read_bytes(),b'not an executable')
+        self.assertEqual((self.source/'WUPHF.exe').read_bytes(),b'not an executable')
+
     def test_default_destinations_are_per_user_and_windows_requires_safe_localappdata(self):
         cases=(('darwin',{},self.home/'Library'/'Application Support'/'WUPHF'),
                ('linux',{'XDG_DATA_HOME':'/outside'},self.home/'.local'/'opt'/'WUPHF'),

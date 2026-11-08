@@ -55,7 +55,10 @@ def _safe_parent(destination):
 
 
 def _inventory(root):
-    if root.is_symlink() or not root.is_dir():raise ValueError('Incomplete bundle: expected a real package directory.')
+    info=root.lstat()
+    if stat.S_ISLNK(info.st_mode) or getattr(info,'st_file_attributes',0)&getattr(stat,'FILE_ATTRIBUTE_REPARSE_POINT',0):
+        raise ValueError('Bundle root must not be a link, junction or reparse point.')
+    if not stat.S_ISDIR(info.st_mode):raise ValueError('Incomplete bundle: expected a real package directory.')
     entries={}
     for directory,dirs,files in os.walk(root,followlinks=False):
         for name in sorted(dirs+files):
@@ -120,6 +123,27 @@ def _validate_bundle(root):
 
 
 def _copy_bundle(source,staging):
+    if sys.platform=='win32':
+        import ctypes
+        copy_file=ctypes.WinDLL('kernel32',use_last_error=True).CopyFileExW
+        copy_file.argtypes=[ctypes.c_wchar_p,ctypes.c_wchar_p,ctypes.c_void_p,ctypes.c_void_p,ctypes.c_void_p,ctypes.c_ulong]
+        copy_file.restype=ctypes.c_int
+        def copy(old,new):
+            if not copy_file(os.fspath(old),os.fspath(new),None,None,None,1): # COPY_FILE_FAIL_IF_EXISTS
+                raise ctypes.WinError()
+            return new
+        links=[]
+        def skip_links(directory,names):
+            skipped=[]
+            for name in names:
+                path=Path(directory)/name
+                if path.is_symlink():links.append(path);skipped.append(name)
+            return skipped
+        # Python 3.11 loses ADS in copy2 and the directory type when copying symlinks.
+        shutil.copytree(source,staging,copy_function=copy,ignore=skip_links)
+        for path in links:
+            os.symlink(os.readlink(path),staging/path.relative_to(source),target_is_directory=path.is_dir())
+        return
     if sys.platform!='darwin':
         shutil.copytree(source,staging,symlinks=True,dirs_exist_ok=True)
         return
@@ -158,7 +182,9 @@ def _promote(staging,destination):
 
 def install_bundle(source,destination):
     source=Path(source).absolute();destination=Path(destination).absolute()
-    if source.is_symlink():raise ValueError('Incomplete bundle: expected a real package directory, not a root link.')
+    info=source.lstat()
+    if stat.S_ISLNK(info.st_mode) or getattr(info,'st_file_attributes',0)&getattr(stat,'FILE_ATTRIBUTE_REPARSE_POINT',0):
+        raise ValueError('Source root must not be a link, junction or reparse point.')
     source=source.resolve(strict=True)
     resolved_source=source;resolved_destination=destination.resolve()
     if resolved_source!=resolved_destination and (resolved_source.is_relative_to(resolved_destination) or resolved_destination.is_relative_to(resolved_source)):
@@ -174,7 +200,7 @@ def install_bundle(source,destination):
     destination.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
     _safe_parent(destination)
     staging=Path(tempfile.mkdtemp(prefix='.WUPHF-install-',dir=destination.parent))
-    candidate=staging/'WUPHF'
+    candidate=staging/'WUPHF' # ditto preserves root metadata only when the target is absent.
     try:
         _copy_bundle(source,candidate)
         if _validate_bundle(candidate)!=original:raise ValueError('Copied bundle differs from the source; no installation was promoted.')
