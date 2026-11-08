@@ -29,6 +29,10 @@ def main(argv=None):
     args=sys.argv[1:] if argv is None else argv
     if args==['--version']:
         print('WUPHF '+(Path(__file__).resolve().parent/'VERSION').read_text(encoding='utf-8').strip())
+    elif args==['--install']:
+        from wuphf.install import main as run_install
+        try:run_install()
+        except (ValueError,OSError,RuntimeError) as error:raise SystemExit(str(error)) from None
     elif args==['--background']:
         from wuphf.cli import main as run_cli
         run_cli(['run'])
@@ -56,7 +60,7 @@ def main(argv=None):
         from wuphf.web import main as run_web
         run_web()
     else:
-        raise SystemExit('Usage: WUPHF [--version|--background|--check-assets|--check-codex]')
+        raise SystemExit('Usage: WUPHF [--version|--install|--background|--check-assets|--check-codex]')
 
 
 if __name__=='__main__':

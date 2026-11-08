@@ -128,3 +128,10 @@ class EntrypointTests(unittest.TestCase):
             with patch('wuphf.google_auth.PUBLIC_CLIENT',public),patch('wuphf.google_auth.BUNDLED_CLIENT',root/'missing-personal.json'),patch('wuphf.google_auth.default_client',side_effect=AssertionError('Asset check must use PUBLIC_CLIENT')),patch('sys.stdout',new_callable=StringIO) as output:
                 launcher.main(['--check-assets'])
             self.assertIn('assets OK',output.getvalue())
+
+    def test_install_dispatch_rejects_source_without_opening_setup_or_running_reminders(self):
+        import wuphf_launcher as launcher
+        with patch.object(launcher.sys,'frozen',False,create=True),patch('wuphf.web.main') as web,patch('wuphf.cli.main') as cli:
+            with self.assertRaisesRegex(SystemExit,'frozen.*source'):
+                launcher.main(['--install'])
+        web.assert_not_called();cli.assert_not_called()
