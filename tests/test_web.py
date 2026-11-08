@@ -209,3 +209,10 @@ class WebTests(unittest.TestCase):
             res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
         self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'telegram_pair_expired')
         self.assertNotIn(b'98765',body)
+
+    def test_status_does_not_expose_account_fingerprint(self):
+        sample={'count':1,'complete':True,'account_fingerprint':'private-fingerprint','credits':[{'id':'private-credit','expiresAt':1796070020}]}
+        with patch('wuphf.web.read_snapshot',return_value=sample),patch('wuphf.web.load',return_value={}):
+            res,data=self.request('GET','/api/status',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,200)
+        self.assertNotIn(b'private-fingerprint',data);self.assertNotIn(b'private-credit',data)

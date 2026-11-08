@@ -1,24 +1,36 @@
+import hashlib
 import json
 import math
 import queue
+import re
 import shutil
 import subprocess
 import threading
 
 
-def snapshot(raw):
+def valid_identity(identity):
+    return isinstance(identity,str) and re.fullmatch(r'[0-9a-f]{64}',identity) is not None
+
+
+def snapshot(raw, account_id=None):
+    identity=None
+    if isinstance(account_id,str) and account_id.strip():
+        try:identity=hashlib.sha256(b'wuphf-account-v1\0'+account_id.encode('utf-8')).hexdigest()
+        except UnicodeEncodeError:pass
     if not isinstance(raw, dict):
-        return {'count': None, 'credits': None, 'complete': False}
+        return {'count': None, 'credits': None, 'complete': False, 'account_fingerprint':identity}
     count, rows = raw.get('availableCount'), raw.get('credits')
     valid_count = isinstance(count, int) and not isinstance(count, bool) and count >= 0
     valid_rows = isinstance(rows, list) and all(isinstance(x, dict) and isinstance(x.get('id'), str) and x['id'] for x in rows)
     complete = bool(valid_count and valid_rows and len(rows) == count and len({x['id'] for x in rows}) == count)
-    return {'count': count if valid_count else None, 'credits': rows if valid_rows else None, 'complete': complete}
+    return {'count': count if valid_count else None, 'credits': rows if valid_rows else None, 'complete': complete, 'account_fingerprint':identity}
 
 
 def compare(old, new):
     if not old or not old['complete'] or not new['complete']:
         return None
+    identity=old.get('account_fingerprint')
+    if not valid_identity(identity) or identity!=new.get('account_fingerprint'):return None
     before = {x['id'] for x in old['credits']}
     after = {x['id'] for x in new['credits']}
     return after - before, before - after
@@ -60,7 +72,8 @@ def read_snapshot(timeout=20):
         response(1)
         send({'method':'initialized','params':{}})
         send({'id':2,'method':'account/rateLimits/read'})
-        return snapshot(response(2).get('rateLimitResetCredits'))
+        result=response(2)
+        return snapshot(result.get('rateLimitResetCredits'),result.get('accountId'))
     except queue.Empty as exc:
         raise RuntimeError('Codex account check timed out.') from exc
     finally:

@@ -29,6 +29,7 @@ class RunnerTests(unittest.TestCase):
         first={'count':0,'complete':True,'credits':[]}
         second={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':9000000}]}
         settings={'advance_days':1,'repeat_hours':1,'channels':{'ntfy':{}}}
+        first['account_fingerprint']=second['account_fingerprint']='a'*64
         calls=[]
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'state.json'
@@ -77,6 +78,7 @@ class RunnerTests(unittest.TestCase):
         old={'count':0,'complete':True,'credits':[]}
         new={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':2000}]}
         changed={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':5000}]}
+        old['account_fingerprint']=new['account_fingerprint']=changed['account_fingerprint']='a'*64
         settings={'advance_days':0.0001,'repeat_hours':1,'channels':{'ntfy':{}}};calls=[]
         with tempfile.TemporaryDirectory() as d, patch('wuphf.runner.message',side_effect=lambda c:str(c['expiresAt'])):
             p=Path(d)/'state.json'
@@ -89,6 +91,7 @@ class RunnerTests(unittest.TestCase):
     def test_malformed_expiry_is_unknown_and_does_not_crash_queue(self):
         old={'count':0,'complete':True,'credits':[]}
         new={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':'unknown'}]}
+        old['account_fingerprint']=new['account_fingerprint']='a'*64
         settings={'advance_days':1,'repeat_hours':1,'channels':{'ntfy':{}}};calls=[]
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'state.json'
@@ -99,6 +102,7 @@ class RunnerTests(unittest.TestCase):
     def test_failed_new_notice_suppresses_duplicate_expiry_attempt(self):
         old={'count':0,'complete':True,'credits':[]}
         new={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':87400}]}
+        old['account_fingerprint']=new['account_fingerprint']='a'*64
         settings={'advance_days':1,'repeat_hours':1,'channels':{'ntfy':{}}};calls=[]
         def send(channel, config, text):
             calls.append(text)
@@ -259,3 +263,81 @@ class RunnerTests(unittest.TestCase):
             check(snap,settings,p,now=now,deliver=fail)
             check(snap,settings,p,now=now-7200,deliver=fail)
             self.assertEqual(len(calls),2)
+
+    def test_account_switch_clears_old_queue_and_ledger_before_baseline(self):
+        from wuphf.core import snapshot
+        now=1800000000
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}};calls=[]
+        first=snapshot({'availableCount':0,'credits':[]},'account-a')
+        a=snapshot({'availableCount':1,'credits':[{'id':'same','expiresAt':now+600}]},'account-a')
+        b=snapshot({'availableCount':1,'credits':[{'id':'same','expiresAt':now+864000}]},'account-b')
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            check(first,settings,p,now=now,deliver=lambda *args:None)
+            check(a,settings,p,now=now,deliver=lambda *args:(_ for _ in ()).throw(RuntimeError('offline')))
+            state=check(b,settings,p,now=now+1,deliver=lambda *args:calls.append(args))
+            self.assertEqual(calls,[]);self.assertEqual(state['new_queue'],[])
+            self.assertEqual(state['ledger'],{});self.assertEqual(state['retry'],{})
+
+    def test_unknown_identity_never_generates_new_credit_notice_but_keeps_cadence(self):
+        from wuphf.core import snapshot
+        now=1800000000;calls=[]
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        a=snapshot({'availableCount':1,'credits':[{'id':'a','expiresAt':now+1000}]},None)
+        b=snapshot({'availableCount':2,'credits':[{'id':'a','expiresAt':now+1000},{'id':'b','expiresAt':now+1000}]},None)
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            check(a,settings,p,now=now,deliver=lambda *args:calls.append(args))
+            check(b,settings,p,now=now+1,deliver=lambda *args:calls.append(args))
+            self.assertEqual(len(calls),2)
+            self.assertTrue(all('new' not in call[2].lower() for call in calls))
+
+    def test_identity_transitions_never_compare_across_unknown(self):
+        from wuphf.core import snapshot
+        now=1800000000;calls=[]
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        def s(ident,rows):return snapshot({'availableCount':len(rows),'credits':rows},ident)
+        rows=[{'id':'x','expiresAt':now+864000}]
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            for snap in (s('account-a',[]),s(None,rows),s('account-b',rows)):
+                check(snap,settings,p,now=now,deliver=lambda *args:calls.append(args))
+            self.assertEqual(calls,[])
+
+    def test_changed_or_newly_known_account_gets_fresh_expiry_reminder(self):
+        from wuphf.core import snapshot
+        now=1800000000;calls=[]
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        def s(ident):return snapshot({'availableCount':1,'credits':[{'id':'same','expiresAt':now+1000}]},ident)
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            for snap in (s('account-a'),s(None),s('account-b')):
+                check(snap,settings,p,now=now,deliver=lambda *args:calls.append(args))
+            self.assertEqual(len(calls),3)
+            self.assertTrue(all('new' not in call[2].lower() for call in calls))
+
+    def test_legacy_state_queue_and_ledger_are_discarded_when_identity_becomes_known(self):
+        from wuphf.core import snapshot
+        from wuphf.storage import save
+        now=1800000000;calls=[]
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        row={'id':'same','expiresAt':now+1000}
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            save(p,{'ledger':{'same:ntfy':now},'new_queue':[{'credit':row,'channel':'ntfy'}],
+                    'snapshot':{'complete':True,'credits':[row]},'failures':{}})
+            state=check(snapshot({'availableCount':1,'credits':[row]},'account-a'),settings,p,now=now,deliver=lambda *args:calls.append(args))
+            self.assertEqual(len(calls),1);self.assertNotIn('new',calls[0][2].lower())
+            self.assertEqual(state['new_queue'],[])
+
+    def test_known_same_account_still_detects_new_credit_after_restart(self):
+        from wuphf.core import snapshot
+        now=1800000000;calls=[]
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        old=snapshot({'availableCount':0,'credits':[]},'account-a')
+        new=snapshot({'availableCount':1,'credits':[{'id':'a','expiresAt':now+864000}]},'account-a')
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            check(old,settings,p,now=now,deliver=lambda *args:calls.append(args))
+            check(new,settings,p,now=now+1,deliver=lambda *args:calls.append(args))
+            self.assertEqual(len(calls),1);self.assertIn('new',calls[0][2].lower())

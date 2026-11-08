@@ -1,6 +1,6 @@
 import time
 from .channels import send
-from .core import compare, valid_expiry
+from .core import compare, valid_expiry, valid_identity
 from .reminders import message, pending
 from .storage import load, save
 from .i18n import translate
@@ -16,6 +16,21 @@ def check(snap, settings, state_path, now=None, deliver=send):
     state.setdefault('ledger',{});state.setdefault('failures',{})
     state.setdefault('ledger_expiry',{})
     state.setdefault('retry',{})
+    state.setdefault('new_queue', [])
+    identity=snap.get('account_fingerprint')
+    if not valid_identity(identity):identity=None
+    if state.get('account_fingerprint')!=identity:
+        state['snapshot']=None;state['new_queue']=[]
+        state['ledger']={};state['ledger_expiry']={};state['retry']={}
+    elif identity is None:
+        # Unknown identity cannot establish new-credit continuity across checks.
+        state['new_queue']=[]
+        current={credit['id']+':'+channel for credit in snap.get('credits') or []
+                 if credit.get('status','available')=='available' for channel in settings.get('channels',{})} if snap.get('complete') else set()
+        for mapping in (state['ledger'],state['ledger_expiry']):
+            for key in list(mapping):
+                if key not in current:mapping.pop(key)
+    state['account_fingerprint']=identity
     failed_channels=set()
     for channel in list(state['retry']):
         if channel not in settings.get('channels',{}):del state['retry'][channel]
@@ -43,7 +58,6 @@ def check(snap, settings, state_path, now=None, deliver=send):
     def succeeded(channel):
         state['retry'].pop(channel,None)
         state['failures'].pop(channel,None)
-    state.setdefault('new_queue', [])
     previous=state.get('snapshot')
     changes=compare(previous,snap)
     # Migrate existing ledgers using the last complete snapshot, when available.
