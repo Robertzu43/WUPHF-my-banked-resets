@@ -341,3 +341,35 @@ class RunnerTests(unittest.TestCase):
             check(old,settings,p,now=now,deliver=lambda *args:calls.append(args))
             check(new,settings,p,now=now+1,deliver=lambda *args:calls.append(args))
             self.assertEqual(len(calls),1);self.assertIn('new',calls[0][2].lower())
+
+    def test_unknown_identity_incomplete_gap_preserves_expiry_reminder_cadence(self):
+        from wuphf.core import snapshot
+        now=1800000000;calls=[]
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        complete=snapshot({'availableCount':1,'credits':[{'id':'a','expiresAt':now+1000}]},None)
+        incomplete=snapshot({'availableCount':1,'credits':None},None)
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            check(complete,settings,p,now=now,deliver=lambda *args:calls.append(args))
+            state=check(incomplete,settings,p,now=now+1,deliver=lambda *args:calls.append(args))
+            self.assertIn('a:ntfy',state['ledger'])
+            check(complete,settings,p,now=now+2,deliver=lambda *args:calls.append(args))
+            self.assertEqual(len(calls),1)
+
+    def test_known_a_incomplete_unknown_then_known_b_drops_a_queue(self):
+        from wuphf.core import snapshot
+        now=1800000000;calls=[]
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        first=snapshot({'availableCount':0,'credits':[]},'account-a')
+        a=snapshot({'availableCount':1,'credits':[{'id':'same','expiresAt':now+864000}]},'account-a')
+        gap=snapshot({'availableCount':1,'credits':None},None)
+        b=snapshot({'availableCount':1,'credits':[{'id':'same','expiresAt':now+864000}]},'account-b')
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            check(first,settings,p,now=now,deliver=lambda *args:None)
+            state=check(a,settings,p,now=now,deliver=lambda *args:(_ for _ in ()).throw(RuntimeError('offline')))
+            self.assertEqual(len(state['new_queue']),1)
+            state=check(gap,settings,p,now=now+1,deliver=lambda *args:calls.append(args))
+            self.assertEqual(len(state['new_queue']),1)
+            state=check(b,settings,p,now=now+2,deliver=lambda *args:calls.append(args))
+            self.assertEqual(state['new_queue'],[]);self.assertEqual(calls,[])

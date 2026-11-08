@@ -136,7 +136,8 @@
     "telegram_phrase": "Pairing phrase",
     "telegram_pair_help": "Send the entire phrase to your bot within 10 minutes. Then find your chat ID.",
     "telegram_pair_ready": "Pairing phrase ready. Send it to your bot, then find your chat ID.",
-    "telegram_pair_expired": "This pairing phrase expired or was already used. Generate a new one."
+    "telegram_pair_expired": "This pairing phrase expired or was already used. Generate a new one.",
+    "identity_limit": "New-reset alerts need a known account ID. When Codex does not provide one, WUPHF can still send expiry reminders, but may miss account switches."
   },
   "es": {
     "language": "Idioma",
@@ -275,7 +276,8 @@
     "telegram_phrase": "Frase de vinculación",
     "telegram_pair_help": "Envía la frase completa a tu bot en 10 minutos. Luego busca tu ID de chat.",
     "telegram_pair_ready": "Frase lista. Envíala a tu bot y busca tu ID de chat.",
-    "telegram_pair_expired": "La frase caducó o ya se usó. Genera una nueva."
+    "telegram_pair_expired": "La frase caducó o ya se usó. Genera una nueva.",
+    "identity_limit": "Las alertas de nuevos reinicios necesitan un ID de cuenta conocido. Si Codex no lo proporciona, WUPHF aún puede enviar recordatorios de vencimiento, pero podría no detectar cambios de cuenta."
   },
   "de": {
     "language": "Sprache",
@@ -414,7 +416,8 @@
     "telegram_phrase": "Verbindungscode",
     "telegram_pair_help": "Sende den vollständigen Code innerhalb von 10 Minuten an deinen Bot. Ermittle dann deine Chat-ID.",
     "telegram_pair_ready": "Code bereit. Sende ihn an deinen Bot und ermittle deine Chat-ID.",
-    "telegram_pair_expired": "Dieser Code ist abgelaufen oder wurde bereits verwendet. Erzeuge einen neuen."
+    "telegram_pair_expired": "Dieser Code ist abgelaufen oder wurde bereits verwendet. Erzeuge einen neuen.",
+    "identity_limit": "Hinweise auf neue Resets benötigen eine bekannte Konto-ID. Wenn Codex sie nicht liefert, kann WUPHF weiterhin an den Ablauf erinnern, aber Kontowechsel möglicherweise nicht erkennen."
   },
   "pt": {
     "language": "Idioma",
@@ -553,7 +556,8 @@
     "telegram_phrase": "Frase de pareamento",
     "telegram_pair_help": "Envie a frase completa ao bot em até 10 minutos. Depois encontre seu ID de chat.",
     "telegram_pair_ready": "Frase pronta. Envie-a ao bot e encontre seu ID de chat.",
-    "telegram_pair_expired": "A frase expirou ou já foi usada. Gere outra."
+    "telegram_pair_expired": "A frase expirou ou já foi usada. Gere outra.",
+    "identity_limit": "Alertas de novos resets precisam de um ID de conta conhecido. Se o Codex não o fornecer, o WUPHF ainda pode lembrar o vencimento, mas pode não detectar mudanças de conta."
   },
   "fr": {
     "language": "Langue",
@@ -692,7 +696,8 @@
     "telegram_phrase": "Phrase de jumelage",
     "telegram_pair_help": "Envoyez la phrase entière à votre bot dans les 10 minutes, puis trouvez votre ID de discussion.",
     "telegram_pair_ready": "Phrase prête. Envoyez-la à votre bot, puis trouvez votre ID.",
-    "telegram_pair_expired": "Cette phrase a expiré ou a déjà été utilisée. Générez-en une nouvelle."
+    "telegram_pair_expired": "Cette phrase a expiré ou a déjà été utilisée. Générez-en une nouvelle.",
+    "identity_limit": "Les alertes de nouvelles réinitialisations nécessitent un ID de compte connu. Si Codex ne le fournit pas, WUPHF peut toujours rappeler les échéances, mais risque de ne pas détecter les changements de compte."
   },
   "ja": {
     "language": "言語",
@@ -831,7 +836,8 @@
     "telegram_phrase": "ペアリングフレーズ",
     "telegram_pair_help": "10分以内にフレーズ全体をボットへ送信し、チャット ID を検索してください。",
     "telegram_pair_ready": "フレーズができました。ボットへ送信してチャット ID を検索してください。",
-    "telegram_pair_expired": "フレーズの有効期限が切れたか、すでに使用されています。新しく生成してください。"
+    "telegram_pair_expired": "フレーズの有効期限が切れたか、すでに使用されています。新しく生成してください。",
+    "identity_limit": "新しいリセットの通知には既知のアカウント ID が必要です。Codex から提供されない場合、期限のリマインダーは送れますが、アカウントの切り替えを検出できないことがあります。"
   },
   "ko": {
     "language": "언어",
@@ -970,7 +976,8 @@
     "telegram_phrase": "연결 문구",
     "telegram_pair_help": "10분 안에 전체 문구를 봇에게 보낸 후 채팅 ID를 찾으세요.",
     "telegram_pair_ready": "연결 문구가 준비되었습니다. 봇에게 보낸 후 채팅 ID를 찾으세요.",
-    "telegram_pair_expired": "연결 문구가 만료되었거나 이미 사용되었습니다. 새 문구를 생성하세요."
+    "telegram_pair_expired": "연결 문구가 만료되었거나 이미 사용되었습니다. 새 문구를 생성하세요.",
+    "identity_limit": "새 리셋 알림에는 알려진 계정 ID가 필요합니다. Codex가 이를 제공하지 않으면 만료 알림은 보낼 수 있지만 계정 전환을 감지하지 못할 수 있습니다."
   },
   "zh": {
     "language": "语言",
@@ -1109,6 +1116,7 @@
     "telegram_phrase": "配对短语",
     "telegram_pair_help": "请在 10 分钟内将完整短语发送给机器人，然后查找聊天 ID。",
     "telegram_pair_ready": "配对短语已生成。请发送给机器人，然后查找聊天 ID。",
-    "telegram_pair_expired": "此配对短语已过期或已使用，请重新生成。"
+    "telegram_pair_expired": "此配对短语已过期或已使用，请重新生成。",
+    "identity_limit": "新重置提醒需要已知的账户 ID。如果 Codex 未提供该信息，WUPHF 仍可发送到期提醒，但可能无法检测账户切换。"
   }
 }

@@ -19,7 +19,7 @@ WUPHF helps you keep track of available Codex banked resets and reminds you befo
 
 WUPHF runs locally. Your computer must be awake, online, and logged in for background checks and messages to run. Unknown or incomplete Codex data cannot be treated as a confirmed expiry or a used reset. Delivery depends on your selected services.
 
-When Codex supplies an account identifier, WUPHF uses a local fingerprint to avoid carrying reminder state between different accounts. Codex may omit that identifier; in that case WUPHF cannot reliably detect account or workspace switches. Check your account and reminders after switching, and keep a backup reminder.
+When Codex supplies an account identifier, WUPHF uses a local fingerprint to avoid carrying reminder state between different accounts. Codex may omit that identifier. While it is unavailable, WUPHF cannot send alerts for newly detected resets or reliably detect account or workspace switches; expiry reminders for known deadlines can still run. Check your account and reminders after switching, and keep a backup reminder.
 
 ## Try the prototype
 

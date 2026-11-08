@@ -19,18 +19,19 @@ def check(snap, settings, state_path, now=None, deliver=send):
     state.setdefault('new_queue', [])
     identity=snap.get('account_fingerprint')
     if not valid_identity(identity):identity=None
-    if state.get('account_fingerprint')!=identity:
-        state['snapshot']=None;state['new_queue']=[]
-        state['ledger']={};state['ledger_expiry']={};state['retry']={}
-    elif identity is None:
-        # Unknown identity cannot establish new-credit continuity across checks.
-        state['new_queue']=[]
-        current={credit['id']+':'+channel for credit in snap.get('credits') or []
-                 if credit.get('status','available')=='available' for channel in settings.get('channels',{})} if snap.get('complete') else set()
-        for mapping in (state['ledger'],state['ledger_expiry']):
-            for key in list(mapping):
-                if key not in current:mapping.pop(key)
-    state['account_fingerprint']=identity
+    if snap.get('complete'):
+        if state.get('account_fingerprint')!=identity:
+            state['snapshot']=None;state['new_queue']=[]
+            state['ledger']={};state['ledger_expiry']={};state['retry']={}
+        elif identity is None:
+            # Unknown identity cannot establish new-credit continuity across checks.
+            state['new_queue']=[]
+            current={credit['id']+':'+channel for credit in snap.get('credits') or []
+                     if credit.get('status','available')=='available' for channel in settings.get('channels',{})}
+            for mapping in (state['ledger'],state['ledger_expiry']):
+                for key in list(mapping):
+                    if key not in current:mapping.pop(key)
+        state['account_fingerprint']=identity
     failed_channels=set()
     for channel in list(state['retry']):
         if channel not in settings.get('channels',{}):del state['retry'][channel]

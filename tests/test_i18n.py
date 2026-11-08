@@ -67,3 +67,9 @@ class LanguageTests(unittest.TestCase):
         for language,phrase in expected.items():
             with self.subTest(language=language):self.assertIn(phrase,catalog(language)['telegram_help'])
         self.assertIn(catalog('en')['telegram_help'],PAGE.read_text(encoding='utf-8'))
+    def test_missing_account_identity_limitation_is_shown_in_all_languages(self):
+        from wuphf.web import PAGE
+        expected={'en':'New-reset alerts','es':'nuevos reinicios','de':'neue Resets','pt':'novos resets','fr':'nouvelles réinitialisations','ja':'新しいリセット','ko':'새 리셋','zh':'新重置'}
+        for language,phrase in expected.items():
+            with self.subTest(language=language):self.assertIn(phrase,catalog(language).get('identity_limit',''))
+        self.assertIn(catalog('en').get('identity_limit','MISSING_IDENTITY_LIMIT'),PAGE.read_text(encoding='utf-8'))
