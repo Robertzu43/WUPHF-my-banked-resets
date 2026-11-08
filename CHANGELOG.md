@@ -13,6 +13,9 @@ No version tag or public binary release has been published for this candidate. T
 - Pixel-art interface with eight languages, keyboard focus and reduced-motion support.
 - User-level background jobs for macOS, Windows and Linux; OS credential storage.
 - Source launchers, experimental one-folder packages and automated CI.
+- Bundled public Desktop app registration for Gmail and Calendar; normal setup no longer requires users to create a Google Cloud project.
+- Draft-only release workflow with versioned OS/architecture archives, exact-commit checks and combined SHA-256 checksums.
+- Public privacy policy linked in the app, with Google review status disclosed in eight languages.
 
 ### Reliability fixes
 
@@ -22,10 +25,12 @@ No version tag or public binary release has been published for this candidate. T
 - Improve scheduler failure recovery, Windows battery operation and packaged Codex discovery.
 - Clear stale reset status after refresh errors, including when changing language.
 - Include candidate version, documentation, platform metadata and archive checksums.
+- Keep Windows 10+ packages on the OS Universal C Runtime and exclude unrelated DLLs from build-tool PATH entries.
+- Attribute native wheel binaries by exact distribution ownership and Python-framework OpenSSL libraries by build provenance.
 
 ### Known limits
 
-- Google verification and a distributor-provided OAuth client remain pending. Gmail and Calendar require a separately configured desktop client.
+- Google verification remains pending. Gmail and Calendar use the bundled registration but Google can warn or restrict access until approval.
 - Computers must be awake, online and logged in. Missing account identifiers limit switch detection and new-reset alerts; incomplete details pause reminders.
 - Real Windows/Linux account and background-delivery tests were skipped by the project owner's decision. Generic SMTP and live Google Calendar delivery are not confirmed.
 - Calendar imports are static snapshots; Google events can remain after a reset disappears. Disconnecting does not remove remote calendars.

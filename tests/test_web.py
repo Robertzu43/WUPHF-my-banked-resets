@@ -57,7 +57,7 @@ class WebTests(unittest.TestCase):
             res,data=self.request('POST','/api/google/connect',client,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
         self.assertEqual(res.status,200);start.assert_called_once_with(client);self.assertNotIn(b'secret',data)
     def test_direct_google_connect_explains_missing_client_setup(self):
-        with patch('wuphf.google_auth.BUNDLED_CLIENT',new=__import__('pathlib').Path('/nonexistent/wuphf-client.json')):
+        with patch('wuphf.google_auth.default_client',return_value={}):
             res,data=self.request('POST','/api/google/connect',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
         self.assertEqual(res.status,400)
         self.assertIn(b'OAuth',data)

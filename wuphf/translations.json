@@ -38,10 +38,10 @@
     "download": "Download .ics",
     "calendar_note": "Imported events are snapshots and won't update if you use a banked reset.",
     "google_title": "Google Calendar sync",
-    "google_desc": "Connect a Google desktop OAuth client to add expiry dates to a separate WUPHF calendar. Events remain if a reset is used or expires; remove outdated events manually.",
+    "google_desc": "Connect Google to add expiry dates to a separate WUPHF calendar. Events remain if a reset is used or expires; remove outdated events manually.",
     "developer_setup": "Developer setup: provide an OAuth client",
     "oauth_file": "Desktop OAuth client JSON",
-    "oauth_help": "Only needed when WUPHF has not been packaged with its own OAuth client. The file stays on this computer.",
+    "oauth_help": "Optional: use your own Google Desktop app registration instead of WUPHF's. The file stays on this computer.",
     "google_approval": "Google will ask you to approve access to a separate WUPHF calendar.",
     "connect": "Connect Google",
     "sync": "Sync now",
@@ -131,7 +131,9 @@
     "identity_limit": "New-reset alerts need a known account ID. When Codex does not provide one, WUPHF can still send expiry reminders, but may miss account switches.",
     "legacy_ntfy": "Legacy ntfy alerts",
     "legacy_ntfy_note": "Existing ntfy alerts are enabled. To stop them, uncheck this option and save settings.",
-    "mac_protected_location": "Move WUPHF and its Python environment out of Documents, Desktop, or Downloads, for example to ~/Library/Application Support/WUPHF. Reopen it, then enable checks again. If Codex is in one of these folders, move or reinstall it elsewhere."
+    "mac_protected_location": "Move WUPHF and its Python environment out of Documents, Desktop, or Downloads, for example to ~/Library/Application Support/WUPHF. Reopen it, then enable checks again. If Codex is in one of these folders, move or reinstall it elsewhere.",
+    "privacy_policy": "Privacy policy",
+    "google_review_pending": "Gmail and Google Calendar are experimental while Google verification is pending."
   },
   "es": {
     "language": "Idioma",
@@ -172,10 +174,10 @@
     "download": "Descargar .ics",
     "calendar_note": "Los eventos importados son una copia y no se actualizan si usas un reinicio guardado.",
     "google_title": "Sincronización con Google Calendar",
-    "google_desc": "Conecta un cliente OAuth de escritorio de Google para añadir fechas de vencimiento a un calendario WUPHF independiente. Los eventos permanecen cuando usas un reinicio o este vence; elimina los eventos antiguos manualmente.",
+    "google_desc": "Conecta Google para añadir fechas de vencimiento a un calendario WUPHF independiente. Los eventos permanecen si usas un reinicio o caduca; elimina los antiguos manualmente.",
     "developer_setup": "Configuración para desarrolladores: añadir un cliente OAuth",
     "oauth_file": "Archivo JSON del cliente OAuth de escritorio",
-    "oauth_help": "Solo se necesita cuando WUPHF no incluye su propio cliente OAuth. El archivo permanece en esta computadora.",
+    "oauth_help": "Opcional: usa tu propio registro de aplicación de escritorio de Google en lugar del de WUPHF. El archivo permanece en este equipo.",
     "google_approval": "Google te pedirá que autorices el acceso a un calendario WUPHF independiente.",
     "connect": "Conectar Google",
     "sync": "Sincronizar ahora",
@@ -265,7 +267,9 @@
     "identity_limit": "Las alertas de nuevos reinicios necesitan un ID de cuenta conocido. Si Codex no lo proporciona, WUPHF aún puede enviar recordatorios de vencimiento, pero podría no detectar cambios de cuenta.",
     "legacy_ntfy": "Alertas ntfy anteriores",
     "legacy_ntfy_note": "Las alertas ntfy anteriores están activadas. Para detenerlas, desmarca esta opción y guarda los ajustes.",
-    "mac_protected_location": "Mueve WUPHF y su entorno de Python fuera de Documentos, Escritorio o Descargas, por ejemplo a ~/Library/Application Support/WUPHF. Ábrelo de nuevo y activa las comprobaciones. Si Codex está en una de estas carpetas, muévelo o vuelve a instalarlo en otro lugar."
+    "mac_protected_location": "Mueve WUPHF y su entorno de Python fuera de Documentos, Escritorio o Descargas, por ejemplo a ~/Library/Application Support/WUPHF. Ábrelo de nuevo y activa las comprobaciones. Si Codex está en una de estas carpetas, muévelo o vuelve a instalarlo en otro lugar.",
+    "privacy_policy": "Política de privacidad",
+    "google_review_pending": "Gmail y Google Calendar son experimentales mientras se completa la verificación de Google."
   },
   "de": {
     "language": "Sprache",
@@ -306,10 +310,10 @@
     "download": "Laden Sie .ics herunter",
     "calendar_note": "Importierte Termine sind Momentaufnahmen und werden nach dem Einlösen nicht aktualisiert.",
     "google_title": "Google Kalender synchronisieren",
-    "google_desc": "Verbinden Sie einen Google Desktop-OAuth-Client, um Ablaufdaten zu einem separaten WUPHF-Kalender hinzuzufügen. Ereignisse bleiben bestehen, wenn ein Reset verwendet wird oder abläuft; Entfernen Sie veraltete Ereignisse manuell.",
+    "google_desc": "Verbinde Google, um Ablaufdaten in einem eigenen WUPHF-Kalender einzutragen. Termine bleiben nach Verwendung oder Ablauf eines Resets bestehen; entferne veraltete Termine manuell.",
     "developer_setup": "Entwickler-Setup: Stellen Sie einen OAuth-Client bereit",
     "oauth_file": "Desktop-OAuth-Client-JSON",
-    "oauth_help": "Nur erforderlich, wenn WUPHF keinen eigenen OAuth-Client enthält. Die Datei bleibt auf diesem Computer.",
+    "oauth_help": "Optional: Verwende deine eigene Google-Desktop-App-Registrierung statt der von WUPHF. Die Datei bleibt auf diesem Computer.",
     "google_approval": "Google wird Sie bitten, den Zugriff auf einen separaten WUPHF-Kalender zu genehmigen.",
     "connect": "Verbinden Sie Google",
     "sync": "Jetzt synchronisieren",
@@ -399,7 +403,9 @@
     "identity_limit": "Hinweise auf neue Resets benötigen eine bekannte Konto-ID. Wenn Codex sie nicht liefert, kann WUPHF weiterhin an den Ablauf erinnern, aber Kontowechsel möglicherweise nicht erkennen.",
     "legacy_ntfy": "Bisherige ntfy-Benachrichtigungen",
     "legacy_ntfy_note": "Bisherige ntfy-Benachrichtigungen sind aktiviert. Zum Beenden deaktiviere diese Option und speichere die Einstellungen.",
-    "mac_protected_location": "Verschiebe WUPHF und seine Python-Umgebung aus Dokumente, Schreibtisch oder Downloads, zum Beispiel nach ~/Library/Application Support/WUPHF. Öffne es erneut und aktiviere die Prüfungen. Wenn Codex in einem dieser Ordner liegt, verschiebe es oder installiere es an einem anderen Ort neu."
+    "mac_protected_location": "Verschiebe WUPHF und seine Python-Umgebung aus Dokumente, Schreibtisch oder Downloads, zum Beispiel nach ~/Library/Application Support/WUPHF. Öffne es erneut und aktiviere die Prüfungen. Wenn Codex in einem dieser Ordner liegt, verschiebe es oder installiere es an einem anderen Ort neu.",
+    "privacy_policy": "Datenschutzerklärung",
+    "google_review_pending": "Gmail und Google Kalender sind experimentell, solange die Google-Verifizierung aussteht."
   },
   "pt": {
     "language": "Idioma",
@@ -440,10 +446,10 @@
     "download": "Baixar .ics",
     "calendar_note": "Os eventos importados são cópias e não são atualizados quando você usa uma redefinição guardada.",
     "google_title": "Sincronizar com o Google Agenda",
-    "google_desc": "Conecte um cliente Google desktop OAuth para adicionar datas de expiração a um calendário WUPHF separado. Os eventos permanecem se uma redefinição for usada ou expirar; remova eventos desatualizados manualmente.",
+    "google_desc": "Conecte o Google para adicionar datas de expiração a um calendário WUPHF separado. Os eventos permanecem após usar um reset ou ele expirar; remova os antigos manualmente.",
     "developer_setup": "Configuração do desenvolvedor: forneça um cliente OAuth",
     "oauth_file": "JSON do cliente OAuth para área de trabalho",
-    "oauth_help": "Necessário apenas quando o WUPHF não inclui seu próprio cliente OAuth. O arquivo permanece neste computador.",
+    "oauth_help": "Opcional: use seu próprio registro de aplicativo para computador do Google em vez do registro do WUPHF. O arquivo fica neste computador.",
     "google_approval": "Google solicitará que você aprove o acesso a um calendário WUPHF separado.",
     "connect": "Conectar Google",
     "sync": "Sincronize agora",
@@ -533,7 +539,9 @@
     "identity_limit": "Alertas de novos resets precisam de um ID de conta conhecido. Se o Codex não o fornecer, o WUPHF ainda pode lembrar o vencimento, mas pode não detectar mudanças de conta.",
     "legacy_ntfy": "Alertas ntfy anteriores",
     "legacy_ntfy_note": "Os alertas ntfy anteriores estão ativados. Para interrompê-los, desmarque esta opção e salve as configurações.",
-    "mac_protected_location": "Mova o WUPHF e seu ambiente Python para fora de Documentos, Mesa ou Downloads, por exemplo para ~/Library/Application Support/WUPHF. Abra novamente e ative as verificações. Se o Codex estiver em uma dessas pastas, mova-o ou reinstale-o em outro local."
+    "mac_protected_location": "Mova o WUPHF e seu ambiente Python para fora de Documentos, Mesa ou Downloads, por exemplo para ~/Library/Application Support/WUPHF. Abra novamente e ative as verificações. Se o Codex estiver em uma dessas pastas, mova-o ou reinstale-o em outro local.",
+    "privacy_policy": "Política de privacidade",
+    "google_review_pending": "O Gmail e o Google Agenda são experimentais enquanto a verificação do Google estiver pendente."
   },
   "fr": {
     "language": "Langue",
@@ -574,10 +582,10 @@
     "download": "Télécharger le fichier .ics",
     "calendar_note": "Les événements importés sont des copies et ne sont pas actualisés après utilisation d’une réinitialisation en réserve.",
     "google_title": "Synchronisation Google Agenda",
-    "google_desc": "Connectez un client OAuth de bureau Google pour ajouter des dates d'expiration à un calendrier WUPHF distinct. Les événements demeurent si une réinitialisation est utilisée ou expire ; supprimer manuellement les événements obsolètes.",
+    "google_desc": "Connectez Google pour ajouter les dates d'expiration à un calendrier WUPHF distinct. Les événements restent après l'utilisation ou l'expiration d'une réinitialisation ; supprimez les anciens manuellement.",
     "developer_setup": "Configuration du développeur : fournir un client OAuth",
     "oauth_file": "Client JSON OAuth de bureau",
-    "oauth_help": "Nécessaire uniquement si WUPHF ne fournit pas son propre client OAuth. Le fichier reste sur cet ordinateur.",
+    "oauth_help": "Facultatif : utilisez votre propre inscription d'application de bureau Google à la place de celle de WUPHF. Le fichier reste sur cet ordinateur.",
     "google_approval": "Google vous demandera d'approuver l'accès à un calendrier WUPHF distinct.",
     "connect": "Connectez-vous à Google",
     "sync": "Synchronisez maintenant",
@@ -667,7 +675,9 @@
     "identity_limit": "Les alertes de nouvelles réinitialisations nécessitent un ID de compte connu. Si Codex ne le fournit pas, WUPHF peut toujours rappeler les échéances, mais risque de ne pas détecter les changements de compte.",
     "legacy_ntfy": "Alertes ntfy existantes",
     "legacy_ntfy_note": "Les alertes ntfy existantes sont activées. Pour les arrêter, décochez cette option et enregistrez les paramètres.",
-    "mac_protected_location": "Déplacez WUPHF et son environnement Python hors de Documents, Bureau ou Téléchargements, par exemple vers ~/Library/Application Support/WUPHF. Rouvrez-le puis activez les vérifications. Si Codex se trouve dans un de ces dossiers, déplacez-le ou réinstallez-le ailleurs."
+    "mac_protected_location": "Déplacez WUPHF et son environnement Python hors de Documents, Bureau ou Téléchargements, par exemple vers ~/Library/Application Support/WUPHF. Rouvrez-le puis activez les vérifications. Si Codex se trouve dans un de ces dossiers, déplacez-le ou réinstallez-le ailleurs.",
+    "privacy_policy": "Politique de confidentialité",
+    "google_review_pending": "Gmail et Google Agenda sont expérimentaux tant que la validation par Google est en attente."
   },
   "ja": {
     "language": "言語",
@@ -708,10 +718,10 @@
     "download": ".ics をダウンロード",
     "calendar_note": "読み込んだ予定は固定されたコピーです。保存済みリセットを使用しても更新されません。",
     "google_title": "Google カレンダーと同期",
-    "google_desc": "Google デスクトップ OAuth クライアントを接続して、有効期限を別の WUPHF カレンダーに追加します。リセットが使用された場合、または有効期限が切れた場合、イベントは残ります。古いイベントを手動で削除します。",
+    "google_desc": "Googleに接続して、有効期限を専用のWUPHFカレンダーに追加します。リセットの使用後や期限切れ後も予定は残ります。古い予定は手動で削除してください。",
     "developer_setup": "開発者セットアップ: OAuth クライアントを提供します",
     "oauth_file": "デスクトップ OAuth クライアント JSON",
-    "oauth_help": "WUPHF に独自の OAuth クライアントが含まれていない場合のみ必要です。ファイルはこのコンピューターに保存されます。",
+    "oauth_help": "任意：WUPHFの代わりに、ご自身のGoogleデスクトップアプリ登録を使用できます。ファイルはこのコンピューターに保存されます。",
     "google_approval": "Google は、別の WUPHF カレンダーへのアクセスを承認するように求めます。",
     "connect": "Google に接続する",
     "sync": "今すぐ同期する",
@@ -801,7 +811,9 @@
     "identity_limit": "新しいリセットの通知には既知のアカウント ID が必要です。Codex から提供されない場合、期限のリマインダーは送れますが、アカウントの切り替えを検出できないことがあります。",
     "legacy_ntfy": "従来の ntfy 通知",
     "legacy_ntfy_note": "既存の ntfy 通知は有効です。停止するには、この項目のチェックを外して設定を保存してください。",
-    "mac_protected_location": "WUPHFとPython環境を「書類」「デスクトップ」「ダウンロード」の外（例：~/Library/Application Support/WUPHF）に移動してください。開き直してチェックを有効にしてください。 Codexがこれらのフォルダにある場合は、別の場所に移動するか再インストールしてください。"
+    "mac_protected_location": "WUPHFとPython環境を「書類」「デスクトップ」「ダウンロード」の外（例：~/Library/Application Support/WUPHF）に移動してください。開き直してチェックを有効にしてください。 Codexがこれらのフォルダにある場合は、別の場所に移動するか再インストールしてください。",
+    "privacy_policy": "プライバシーポリシー",
+    "google_review_pending": "Google の確認が完了するまで、Gmail と Google カレンダーの連携は試験的な機能です。"
   },
   "ko": {
     "language": "언어",
@@ -842,10 +854,10 @@
     "download": ".ics 다운로드",
     "calendar_note": "가져온 일정은 고정된 사본이며, 저장된 리셋을 사용해도 자동으로 업데이트되지 않습니다.",
     "google_title": "Google 캘린더 동기화",
-    "google_desc": "별도의 WUPHF 달력에 만료 날짜를 추가하려면 Google 데스크톱 OAuth 클라이언트를 연결하세요. 재설정이 사용되거나 만료되더라도 이벤트는 유지됩니다. 오래된 이벤트를 수동으로 제거하세요.",
+    "google_desc": "Google을 연결하여 별도의 WUPHF 캘린더에 만료일을 추가하세요. 리셋을 사용하거나 만료되어도 일정은 남습니다. 오래된 일정은 직접 삭제하세요.",
     "developer_setup": "개발자 설정: OAuth 클라이언트 제공",
     "oauth_file": "데스크톱 OAuth 클라이언트 JSON",
-    "oauth_help": "WUPHF에 자체 OAuth 클라이언트가 포함되지 않은 경우에만 필요합니다. 파일은 이 컴퓨터에 보관됩니다.",
+    "oauth_help": "선택 사항: WUPHF 등록 대신 본인의 Google 데스크톱 앱 등록을 사용할 수 있습니다. 파일은 이 컴퓨터에 보관됩니다.",
     "google_approval": "Google는 별도의 WUPHF 캘린더에 대한 액세스를 승인하도록 요청합니다.",
     "connect": "Google 연결",
     "sync": "지금 동기화",
@@ -935,7 +947,9 @@
     "identity_limit": "새 리셋 알림에는 알려진 계정 ID가 필요합니다. Codex가 이를 제공하지 않으면 만료 알림은 보낼 수 있지만 계정 전환을 감지하지 못할 수 있습니다.",
     "legacy_ntfy": "기존 ntfy 알림",
     "legacy_ntfy_note": "기존 ntfy 알림이 활성화되어 있습니다. 중지하려면 이 옵션을 선택 해제하고 설정을 저장하세요.",
-    "mac_protected_location": "WUPHF와 Python 환경을 문서, 데스크탑 또는 다운로드 밖의 위치(예: ~/Library/Application Support/WUPHF)로 옮기세요. 다시 열고 확인을 활성화하세요. Codex가 이 폴더 중 하나에 있다면 다른 위치로 옮기거나 다시 설치하세요."
+    "mac_protected_location": "WUPHF와 Python 환경을 문서, 데스크탑 또는 다운로드 밖의 위치(예: ~/Library/Application Support/WUPHF)로 옮기세요. 다시 열고 확인을 활성화하세요. Codex가 이 폴더 중 하나에 있다면 다른 위치로 옮기거나 다시 설치하세요.",
+    "privacy_policy": "개인정보 처리방침",
+    "google_review_pending": "Google 인증이 완료될 때까지 Gmail 및 Google 캘린더 연동은 실험적 기능입니다."
   },
   "zh": {
     "language": "语言",
@@ -976,10 +990,10 @@
     "download": "下载.ics",
     "calendar_note": "导入的日程是静态副本，使用已保存的重置后不会自动更新。",
     "google_title": "同步 Google 日历",
-    "google_desc": "连接 Google 桌面 OAuth 客户端，将到期日期添加到单独的 WUPHF 日历中。如果使用重置或过期，事件仍然存在；手动删除过时的事件。",
+    "google_desc": "连接 Google，将到期日期添加到独立的 WUPHF 日历。重置使用或过期后，日程仍会保留；请手动删除过时的日程。",
     "developer_setup": "开发者设置：提供OAuth客户端",
     "oauth_file": "桌面 OAuth 客户端 JSON",
-    "oauth_help": "仅当 WUPHF 未包含自己的 OAuth 客户端时需要。文件保留在这台电脑上。",
+    "oauth_help": "可选：使用您自己的 Google 桌面应用注册信息代替 WUPHF 的注册信息。文件保留在此计算机上。",
     "google_approval": "Google 将要求您批准访问单独的 WUPHF 日历。",
     "connect": "连接Google",
     "sync": "立即同步",
@@ -1069,6 +1083,8 @@
     "identity_limit": "新重置提醒需要已知的账户 ID。如果 Codex 未提供该信息，WUPHF 仍可发送到期提醒，但可能无法检测账户切换。",
     "legacy_ntfy": "旧版 ntfy 通知",
     "legacy_ntfy_note": "现有 ntfy 通知已启用。要停止通知，请取消勾选此选项并保存设置。",
-    "mac_protected_location": "请将 WUPHF 和它的 Python 环境移出“文稿”、“桌面”或“下载”文件夹，例如移至 ~/Library/Application Support/WUPHF。重新打开后启用检查。 如果 Codex 位于这些文件夹中，请将其移动或重新安装到其他位置。"
+    "mac_protected_location": "请将 WUPHF 和它的 Python 环境移出“文稿”、“桌面”或“下载”文件夹，例如移至 ~/Library/Application Support/WUPHF。重新打开后启用检查。 如果 Codex 位于这些文件夹中，请将其移动或重新安装到其他位置。",
+    "privacy_policy": "隐私政策",
+    "google_review_pending": "在 Google 验证完成之前，Gmail 和 Google 日历集成属于实验性功能。"
   }
 }

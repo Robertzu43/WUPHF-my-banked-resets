@@ -35,6 +35,10 @@ On November 7, 2026, the project owner chose to omit real-account, clean-machine
 
 The [release readiness record](../../release-readiness.md) records the fresh whole-tool audit, fixes, exact verification, and remaining external conditions. Checkboxes below describe composite acceptance tasks; an unchecked task can contain completed code work and an unverified external requirement. Do not infer completion from implementation alone.
 
+## Completion update
+
+Implemented after the baseline audit: public Desktop OAuth registration and optional override, source/frozen registration checks, privacy/review disclosures in all eight languages, shared safe calendar expiry validation, versioned release archives, combined checksums, native notice inventory and a guarded draft-only workflow. Google approval and live/clean-machine evidence are separate external conditions; [readiness](../../release-readiness.md) identifies them. The current scope keeps Gmail/Calendar experimental and excludes generic SMTP/calendar-app imports from verified beta claims.
+
 ## Original baseline
 
 The original developer Mac read real Codex data and received Gmail and Telegram tests. The current cross-platform branch has 102 automated tests passing in CI across macOS, Windows and Ubuntu on Python 3.11 and 3.13. A Windows runner exercised Credential Manager and Task Scheduler registration; a Linux container exercised Secret Service. None of these establishes full reminder delivery on real Windows/Linux accounts. The public repository has no releases or tags; PRs #2–#5 are stacked, with #3–#5 drafts. Google verification and production Gmail reauthorization remain outstanding, and Google Calendar live sync has not been established. ntfy is outside the new release scope; legacy settings remain manageable.
@@ -43,10 +47,10 @@ The original developer Mac read real Codex data and received Gmail and Telegram 
 
 **Files:** `wuphf/core.py`, `wuphf/reminders.py`, `wuphf/runner.py`, `tests/test_core.py`, `tests/test_reminders.py`, `tests/test_runner.py`; PRs #2–#5.
 
-- [ ] Review each stacked PR in order, verify its base, and resolve review findings without disturbing the developer's active Mac installation.
+- [x] Review the stacked changes and integrate the reviewed combined tree without disturbing the developer's active Mac installation. PR #5 merged at `377471f`; PR #2 merged and #3/#4 closed as superseded.
 - [ ] Check the baseline tests with `python3 -m unittest discover -s tests -v`; require a passing GitHub Actions matrix for the proposed release commit.
 - [ ] Verify that an incomplete snapshot never indicates a consumed reset or triggers an expiry reminder with no known expiry; add targeted tests if a case is missing.
-- [ ] Merge in dependency order only after each PR's review and required checks pass. Record the resulting default-branch commit.
+- [x] Integrate reviewed changes after required checks pass. Baseline merge `377471f41301ef467560a0f5d0006957aa45c9c8` has the same tree as tested `3aeeb06`; subsequent release work requires its own final CI.
 
 ## Task 2: Reliable tracking and background reminders
 
@@ -72,8 +76,8 @@ The original developer Mac read real Codex data and received Gmail and Telegram 
 **Files:** `wuphf/channels.py`, `wuphf/web.html`, `wuphf/web.py`, `wuphf/translations.json`, `tests/test_channels.py`, `tests/test_web.py`, `tests/test_i18n.py`, `README.md`.
 
 - [ ] Walk through Gmail, SMTP and Telegram with a new user; identify every required field and failure. Add concise, translated, step-by-step inline help and test actions for saved destinations.
-- [ ] Simplify Telegram setup using a user's own bot and a safe way to obtain the chat ID. Verify any auto-discovery against the Bot API and avoid shipping a shared secret. Document unavoidable BotFather and start-chat steps; do not promise one-click setup without a tested implementation.
-- [ ] Test provider errors, invalid credentials and timeout handling with mocks; ensure no tokens appear in responses, logs or issue templates.
+- [x] Simplify Telegram setup using a user's own bot and a safe way to obtain the chat ID. Verify any auto-discovery against the Bot API and avoid shipping a shared secret. Document unavoidable BotFather and start-chat steps; do not promise one-click setup without a tested implementation.
+- [x] Test provider errors, invalid credentials and timeout handling with mocks; ensure no tokens appear in responses, logs or issue templates.
 - [ ] With authorized destinations, receive real Telegram, Gmail and SMTP messages on the intended devices and exercise a scheduled reminder for each enabled channel. Keep the beta blocked for any advertised channel without an end-to-end test, or explicitly exclude it from beta claims.
 
 ## Task 5: Easy installation and release packages
@@ -82,13 +86,13 @@ The original developer Mac read real Codex data and received Gmail and Telegram 
 
 - [ ] Test a clean-machine install on macOS where available. Do not require Windows or Linux clean-machine tests for this release; record they were skipped. Choose the smallest supported packaging approach that removes Python setup where practical, with a transparent Codex sign-in flow.
 - [ ] Produce packages for Windows, macOS and supported Linux; run automated CI and package smoke checks, and document architectures, OS floors, dependencies/licenses, upgrade/uninstall and checksums. Do not require Windows or Linux real-device install, monitoring, upgrade or uninstall tests for this release; disclose this limitation.
-- [ ] Assess OS signing/notarization availability and costs; sign where feasible and document warnings and the exact unsigned status otherwise. Do not advertise a polished universal installer before it exists and is tested.
+- [x] Assess OS signing/notarization availability and costs; sign where feasible and document warnings and the exact unsigned status otherwise. Do not advertise a polished universal installer before it exists and is tested.
 
 ## Task 6: Documentation, versioning and accessibility
 
 **Files:** `README.md`, `docs/images/wuphf-logo.svg`, `docs/superpowers/plans/2026-11-07-public-beta-release.md`; add `CHANGELOG.md` at release.
 
-- [ ] Keep README logo, plain-language overview, status, OS support, exact current setup, supported channels, calendar limitations, security, uninstall and troubleshooting accurate for the default branch. Ensure a new user can follow the final installation steps without private context.
+- [x] Keep README logo, plain-language overview, status, OS support, exact current setup, supported channels, calendar limitations, security, uninstall and troubleshooting accurate for the default branch. Ensure a new user can follow the final installation steps without private context.
 - [ ] Confirm each of the eight translations, keyboard navigation, visible focus, reduced-motion behavior and readable contrast. Record native-speaker review as pending if unavailable.
 - [ ] Adopt Semantic Versioning, create an initial `CHANGELOG.md`, and prepare `v0.1.0-beta.1` as a prerelease only when beta gates pass. Release notes must name supported systems, tested integrations, known limitations and upgrade/uninstall steps. Never create a tag for an unreleased or unverified build.
 

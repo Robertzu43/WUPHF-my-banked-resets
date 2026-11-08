@@ -1,0 +1,12 @@
+# Approved public Desktop OAuth registration only; user credentials remain scanned.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+[[rules.allowlists]]
+description = "WUPHF public Desktop registration; see docs/google-production.md"
+condition = "AND"
+regexTarget = "secret"
+paths = ['''^wuphf/oauth-client\.json$''']
+regexes = ['''^GOCSPX\-fvQWJX9T7gh_aL1h8aWeHwcvsQmv$''']

@@ -12,7 +12,7 @@ from email.message import EmailMessage
 from http.server import BaseHTTPRequestHandler
 
 from . import cli
-from .google_auth import BUNDLED_CLIENT, CallbackServer, parse_client
+from .google_auth import CallbackServer, parse_client, default_client
 from .i18n import translate
 from .keychain import get_secret, set_secret, delete_secret
 from .storage import load, save
@@ -34,7 +34,7 @@ def token_request(data):
 
 def start_connect(raw):
     if not raw:
-        raw = load(BUNDLED_CLIENT, {})
+        raw = default_client()
     ident, secret = parse_client(raw)
     with _lock:
         if status['state'] == 'connecting':
