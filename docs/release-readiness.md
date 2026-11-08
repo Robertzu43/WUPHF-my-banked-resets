@@ -1,3 +1,9 @@
+# Candidate 0.1.0-beta.2: verification in progress
+
+The quality branch adds guided setup, complete packaged help, launch entries, and Calendar account binding. Local supported-Python and independent scoped tests pass, but the candidate is not yet released. Windows CI exposed a help-test encoding defect; its fix and further UI corrections require fresh CI. Final immutable package provenance, the new installation action, full-branch QA and public-download verification remain pending. Earlier beta.1 live evidence below is historical and does not certify this candidate. Windows/Linux real-device tests remain waived; signing and first-time-user evidence remain unresolved.
+
+---
+
 # Release readiness — 0.1.0-beta.1
 
 Updated November 8, 2026. This records the earlier verified binary candidate `472ebcc8a8a3b6a45766c0858ed2262fe90bf826` and its limits. Publication is a separate release action; Google approval is not claimed.

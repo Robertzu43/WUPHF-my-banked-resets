@@ -5,7 +5,7 @@
 <p align="center"><strong>Your reset bank called. It wants you to use it.</strong></p>
 <p align="center">Free, open-source reminders for your banked Codex resets. Your computer. Your accounts. Your choice of channels.</p>
 <p align="center">
-  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.1"><img alt="Version 0.1.0-beta.1" src="https://img.shields.io/badge/version-0.1.0--beta.1-2454dd?style=flat-square"></a>
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.2"><img alt="Version 0.1.0-beta.2" src="https://img.shields.io/badge/version-0.1.0--beta.2-2454dd?style=flat-square"></a>
   <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2454dd?style=flat-square"></a>
   <img alt="macOS, Windows and Linux" src="https://img.shields.io/badge/desktop-macOS%20%7C%20Windows%20%7C%20Linux-2454dd?style=flat-square">
   <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/actions"><img alt="Build and test results" src="https://img.shields.io/badge/checks-GitHub%20Actions-2454dd?style=flat-square"></a>
@@ -16,7 +16,7 @@
   <a href="#install-and-get-started"><strong>Install manually</strong></a> ·
   <a href="#connect-your-own-accounts"><strong>Connect your accounts</strong></a> ·
   <a href="#help-and-troubleshooting"><strong>Get help</strong></a> ·
-  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.1"><strong>Release notes</strong></a>
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.2"><strong>Release notes</strong></a>
 </p>
 
 WUPHF checks your available **banked Codex resets** and reminds you before known expiry dates. It never uses a reset for you. Choose **Gmail, other email, Telegram, calendar dates, or any combination**. There is no WUPHF account or hosted reminder service to sign up for.
@@ -46,8 +46,10 @@ I request changes.
 
 Detect my OS and architecture. Read the official setup guide and release notes.
 Use the newest published compatible release, including betas, verify its
-archive against that release's SHA256SUMS, and install the complete folder in
-a permanent user-owned location. Use the source-install instructions if no
+archive against that release's SHA256SUMS. Pin that version and use its own
+setup instructions throughout. If the verified bundle provides --install, run
+that local action and reopen the installed copy at the reported permanent
+user-owned location; otherwise place the complete folder there yourself. Use the source-install instructions if no
 compatible package exists; explain any untested compatibility. Check the
 Codex CLI and help install it from its official source if missing. Use my own
 ChatGPT sign-in without exposing its credentials or consuming any reset.
@@ -88,15 +90,17 @@ Already using the Codex CLI? You can keep your existing sign-in. The Codex deskt
 
 | Computer | Download | Open after extracting |
 | --- | --- | --- |
-| Mac with Apple silicon (M1 or newer) | [Download for macOS](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.1/wuphf-0.1.0-beta.1-macos-arm64-unsigned.tar.gz) | In the `WUPHF` folder, run `./WUPHF` in Terminal. |
-| Windows 10 or newer, x64 | [Download for Windows](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.1/wuphf-0.1.0-beta.1-windows-x86_64-unsigned.zip) | Extract all files, then double-click `WUPHF.exe`. |
-| Linux x64 desktop (Ubuntu 24.04 build) | [Download for Linux](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.1/wuphf-0.1.0-beta.1-linux-x86_64-unsigned.tar.gz) | Extract with `tar -xzf ARCHIVE_NAME.tar.gz`, then run `./WUPHF` inside the extracted folder. |
+| Mac with Apple silicon (M1 or newer) | [Download for macOS](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.2/wuphf-0.1.0-beta.2-macos-arm64-unsigned.tar.gz) | Open `Start WUPHF.command` in the complete extracted folder. |
+| Windows 10 or newer, x64 | [Download for Windows](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.2/wuphf-0.1.0-beta.2-windows-x86_64-unsigned.zip) | Extract all files, then double-click `WUPHF.exe`. |
+| Linux x64 desktop (Ubuntu 24.04 build) | [Download for Linux](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.2/wuphf-0.1.0-beta.2-linux-x86_64-unsigned.tar.gz) | Extract with `tar -xzf ARCHIVE_NAME.tar.gz`, then use `Start WUPHF.sh` in the complete folder. |
+
+**Optional permanent install:** from the extracted folder run `./WUPHF --install` on Mac/Linux, or `.\WUPHF.exe --install` in Windows PowerShell. It copies the verified bundle into your user installation folder and prints how to reopen it. An identical installation is left alone; a different existing installation is refused with upgrade guidance. It does not configure accounts or enable jobs.
 
 Keep the **whole extracted folder** together, including `_internal`, in a permanent location. Background checks use that location. On macOS, put the folder under `~/Library/Application Support/` before opening it; keep both WUPHF and Codex outside Documents, Desktop and Downloads for background operation. In Finder, **Go → Go to Folder** lets you open `~/Library/Application Support/`.
 
 Linux requires a graphical session, a running **systemd user service**, and an unlocked **Secret Service keyring**. These are desktop packages, not cloud/server installers. Other architectures, including Intel Macs, can try the [source installation](#run-from-source) with Python 3.11+; compatibility outside the tested builds is not established.
 
-Because this beta is unsigned, your operating system may ask you to approve opening it or block it. Review the download source and [SHA256SUMS](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.1/SHA256SUMS). On macOS, follow [Apple's instructions for opening an app from an unidentified developer](https://support.apple.com/en-us/102445) if you choose to trust the download. Do not disable system security protections globally. Source installation is also available below.
+Because this beta is unsigned, your operating system may ask you to approve opening it or block it. Review the download source and [SHA256SUMS](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/download/v0.1.0-beta.2/SHA256SUMS). On macOS, follow [Apple's instructions for opening an app from an unidentified developer](https://support.apple.com/en-us/102445) if you choose to trust the download. Do not disable system security protections globally. Source installation is also available below.
 
 ### 3. Choose your reminders
 
@@ -164,6 +168,8 @@ The bundled registration is used automatically; no client file is needed for tha
 
 Events can remain after a reset is used or expires; remove old events manually. Disconnecting removes local authorization, not the remote calendar. Reconnecting can create another WUPHF calendar. Live authorization, saved-token refresh, and test-event creation/update were verified; longer unattended operation and the full reconnect lifecycle remain beta checks.
 
+Google Calendar sync requires a stable Codex account identifier. Missing identity pauses sync; other channels and ICS remain available. Connections made before account binding require disconnect/reconnect once; existing remote calendars and events are retained.
+
 ## Help and troubleshooting
 
 | Problem | What to try |
@@ -189,7 +195,7 @@ Events can remain after a reset is used or expires; remove old events manually. 
 <details>
 <summary>For developers or users who prefer Python instead of a packaged download</summary>
 
-Install Python **3.11+** and the signed-in Codex CLI. [Download the beta source ZIP](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/tags/v0.1.0-beta.1.zip) and extract it to a permanent folder. On macOS, keep the source, Python and Codex outside Documents/Desktop/Downloads.
+Install Python **3.11+** and the signed-in Codex CLI. [Download the beta source ZIP](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/tags/v0.1.0-beta.2.zip) and extract it to a permanent folder. On macOS, keep the source, Python and Codex outside Documents/Desktop/Downloads.
 
 - **macOS:** Open Terminal in the source folder and run `python3 -m wuphf.web`, or use `Start WUPHF.command`.
 - **Windows:** Run `Start WUPHF.bat`; Python must be on PATH.
@@ -214,7 +220,7 @@ See the [release evidence](https://github.com/Robertzu43/WUPHF-my-banked-resets/
 
 ## Development and versioning
 
-`VERSION` identifies **0.1.0-beta.1**. Releases use Semantic Versioning with explicit beta tags. See the [changelog](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/CHANGELOG.md) and [release procedure](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/docs/releasing.md).
+`VERSION` identifies **0.1.0-beta.2**. Releases use Semantic Versioning with explicit beta tags. See the [changelog](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/CHANGELOG.md) and [release procedure](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/docs/releasing.md).
 
 Run `python3 -m unittest discover -s tests -v` from the repository root. Install Node.js for the frontend behavioral checks. CI tests Python on macOS, Windows and Ubuntu; mocked provider tests do not establish live delivery.
 
