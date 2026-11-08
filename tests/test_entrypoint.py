@@ -42,3 +42,12 @@ class EntrypointTests(unittest.TestCase):
         import wuphf_launcher
         with patch('wuphf.web.PAGE',Path('/missing-wuphf-ui-file')):
             with self.assertRaises(FileNotFoundError):wuphf_launcher.main(['--check-assets'])
+
+    def test_codex_check_is_read_only_and_does_not_print_identity(self):
+        from io import StringIO
+        import wuphf_launcher
+        with patch('wuphf.core.read_snapshot',return_value={'complete':True,'account_fingerprint':'private-identity','credits':[{'id':'private-credit'}]}) as read,patch('wuphf.cli.main') as cli,patch('wuphf.web.main') as web,patch('sys.stdout',new_callable=StringIO) as output:
+            try:wuphf_launcher.main(['--check-codex'])
+            except SystemExit:self.fail('read-only Codex check is missing')
+        read.assert_called_once_with();cli.assert_not_called();web.assert_not_called()
+        self.assertNotIn('private-identity',output.getvalue());self.assertNotIn('private-credit',output.getvalue())

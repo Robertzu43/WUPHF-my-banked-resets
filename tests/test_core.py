@@ -71,3 +71,78 @@ class TrackingTests(unittest.TestCase):
         self.assertIsNone(snapshot(raw,'\ud800')['account_fingerprint'])
         self.assertIsNone(compare({'complete':True,'credits':[],'account_fingerprint':'not-a-hash'},
                                   {'complete':True,'credits':[],'account_fingerprint':'not-a-hash'}))
+
+    def test_frozen_linux_restores_library_path_only_for_codex_child(self):
+        import json,os,sys,tempfile
+        from pathlib import Path
+        from unittest.mock import MagicMock,patch
+        from wuphf.core import read_snapshot
+        with tempfile.TemporaryDirectory() as d:
+            bundle=str(Path(d)/'bundle');other=str(Path(d)/'system')
+            env={'PATH':bundle+os.pathsep+other,'LD_LIBRARY_PATH':bundle+os.pathsep+other,'LD_LIBRARY_PATH_ORIG':other}
+            process=MagicMock();process.stdout=iter(['{"id":1,"result":{}}\n',json.dumps({'id':2,'result':{'rateLimitResetCredits':{'availableCount':0,'credits':[]}}})+'\n'])
+            with patch.dict(os.environ,env,clear=True),patch.object(sys,'frozen',True,create=True),patch.object(sys,'_MEIPASS',bundle,create=True),patch.object(sys,'platform','linux'),patch('wuphf.core.shutil.which',return_value='codex') as which,patch('wuphf.core.subprocess.Popen',return_value=process) as launch:
+                read_snapshot();self.assertEqual(os.environ['LD_LIBRARY_PATH'],env['LD_LIBRARY_PATH'])
+            child=launch.call_args.kwargs.get('env',{})
+            self.assertEqual(child.get('LD_LIBRARY_PATH'),other)
+            self.assertEqual(child.get('PATH'),other)
+            self.assertEqual(which.call_args.kwargs.get('path'),other)
+
+    def test_frozen_mac_filters_bundle_only_paths_from_child(self):
+        import json,os,sys,tempfile
+        from pathlib import Path
+        from unittest.mock import MagicMock,patch
+        from wuphf.core import read_snapshot
+        with tempfile.TemporaryDirectory() as d:
+            bundle=str(Path(d)/'bundle');other=str(Path(d)/'system')
+            env={'PATH':bundle+os.pathsep+other,'DYLD_LIBRARY_PATH':bundle+os.pathsep+other}
+            process=MagicMock();process.stdout=iter(['{"id":1,"result":{}}\n',json.dumps({'id':2,'result':{'rateLimitResetCredits':{'availableCount':0,'credits':[]}}})+'\n'])
+            with patch.dict(os.environ,env,clear=True),patch.object(sys,'frozen',True,create=True),patch.object(sys,'_MEIPASS',bundle,create=True),patch.object(sys,'platform','darwin'),patch('wuphf.core.shutil.which',return_value='codex'),patch('wuphf.core.subprocess.Popen',return_value=process) as launch:
+                read_snapshot();self.assertEqual(os.environ['DYLD_LIBRARY_PATH'],env['DYLD_LIBRARY_PATH'])
+            child=launch.call_args.kwargs.get('env',{})
+            self.assertEqual(child.get('DYLD_LIBRARY_PATH'),other);self.assertEqual(child.get('PATH'),other)
+
+    def test_source_mode_inherits_environment_without_changes(self):
+        import json,sys
+        from unittest.mock import MagicMock,patch
+        from wuphf.core import read_snapshot
+        process=MagicMock();process.stdout=iter(['{"id":1,"result":{}}\n',json.dumps({'id':2,'result':{'rateLimitResetCredits':{'availableCount':0,'credits':[]}}})+'\n'])
+        with patch.object(sys,'frozen',False,create=True),patch('wuphf.core.shutil.which',return_value='codex'),patch('wuphf.core.subprocess.Popen',return_value=process) as launch:
+            read_snapshot()
+        self.assertNotIn('env',launch.call_args.kwargs)
+
+    def test_frozen_linux_unsets_modified_library_path_when_no_original(self):
+        import os,sys,tempfile
+        from unittest.mock import patch
+        from wuphf.core import _external_environment
+        with tempfile.TemporaryDirectory() as root,patch.dict(os.environ,{'PATH':'/outside','LD_LIBRARY_PATH':root},clear=True),patch.object(sys,'frozen',True,create=True),patch.object(sys,'_MEIPASS',root,create=True),patch.object(sys,'platform','linux'):
+            child=_external_environment()
+            self.assertNotIn('LD_LIBRARY_PATH',child)
+            self.assertEqual(os.environ['LD_LIBRARY_PATH'],root)
+
+    def test_frozen_windows_filters_bundle_path_but_does_not_claim_dll_reset(self):
+        import os,sys,tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        from wuphf.core import _external_environment
+        with tempfile.TemporaryDirectory() as root:
+            bundle=str(Path(root)/'bundle');sibling=str(Path(root)/'bundle-other')
+            with patch.dict(os.environ,{'PATH':bundle+os.pathsep+sibling},clear=True),patch.object(sys,'frozen',True,create=True),patch.object(sys,'_MEIPASS',bundle,create=True),patch.object(sys,'platform','win32'):
+                child=_external_environment()
+                self.assertEqual(child['PATH'],sibling)
+                self.assertEqual(os.environ['PATH'],bundle+os.pathsep+sibling)
+
+    def test_frozen_mac_removes_empty_bundle_only_library_path(self):
+        import os,sys,tempfile
+        from unittest.mock import patch
+        from wuphf.core import _external_environment
+        with tempfile.TemporaryDirectory() as bundle,patch.dict(os.environ,{'PATH':'/outside','DYLD_LIBRARY_PATH':bundle},clear=True),patch.object(sys,'frozen',True,create=True),patch.object(sys,'_MEIPASS',bundle,create=True),patch.object(sys,'platform','darwin'):
+            child=_external_environment()
+            self.assertNotIn('DYLD_LIBRARY_PATH',child)
+
+    def test_frozen_child_path_falls_back_to_system_path_when_only_bundle_is_present(self):
+        import os,sys,tempfile
+        from unittest.mock import patch
+        from wuphf.core import _external_environment
+        with tempfile.TemporaryDirectory() as bundle,patch.dict(os.environ,{'PATH':bundle},clear=True),patch.object(sys,'frozen',True,create=True),patch.object(sys,'_MEIPASS',bundle,create=True),patch.object(sys,'platform','darwin'):
+            self.assertEqual(_external_environment()['PATH'],os.defpath)

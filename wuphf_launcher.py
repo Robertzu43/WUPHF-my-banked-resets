@@ -7,6 +7,10 @@ def main(argv=None):
     if args==['--background']:
         from wuphf.cli import main as run_cli
         run_cli(['run'])
+    elif args==['--check-codex']:
+        from wuphf.core import read_snapshot
+        snap=read_snapshot()
+        print('Codex responded; reset details '+('complete.' if snap.get('complete') else 'unavailable or incomplete.'))
     elif args==['--check-assets']:
         from wuphf.i18n import languages
         from wuphf.web import PAGE, PIXEL_FONT
@@ -24,7 +28,7 @@ def main(argv=None):
         from wuphf.web import main as run_web
         run_web()
     else:
-        raise SystemExit('Usage: WUPHF [--background|--check-assets]')
+        raise SystemExit('Usage: WUPHF [--background|--check-assets|--check-codex]')
 
 
 if __name__=='__main__':

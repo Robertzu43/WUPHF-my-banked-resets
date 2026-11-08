@@ -1,10 +1,12 @@
 import hashlib
 import json
 import math
+import os
 import queue
 import re
 import shutil
 import subprocess
+import sys
 import threading
 
 
@@ -47,9 +49,34 @@ def due(credit, now, advance, repeat, last):
             and (last is None or now - last >= repeat))
 
 
+def _external_environment():
+    env=os.environ.copy()
+    bundle=getattr(sys,'_MEIPASS',None)
+    if bundle:
+        root=os.path.normcase(os.path.realpath(bundle))
+        def outside(value):
+            path=os.path.normcase(os.path.realpath(value or os.curdir))
+            try:return os.path.commonpath((root,path))!=root
+            except ValueError:return True
+        keys=('PATH','DYLD_LIBRARY_PATH') if sys.platform=='darwin' else ('PATH',)
+        for key in keys:
+            if key in env:
+                entries=[item for item in env[key].split(os.pathsep) if outside(item)]
+                if entries:env[key]=os.pathsep.join(entries)
+                elif key=='PATH':env[key]=os.defpath
+                else:env.pop(key,None)
+    if sys.platform.startswith('linux'):
+        if 'LD_LIBRARY_PATH_ORIG' in env:env['LD_LIBRARY_PATH']=env['LD_LIBRARY_PATH_ORIG']
+        else:env.pop('LD_LIBRARY_PATH',None)
+    return env
+
+
 def read_snapshot(timeout=20):
-    p = subprocess.Popen([shutil.which('codex') or 'codex', 'app-server'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                         stderr=subprocess.DEVNULL, text=True, bufsize=1)
+    env=_external_environment() if getattr(sys,'frozen',False) else None
+    launcher=shutil.which('codex',path=env.get('PATH',os.defpath)) if env is not None else shutil.which('codex')
+    options={'env':env} if env is not None else {}
+    p = subprocess.Popen([launcher or 'codex', 'app-server'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                         stderr=subprocess.DEVNULL, text=True, bufsize=1, **options)
     messages = queue.Queue()
     def reader():
         try:

@@ -96,4 +96,6 @@ python scripts/build_package.py --output /path/to/empty/dist --work /path/to/emp
 python scripts/smoke_package.py /path/to/empty/dist/WUPHF
 ```
 
-The smoke check uses a synthetic Codex process and temporary user directory. POSIX packages need an archive format that preserves symbolic links, such as `tar.gz`; do not use a ZIP that dereferences them. The packages have not been validated for real accounts, signed, notarized, or released. Frozen-process library-search behavior for external Codex still needs native validation on every platform.
+The smoke check uses a synthetic Codex process and temporary user directory. POSIX packages need an archive format that preserves symbolic links, such as `tar.gz`; do not use a ZIP that dereferences them. An experimental Mac build completed a read-only real Codex snapshot, but real reminder delivery and installed scheduling remain unverified. Linux needs real-Codex testing; Windows has an unresolved process-wide DLL search-path issue. The packages are not signed, notarized, or released.
+
+For a read-only diagnostic, run the packaged executable with `--check-codex`. It checks whether Codex returns complete reset details without sending reminders.
