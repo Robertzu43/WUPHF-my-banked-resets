@@ -159,7 +159,9 @@
     "status_read": "Codex read at {date}. Dates use your browser’s local timezone.",
     "status_old": "This reading is over 30 minutes old. Refresh before relying on it.",
     "calendar_account_mismatch": "This saved calendar belongs to another or an unknown Codex account. Disconnect and reconnect Google Calendar to create a separate calendar; existing events remain.",
-    "calendar_identity_required": "Calendar sync is paused because Codex did not provide a stable account identity. Check the intended Codex account and CLI. Other reminder channels and .ics export remain available."
+    "calendar_identity_required": "Calendar sync is paused because Codex did not provide a stable account identity. Check the intended Codex account and CLI. Other reminder channels and .ics export remain available.",
+    "setup_checks_on": "Background checks are enabled. Check background health below and verify reminders on your device.",
+    "calendar_export_help": "Export needs a complete Codex reading. Refresh above if details are missing."
   },
   "es": {
     "language": "Idioma",
@@ -321,7 +323,9 @@
     "status_read": "Codex consultado: {date}. Las fechas usan la zona horaria local del navegador.",
     "status_old": "Esta consulta tiene más de 30 minutos. Actualiza antes de confiar en ella.",
     "calendar_account_mismatch": "Este calendario guardado pertenece a otra cuenta de Codex o a una desconocida. Desconecta y vuelve a conectar Google Calendar para crear otro calendario; los eventos existentes se conservan.",
-    "calendar_identity_required": "La sincronización está en pausa porque Codex no proporcionó una identidad de cuenta estable. Revisa la cuenta de Codex y la CLI. Los otros canales y la exportación .ics siguen disponibles."
+    "calendar_identity_required": "La sincronización está en pausa porque Codex no proporcionó una identidad de cuenta estable. Revisa la cuenta de Codex y la CLI. Los otros canales y la exportación .ics siguen disponibles.",
+    "setup_checks_on": "Las comprobaciones están activadas. Revisa su estado abajo y verifica los avisos en tu dispositivo.",
+    "calendar_export_help": "La exportación requiere una lectura completa de Codex. Actualiza arriba si faltan datos."
   },
   "de": {
     "language": "Sprache",
@@ -483,7 +487,9 @@
     "status_read": "Codex abgefragt: {date}. Datumsangaben nutzen die lokale Browser-Zeitzone.",
     "status_old": "Diese Abfrage ist über 30 Minuten alt. Vor Verwendung aktualisieren.",
     "calendar_account_mismatch": "Dieser gespeicherte Kalender gehört zu einem anderen oder unbekannten Codex-Konto. Google Kalender trennen und erneut verbinden, um einen separaten Kalender zu erstellen. Bestehende Termine bleiben erhalten.",
-    "calendar_identity_required": "Die Kalendersynchronisierung pausiert, da Codex keine stabile Kontoidentität geliefert hat. Gewünschtes Codex-Konto und CLI prüfen. Andere Erinnerungskanäle und .ics-Export bleiben verfügbar."
+    "calendar_identity_required": "Die Kalendersynchronisierung pausiert, da Codex keine stabile Kontoidentität geliefert hat. Gewünschtes Codex-Konto und CLI prüfen. Andere Erinnerungskanäle und .ics-Export bleiben verfügbar.",
+    "setup_checks_on": "Hintergrundprüfungen sind aktiviert. Prüfe unten ihren Status und die Erinnerungen auf deinem Gerät.",
+    "calendar_export_help": "Der Export benötigt vollständige Codex-Daten. Aktualisiere oben, wenn Angaben fehlen."
   },
   "pt": {
     "language": "Idioma",
@@ -645,7 +651,9 @@
     "status_read": "Codex consultado em {date}. As datas usam o fuso local do navegador.",
     "status_old": "Esta leitura tem mais de 30 minutos. Atualize antes de confiar nela.",
     "calendar_account_mismatch": "Este calendário salvo pertence a outra conta Codex ou a uma conta desconhecida. Desconecte e reconecte o Google Agenda para criar um calendário separado; os eventos existentes permanecem.",
-    "calendar_identity_required": "A sincronização está pausada porque o Codex não forneceu uma identidade de conta estável. Confira a conta Codex e a CLI. Outros canais e a exportação .ics continuam disponíveis."
+    "calendar_identity_required": "A sincronização está pausada porque o Codex não forneceu uma identidade de conta estável. Confira a conta Codex e a CLI. Outros canais e a exportação .ics continuam disponíveis.",
+    "setup_checks_on": "As verificações estão ativadas. Confira o estado abaixo e os lembretes no seu dispositivo.",
+    "calendar_export_help": "A exportação precisa de uma leitura completa do Codex. Atualize acima se faltarem dados."
   },
   "fr": {
     "language": "Langue",
@@ -807,7 +815,9 @@
     "status_read": "Codex consulté à {date}. Les dates utilisent le fuseau local du navigateur.",
     "status_old": "Cette lecture date de plus de 30 minutes. Actualisez-la avant de vous y fier.",
     "calendar_account_mismatch": "Ce calendrier enregistré appartient à un autre compte Codex ou à un compte inconnu. Déconnectez puis reconnectez Google Agenda pour créer un calendrier distinct ; les événements existants restent.",
-    "calendar_identity_required": "La synchronisation est suspendue car Codex n’a pas fourni d’identité de compte stable. Vérifiez le compte Codex et la CLI. Les autres canaux et l’export .ics restent disponibles."
+    "calendar_identity_required": "La synchronisation est suspendue car Codex n’a pas fourni d’identité de compte stable. Vérifiez le compte Codex et la CLI. Les autres canaux et l’export .ics restent disponibles.",
+    "setup_checks_on": "Les vérifications sont activées. Consultez leur état ci-dessous et vérifiez les rappels sur votre appareil.",
+    "calendar_export_help": "L’export nécessite une lecture complète de Codex. Actualisez ci-dessus si des détails manquent."
   },
   "ja": {
     "language": "言語",
@@ -969,7 +979,9 @@
     "status_read": "Codex 確認時刻：{date}。日付はブラウザーのローカルタイムゾーンです。",
     "status_old": "この情報は30分以上前のものです。利用する前に更新してください。",
     "calendar_account_mismatch": "保存済みカレンダーは別の、または不明な Codex アカウントに属しています。Google カレンダーを切断して再接続すると別のカレンダーを作成します。既存の予定は残ります。",
-    "calendar_identity_required": "Codex が安定したアカウント識別情報を提供しないため、カレンダー同期は停止中です。対象の Codex アカウントと CLI を確認してください。他の通知先と .ics 書き出しは利用できます。"
+    "calendar_identity_required": "Codex が安定したアカウント識別情報を提供しないため、カレンダー同期は停止中です。対象の Codex アカウントと CLI を確認してください。他の通知先と .ics 書き出しは利用できます。",
+    "setup_checks_on": "バックグラウンド確認は有効です。下の動作状況と端末の通知を確認してください。",
+    "calendar_export_help": "書き出しには完全な Codex 情報が必要です。詳細が不足している場合は上の更新を押してください。"
   },
   "ko": {
     "language": "언어",
@@ -1131,7 +1143,9 @@
     "status_read": "Codex 확인 시각: {date}. 날짜는 브라우저의 현지 시간대입니다.",
     "status_old": "이 정보는 30분 이상 지났습니다. 사용하기 전에 새로고침하세요.",
     "calendar_account_mismatch": "저장된 캘린더가 다른 Codex 계정 또는 알 수 없는 계정에 속합니다. Google 캘린더 연결을 해제한 후 다시 연결하면 별도 캘린더가 생성됩니다. 기존 일정은 유지됩니다.",
-    "calendar_identity_required": "Codex가 안정적인 계정 식별 정보를 제공하지 않아 캘린더 동기화가 일시 중지되었습니다. 사용할 Codex 계정과 CLI를 확인하세요. 다른 알림 채널과 .ics 내보내기는 계속 사용할 수 있습니다."
+    "calendar_identity_required": "Codex가 안정적인 계정 식별 정보를 제공하지 않아 캘린더 동기화가 일시 중지되었습니다. 사용할 Codex 계정과 CLI를 확인하세요. 다른 알림 채널과 .ics 내보내기는 계속 사용할 수 있습니다.",
+    "setup_checks_on": "백그라운드 확인이 켜져 있습니다. 아래 상태와 기기에서 알림을 확인하세요.",
+    "calendar_export_help": "내보내기에는 완전한 Codex 정보가 필요합니다. 정보가 부족하면 위에서 새로고침하세요."
   },
   "zh": {
     "language": "语言",
@@ -1293,6 +1307,8 @@
     "status_read": "Codex 读取时间：{date}。日期使用浏览器本地时区。",
     "status_old": "此读取结果已超过30分钟。使用前请刷新。",
     "calendar_account_mismatch": "此已保存的日历属于其他或未知的 Codex 账户。请断开并重新连接 Google 日历以创建独立日历；现有日程将保留。",
-    "calendar_identity_required": "由于 Codex 未提供稳定的账户标识，日历同步已暂停。请检查目标 Codex 账户和 CLI。其他提醒渠道及 .ics 导出仍然可用。"
+    "calendar_identity_required": "由于 Codex 未提供稳定的账户标识，日历同步已暂停。请检查目标 Codex 账户和 CLI。其他提醒渠道及 .ics 导出仍然可用。",
+    "setup_checks_on": "后台检查已启用。请检查下方运行状态，并在设备上确认提醒。",
+    "calendar_export_help": "导出需要完整的 Codex 读取结果。若缺少信息，请在上方刷新。"
   }
 }

@@ -1,12 +1,13 @@
 // Exercise the shipped browser script; only the DOM and network boundary are substituted.
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const html=fs.readFileSync('wuphf/web.html','utf8');
-const elements={}, tests=[];
-function element(id){return elements[id]||(elements[id]={value:'',checked:false,disabled:false,hidden:false,textContent:'',files:[],children:[],listeners:{},dataset:{},classList:{add(){},remove(){}},focus(){},select(){},replaceChildren(...children){this.children=children},addEventListener(type,fn){(this.listeners[type]??=[]).push(fn)},async dispatch(type){for(const fn of this.listeners[type]||[])await fn({preventDefault(){},target:this})}})}
+const elements={}, tests=[], timers=[], downloads=[];
+function element(id){return elements[id]||(elements[id]={value:'',checked:false,disabled:false,hidden:false,textContent:'',files:[],children:[],click(){downloads.push(this.download)},listeners:{},dataset:{},classList:{add(){},remove(){}},focus(){},select(){},replaceChildren(...children){this.children=children},addEventListener(type,fn){(this.listeners[type]??=[]).push(fn)},async dispatch(type){for(const fn of this.listeners[type]||[])await fn({preventDefault(){},target:this})}})}
 for(const tag of html.matchAll(/<[^>]+\bid="([^"]+)"[^>]*>/g)){element(tag[1]).disabled=/\bdisabled\b/.test(tag[0]);}
 for(const tag of html.matchAll(/<button[^>]+class="[^"]*\btest\b[^"]*"[^>]*>/g)){const b=element('test-'+tag[0].match(/data-channel="([^"]+)"/)[1]);b.disabled=/\bdisabled\b/.test(tag[0]);b.dataset.channel=tag[0].match(/data-channel="([^"]+)"/)[1];tests.push(b)}
-const ctx={console,Date,Intl,Number,AbortController,setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,confirm:()=>true,window:{confirm:()=>true},NodeFilter:{SHOW_TEXT:4},document:{body:{},documentElement:{},getElementById:element,querySelector:s=>element(s),querySelectorAll:s=>s==='.test'?tests:[],createTreeWalker:()=>({nextNode:()=>null}),createElement:()=>element('created-'+Math.random())}};
+const ctx={console,Date,Intl,Number,AbortController,setTimeout:(fn,ms)=>(timers.push({fn,ms}),timers.length),clearTimeout(){},setInterval:()=>1,confirm:()=>true,window:{confirm:()=>true},NodeFilter:{SHOW_TEXT:4},document:{body:{},documentElement:{},getElementById:element,querySelector:s=>element(s),querySelectorAll:s=>s==='.test'?tests:[],createTreeWalker:()=>({nextNode:()=>null}),createElement:()=>element('created-'+Math.random())}};
 vm.createContext(ctx);vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)[1].replace(/boot\(\);\s*$/,''),ctx);
+const originalBackgroundStatus=ctx.backgroundStatus;
 const catalog=JSON.parse(fs.readFileSync('wuphf/translations.json'));
 ctx.catalog=catalog;vm.runInContext('translations=catalog',ctx);
 const calls=[];let failSave=false,failTest=false;
@@ -14,6 +15,7 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
 (async()=>{
  assert(tests.every(b=>b.disabled),'Tests must start disabled while settings are loading');
  assert(element('install').disabled,'Enable must start disabled');
+ assert(element('calendar-download').disabled,'Calendar export starts unavailable until Codex data is complete');
  await ctx.settings();
  assert.equal(element('test-telegram').disabled,false);
  assert.equal(element('install').disabled,true,'Saved configuration is not evidence of an accepted test');
@@ -50,5 +52,54 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  let disconnectRelease;ctx.api=()=>new Promise(resolve=>{disconnectRelease=resolve});const disconnect=element('gmail-disconnect').onclick();assert(element('test-gmail').disabled,'Disconnecting blocks tests immediately');assert(element('install').disabled);disconnectRelease({ok:true});ctx.api=async()=>({state:'disconnected'});await disconnect;
  ctx.api=normalApi;ctx.backgroundStatus=()=>{};ctx.api=async()=>({count:0,complete:true,credits:[]});await ctx.status();assert(element('status-freshness').textContent.includes('Codex read at'));
  vm.runInContext('statusReadAt=Date.now()-1800001;renderStatus(lastStatus)',ctx);assert(element('status-freshness').textContent.includes(catalog.en.status_old));
+ for(const provider of ['gmail','google']){
+  const status=provider==='gmail'?'gmailStatus':'googleStatus',render=provider==='gmail'?'renderGmail':'renderGoogle';
+  const action=provider==='gmail'?'test-gmail':'google-sync';
+  ctx[render]({state:'saved'});
+  let connectReject;
+  const waiting=[];
+  ctx.api=(path)=>{
+   if(path==='/api/'+provider+'/status')return new Promise((resolve,reject)=>waiting.push({resolve,reject}));
+   assert.equal(path,'/api/'+provider+'/connect');return new Promise((resolve,reject)=>{connectReject=reject});
+  };
+  const old=ctx[status](),oldFailure=ctx[status](),connecting=element(provider+'-connect').onclick();
+  waiting[0].resolve({state:'saved'});waiting[1].reject(Error('outdated status failed'));await Promise.all([old,oldFailure]);
+  assert(element(provider+'-connect').disabled,provider+' stale status must not restore Connect during authorization');
+  assert(element(action).disabled,provider+' stale status must not restore test/sync during authorization');
+  assert.equal(element(provider+'-status').textContent,catalog.en.google_connecting);
+  connectReject(Error('authorization failed'));await connecting;
+  assert.equal(element(provider+'-status').textContent,'authorization failed');assert(!element(provider+'-connect').disabled,'Failed authorization permits retry');
+  ctx.api=async()=>({state:'connecting'});await ctx[status]();assert(element(provider+'-connect').disabled);
+  const poll=timers.at(-1);assert.equal(poll.ms,2000);
+  ctx.api=async()=>({state:'connected'});await poll.fn();await Promise.resolve();assert(!element(action).disabled,provider+' current polling recovers provider actions');
+  let staleResolve,disconnectResolve;
+  ctx.api=(path)=>{
+   if(path==='/api/'+provider+'/disconnect')return new Promise(resolve=>{disconnectResolve=resolve});
+   assert.equal(path,'/api/'+provider+'/status');return new Promise(resolve=>{staleResolve=resolve});
+  };
+  const stale=ctx[status](),disconnecting=element(provider+'-disconnect').onclick();
+  disconnectResolve({ok:true});ctx.api=async()=>({state:'disconnected'});await disconnecting;
+  staleResolve({state:'saved'});await stale;
+  assert(element(action).disabled,provider+' pre-disconnect status must not restore authorization');assert(element(provider+'-disconnect').disabled);
+  let oldPollCalls=0;ctx.api=async()=>{oldPollCalls++;return {state:'saved'}};await poll.fn();assert.equal(oldPollCalls,0,'A superseded poll must not make a new status request');
+  let lateReject;ctx.api=()=>new Promise((resolve,reject)=>{lateReject=reject});const lateFailure=ctx[status]();
+  ctx.api=async(path)=>path.endsWith('/connect')?{ok:true}:{state:'connected'};await element(provider+'-connect').onclick();
+  lateReject(Error('old request failed'));await lateFailure;assert(!element(action).disabled,'Old failures must not erase successful reauthorization');
+ }
+ ctx.backgroundStatus=originalBackgroundStatus;
+ element('setup-ack').checked=true;await element('setup-ack').dispatch('change');
+ ctx.api=async()=>({scheduler:'disabled',last_check:null,check_status:'never',last_error:false,failures:[]});await ctx.backgroundStatus();
+ assert(!element('install').disabled);assert(element('uninstall').disabled,'Disabled scheduler has no active job to disable');
+ let scheduler='disabled';ctx.api=async(path)=>{if(path==='/api/install'){scheduler='enabled';return {ok:true}}if(path==='/api/uninstall'){scheduler='disabled';return {ok:true}}assert.equal(path,'/api/background');return {scheduler,last_check:null,check_status:'never',last_error:false,failures:[]}};
+ await element('install').onclick();await Promise.resolve();assert(element('install').disabled,'Enabled scheduler must not offer Enable again');assert(!element('uninstall').disabled);assert.equal(element('setup-next').textContent,catalog.en.setup_checks_on);
+ await element('uninstall').onclick();await Promise.resolve();assert(!element('install').disabled);assert(element('uninstall').disabled);
+ ctx.api=async()=>{throw Error('background unavailable')};await ctx.backgroundStatus();assert(!element('uninstall').disabled,'Unknown scheduler must still allow disabling an existing job');
+ ctx.renderStatus({count:0,complete:true,credits:[]});assert(!element('calendar-download').disabled,'Complete zero balance can export');
+ ctx.URL={createObjectURL:()=> 'blob:calendar',revokeObjectURL(){}};
+ ctx.fetch=async()=>({ok:true,blob:async()=>({})});await element('calendar-download').onclick();assert.deepEqual(downloads,['wuphf-resets.ics']);
+ ctx.fetch=async()=>({ok:false,json:async()=>({error:'Reset details are incomplete; refresh before exporting.'})});await element('calendar-download').onclick();assert.equal(element('flash').textContent,catalog.en.api_incomplete_error);assert.equal(downloads.length,1,'Server rejection must not download raw JSON or navigate away');
+ ctx.fetch=async()=>{throw Error('offline')};await element('calendar-download').onclick();assert.equal(element('flash').textContent,catalog.en.api_error);assert(!element('calendar-download').disabled,'Download transport errors allow retry');
+ ctx.renderStatus({count:null,complete:false,credits:[]});assert(element('calendar-download').disabled);await element('calendar-download').onclick();assert.equal(downloads.length,1);
+ ctx.api=async()=>{throw Error('Codex unavailable')};await ctx.status();assert(element('calendar-download').disabled,'Failed Codex refresh must disable export');
  console.log('Guided setup prevents stale sends and false readiness, recovers after save/test failures, and gates disconnected/incomplete actions.');
 })().catch(e=>{console.error(e);process.exitCode=1});

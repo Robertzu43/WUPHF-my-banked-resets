@@ -10,7 +10,7 @@ const states = [
   {scheduler:'enabled',last_check:100,check_status:'recent',last_error:false,failures:['gmail']},
   {scheduler:'disabled',last_check:100,check_status:'stale',last_error:false,failures:['gmail']}
 ];
-const ctx = {Date, Number, AbortController, lastBackground:null, backgroundTimer:null, backgroundInFlight:false,
+const ctx = {renderSetup(){},Date, Number, AbortController, lastBackground:null, backgroundTimer:null, backgroundInFlight:false,
   $:id=>elements[id]||(elements[id]={textContent:''}),
   t:(key,values={})=>key+(values.channels?' '+values.channels:''),locale:()=> 'en',
   api:async()=>states[calls++], setTimeout:(fn,ms)=>(ms===60000?timer=fn:timeout=fn,1),clearTimeout:()=>{}};
