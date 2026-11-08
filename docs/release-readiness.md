@@ -1,10 +1,12 @@
-# Beta.3 release candidate
+# Beta.3 release evidence
 
 Beta.3 includes the frozen macOS trust repair, conservative lifecycle management for newly owned Calendar events and setup-navigation improvements. Google verification and a new external tester do not block this owner-authorized beta. Prior releases remain immutable.
 
 The macOS TLS fix passed independent code review and actual CI-built Python 3.11.9 frozen handshake checks to Telegram and both Google token paths with no trust environment override. Those synthetic requests prove transport on the tested Mac/network, not account authorization or delivery. Legacy/user-edited events and ambiguous remote-success/local-save-loss conflicts require manual Calendar review.
 
-Final integrated tests, independent review, exact-commit build, artifact audit and public download verification are pending below; publication must record their actual results before claiming completion.
+Task7 trust initialization and Task8 Calendar lifecycle passed independent code/safety review. Task9 passed scoped code/browser review after a native Chrome regression found and verified the fix for hidden invalid fields blocking another channel. The expanded private-profile native DOM harness passed Gmail/SMTP deselection/reselection validation, Save→test→enable/disable, and Calendar-only sync→enable using mock APIs. English desktop and German390px renders were inspected; CUA full keyboard traversal remained unavailable because input commands timed out. No real delivery/auth/job execution is inferred.
+
+The integrated source test run at166209a passed (workflow42497534682) and all three package jobs passed (42497534694); the later native-validation fixf71b01a passed focusedNode and Python checks. Independent whole-branch review approved runtime f71b01a for final CI/builds with no remaining release-blocking code findings. Final source-freeze CI is required before merge. The [beta.3 release notes](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.3) record the exact merged build commit, workflow, artifact audit and publication checks when released. Each download includes build-info.json and is covered by SHA256SUMS; use those to identify the actual binary rather than a moving branch. The owner authorized beta publication after those gates without waiting for Google approval or a new tester.
 
 ---
 
