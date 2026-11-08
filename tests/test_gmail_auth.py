@@ -88,12 +88,79 @@ class GmailTests(unittest.TestCase):
             def handle_request(self): self.timeouts.append(self.timeout)
             def server_close(self): pass
         server = Server()
-        with patch.object(gmail_auth, 'HTTPServer', return_value=server), \
+        with patch.object(gmail_auth, 'CallbackServer', return_value=server), \
              patch.object(gmail_auth.webbrowser, 'open'), \
              patch.object(gmail_auth.time, 'monotonic', side_effect=[0, 100, 150, 181]):
             gmail_auth._connect('client.apps.googleusercontent.com', 'secret')
-        self.assertEqual(server.timeouts, [80, 30])
+        self.assertEqual(server.timeouts, [0.25, 0.25])
         self.assertEqual(gmail_auth.status['state'], 'error')
+
+    def test_oauth_ignores_stray_and_malformed_callbacks_until_valid(self):
+        import json, tempfile, threading, urllib.error, urllib.parse, urllib.request
+        from pathlib import Path
+        from unittest.mock import patch
+        from wuphf import gmail_auth
+        responses=[];callback_done=threading.Event()
+        def open_browser(url):
+            query=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+            redirect=query['redirect_uri'][0]; state=query['state'][0]
+            def callbacks():
+                paths=['?state=wrong&code=bad', '?'+urllib.parse.urlencode({'state':'☃','code':'bad'}),
+                       '?'+urllib.parse.urlencode([('state',state),('state',state),('code','bad')]),
+                       '?'+urllib.parse.urlencode([('state',state),('state',''),('code','bad')]),
+                       '?'+urllib.parse.urlencode([('state',state),('code','bad'),('code','')]),
+                       '?'+urllib.parse.urlencode([('state',state),('error','denied'),('error','')]),
+                       '?'+urllib.parse.urlencode({'state':state,'code':''}),
+                       '?'+urllib.parse.urlencode({'state':state,'error':''}),
+                       '?'+urllib.parse.urlencode({'state':state}),
+                       '?'+urllib.parse.urlencode({'state':state,'code':'good'})]
+                for path in paths:
+                    try:
+                        with urllib.request.urlopen(redirect+path,timeout=2) as response:responses.append(response.status)
+                    except urllib.error.HTTPError as error:responses.append(error.code)
+                    except (urllib.error.URLError,OSError):break
+                callback_done.set()
+            threading.Thread(target=callbacks,daemon=True).start()
+        with tempfile.TemporaryDirectory() as tmp, patch.object(gmail_auth,'GMAIL',Path(tmp)/'gmail.json'), \
+             patch.object(gmail_auth.webbrowser,'open',side_effect=open_browser), \
+             patch.object(gmail_auth,'token_request',return_value={'refresh_token':'refresh'}) as request, \
+             patch.object(gmail_auth,'set_secret'):
+            gmail_auth._connect('client.apps.googleusercontent.com','secret')
+            self.assertTrue(callback_done.wait(2))
+            self.assertEqual(gmail_auth.status['state'],'connected')
+            self.assertEqual(request.call_args.args[0]['code'],'good')
+            self.assertEqual(json.loads(gmail_auth.GMAIL.read_text()),{'client_id':'client.apps.googleusercontent.com'})
+        self.assertEqual(responses,[400,400,400,400,400,400,400,400,400,200])
+
+    def test_oauth_stalled_client_does_not_block_valid_callback(self):
+        import socket, tempfile, threading, urllib.parse, urllib.request
+        from pathlib import Path
+        from unittest.mock import patch
+        from wuphf import gmail_auth
+        valid_before_release=[]; callback_done=threading.Event()
+        def open_browser(url):
+            query=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+            redirect=query['redirect_uri'][0];state=query['state'][0]
+            port=urllib.parse.urlsplit(redirect).port
+            def callbacks():
+                stalled=socket.create_connection(('127.0.0.1',port),timeout=2)
+                completed=threading.Event()
+                def valid():
+                    try:
+                        with urllib.request.urlopen(redirect+'?'+urllib.parse.urlencode({'state':state,'code':'good'}),timeout=2):completed.set()
+                    except OSError:pass
+                threading.Thread(target=valid,daemon=True).start()
+                valid_before_release.append(completed.wait(0.5))
+                stalled.close();callback_done.set()
+            threading.Thread(target=callbacks,daemon=True).start()
+        with tempfile.TemporaryDirectory() as tmp, patch.object(gmail_auth,'GMAIL',Path(tmp)/'gmail.json'), \
+             patch.object(gmail_auth.webbrowser,'open',side_effect=open_browser), \
+             patch.object(gmail_auth,'token_request',return_value={'refresh_token':'refresh'}), \
+             patch.object(gmail_auth,'set_secret'):
+            gmail_auth._connect('client.apps.googleusercontent.com','secret')
+            self.assertEqual(gmail_auth.status['state'],'connected')
+        self.assertTrue(callback_done.wait(2))
+        self.assertEqual(valid_before_release,[True])
 
     def test_send_rejects_missing_credentials_without_network(self):
         with patch.object(gmail_auth, 'load', return_value={}), patch.object(gmail_auth.urllib.request, 'urlopen') as network:

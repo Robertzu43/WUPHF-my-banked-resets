@@ -9,10 +9,10 @@ import urllib.parse
 import urllib.request
 import webbrowser
 from email.message import EmailMessage
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler
 
 from . import cli
-from .google_auth import BUNDLED_CLIENT, parse_client
+from .google_auth import BUNDLED_CLIENT, CallbackServer, parse_client
 from .i18n import translate
 from .keychain import get_secret, set_secret, delete_secret
 from .storage import load, save
@@ -50,15 +50,26 @@ def _connect(ident, secret):
     verifier = secrets.token_urlsafe(48)
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b'=').decode()
     result = {}
+    result_lock = threading.Lock()
     class Callback(BaseHTTPRequestHandler):
+        def setup(self):
+            super().setup()
+            self.connection.settimeout(5)
         def log_message(self, *args): pass
         def do_GET(self):
             parsed = urllib.parse.urlsplit(self.path)
-            values = urllib.parse.parse_qs(parsed.query)
-            if parsed.path != '/oauth/callback' or values.get('state', [''])[0] != state:
+            values = urllib.parse.parse_qs(parsed.query, keep_blank_values=True)
+            states, codes, errors = values.get('state', []), values.get('code', []), values.get('error', [])
+            if (parsed.path != '/oauth/callback' or len(states) != 1
+                    or not secrets.compare_digest(states[0].encode(), state.encode())
+                    or not ((len(codes) == 1 and codes[0] and not errors) or (len(errors) == 1 and errors[0] and not codes))):
                 self.send_error(400)
                 return
-            result.update({k: v[0] for k, v in values.items()})
+            with result_lock:
+                if result or time.monotonic() >= deadline:
+                    self.send_error(400)
+                    return
+                result.update({k: v[0] for k, v in values.items()})
             body = b'Google authorization response received. Return to WUPHF.'
             self.send_response(200)
             self.send_header('Content-Length', str(len(body)))
@@ -66,7 +77,7 @@ def _connect(ident, secret):
             self.wfile.write(body)
     server = None
     try:
-        server = HTTPServer(('127.0.0.1', 0), Callback)
+        server = CallbackServer(('127.0.0.1', 0), Callback)
         deadline = time.monotonic() + 180
         redirect = f'http://127.0.0.1:{server.server_port}/oauth/callback'
         query = {'client_id': ident, 'redirect_uri': redirect, 'response_type': 'code', 'scope': SCOPE,
@@ -77,7 +88,7 @@ def _connect(ident, secret):
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 break
-            server.timeout = remaining
+            server.timeout = min(remaining, 0.25)
             server.handle_request()
         if result.get('error') or not result.get('code'):
             raise RuntimeError('Gmail authorization was declined or timed out.')
