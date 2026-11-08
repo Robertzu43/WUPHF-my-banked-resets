@@ -7,7 +7,7 @@ for(const tag of html.matchAll(/<[^>]+\bid="([^"]+)"[^>]*>/g)){element(tag[1]).d
 for(const tag of html.matchAll(/<button[^>]+class="[^"]*\btest\b[^"]*"[^>]*>/g)){const b=element('test-'+tag[0].match(/data-channel="([^"]+)"/)[1]);b.disabled=/\bdisabled\b/.test(tag[0]);b.dataset.channel=tag[0].match(/data-channel="([^"]+)"/)[1];tests.push(b)}
 const ctx={console,Date,Intl,Number,AbortController,setTimeout:(fn,ms)=>(timers.push({fn,ms}),timers.length),clearTimeout(){},setInterval:()=>1,confirm:()=>true,window:{confirm:()=>true},NodeFilter:{SHOW_TEXT:4},document:{body:{},documentElement:{},getElementById:element,querySelector:s=>element(s),querySelectorAll:s=>s==='.test'?tests:[],createTreeWalker:()=>({nextNode:()=>null}),createElement:()=>element('created-'+Math.random())}};
 vm.createContext(ctx);vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)[1].replace(/boot\(\);\s*$/,''),ctx);
-const originalBackgroundStatus=ctx.backgroundStatus;
+const originalBackgroundStatus=ctx.backgroundStatus,originalApi=ctx.api;
 const catalog=JSON.parse(fs.readFileSync('wuphf/translations.json'));
 ctx.catalog=catalog;vm.runInContext('translations=catalog',ctx);
 for(const [language,strings] of Object.entries(catalog))assert(!/OAuth|JSON/.test(strings.google_restriction),language+' normal Google setup must not require developer client files');
@@ -51,7 +51,7 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  assert(element('test-telegram').disabled,'An edit during save must remain unsaved');assert.equal(element('telegram-token').value,'newer-secret','A save must not erase a newer unsaved token');
  ctx.api=normalApi;await element('settings').dispatch('submit');
  element('use-gmail').checked=true;await element('settings').dispatch('change');await element('settings').dispatch('submit');ctx.renderGmail({state:'saved'});element('setup-ack').checked=true;await element('setup-ack').dispatch('change');assert(!element('install').disabled);
- let authRelease;ctx.api=()=>new Promise(resolve=>{authRelease=resolve});const auth=element('gmail-connect').onclick();assert(element('test-gmail').disabled,'Reauthorizing must invalidate earlier Gmail readiness immediately');assert(element('install').disabled);authRelease({ok:true});ctx.api=async()=>({state:'disconnected'});await auth;
+ ctx.renderGmail({state:'disconnected'});let authRelease;ctx.api=()=>new Promise(resolve=>{authRelease=resolve});const auth=element('gmail-connect').onclick();assert(element('test-gmail').disabled,'Starting Gmail authorization must keep earlier readiness invalid');assert(element('install').disabled);authRelease({ok:true});ctx.api=async()=>({state:'disconnected'});await auth;
  ctx.api=normalApi;ctx.renderGmail({state:'saved'});element('setup-ack').checked=true;await element('setup-ack').dispatch('change');
  let disconnectRelease;ctx.api=()=>new Promise(resolve=>{disconnectRelease=resolve});const disconnect=element('gmail-disconnect').onclick();assert(element('test-gmail').disabled,'Disconnecting blocks tests immediately');assert(element('install').disabled);disconnectRelease({ok:true});ctx.api=async()=>({state:'disconnected'});await disconnect;
  ctx.api=normalApi;ctx.backgroundStatus=()=>{};ctx.api=async()=>({count:0,complete:true,credits:[]});await ctx.status();assert(element('status-freshness').textContent.includes('Codex read at'));
@@ -59,7 +59,7 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  for(const provider of ['gmail','google']){
   const status=provider==='gmail'?'gmailStatus':'googleStatus',render=provider==='gmail'?'renderGmail':'renderGoogle';
   const action=provider==='gmail'?'test-gmail':'google-sync';
-  ctx[render]({state:'saved'});
+  ctx[render]({state:'disconnected'});
   let connectReject;
   const waiting=[];
   ctx.api=(path)=>{
@@ -71,8 +71,8 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
   assert(element(provider+'-connect').disabled,provider+' stale status must not restore Connect during authorization');
   assert(element(action).disabled,provider+' stale status must not restore test/sync during authorization');
   assert.equal(element(provider+'-status').textContent,catalog.en.google_connecting);
-  connectReject(Error('authorization failed'));await connecting;
-  assert.equal(element(provider+'-status').textContent,'authorization failed');assert(!element(provider+'-connect').disabled,'Failed authorization permits retry');
+  connectReject(Error('authorization failed'));ctx.api=async()=>({state:'disconnected'});await connecting;
+  assert.equal(element('flash').textContent,'authorization failed');assert(!element(provider+'-connect').disabled,'Failed authorization permits retry');
   ctx.api=async()=>({state:'connecting'});await ctx[status]();assert(element(provider+'-connect').disabled);
   const poll=timers.at(-1);assert.equal(poll.ms,2000);
   ctx.api=async()=>({state:'connected'});await poll.fn();await Promise.resolve();assert(!element(action).disabled,provider+' current polling recovers provider actions');
@@ -90,6 +90,39 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
   ctx.api=async(path)=>path.endsWith('/connect')?{ok:true}:{state:'connected'};await element(provider+'-connect').onclick();
   lateReject(Error('old request failed'));await lateFailure;assert(!element(action).disabled,'Old failures must not erase successful reauthorization');
  }
+ for(const provider of ['gmail','google']){
+  const status=provider==='gmail'?'gmailStatus':'googleStatus',render=provider==='gmail'?'renderGmail':'renderGoogle',action=provider==='gmail'?'test-gmail':'google-sync';
+  for(const state of ['saved','connected']){
+   ctx[render]({state});let requests=0;ctx.api=async()=>{requests++;return {ok:true}};
+   assert(element(provider+'-connect').disabled,provider+' saved/connected setup must not offer duplicate Connect');
+   assert(!element(provider+'-disconnect').disabled);await element(provider+'-connect').onclick();assert.equal(requests,0);
+  }
+  for(const operation of ['connect','disconnect'])for(const statusFails of [false,true]){
+   ctx[render]({state:operation==='connect'?'disconnected':'saved'});let reads=0;
+   ctx.api=async(path)=>{if(path==='/api/'+provider+'/'+operation)throw Error('action refused');assert.equal(path,'/api/'+provider+'/status');reads++;if(statusFails)throw Error('status unavailable');return {state:'saved'}};
+   await element(provider+'-'+operation).onclick();
+   assert.equal(reads,1,provider+' failed '+operation+' must recheck actual saved configuration');
+   assert(!element(provider+'-disconnect').disabled,provider+' failed actions/status reads must keep local Disconnect reachable');
+   assert.equal(element(provider+'-connect').disabled,!statusFails,provider+' confirmed saved config must require Disconnect before Connect');
+   assert.equal(element('flash').textContent,'action refused');assert.equal(element('flash').dataset.error,'true');
+   if(statusFails){assert(element(action).disabled,'Unknown credentials must not permit test/sync');assert.equal(element(provider+'-status').textContent,catalog.en.auth_status_unknown)}
+   ctx.api=async(path)=>path.endsWith('/disconnect')?{ok:true}:{state:'disconnected'};await element(provider+'-disconnect').onclick();
+   assert(!element(provider+'-connect').disabled);assert(element(provider+'-disconnect').disabled,provider+' successful recovery must restore the disconnected controls');
+  }
+  ctx[render]({state:'saved'});ctx.api=async()=>{throw Error('status unavailable')};await ctx[status]();
+  assert(!element(provider+'-disconnect').disabled,provider+' an ordinary status-fetch error must not strand saved credentials');assert(element(action).disabled);
+  ctx.api=async(path)=>path.endsWith('/disconnect')?{ok:true}:{state:'disconnected'};await element(provider+'-disconnect').onclick();
+ }
+ for(const language of Object.keys(catalog)){
+  vm.runInContext('language='+JSON.stringify(language),ctx);
+  for(const error of ['Could not start Google sign-in. Check the connection status and try again.','This build needs a Google desktop OAuth client in Developer setup before it can connect.']){
+   ctx.fetch=async()=>({ok:false,json:async()=>({error})});
+   await assert.rejects(()=>originalApi('/api/gmail/connect','POST',{}),failure=>failure.message===catalog[language].api_google_error);
+   assert(!/OAuth|JSON/.test(catalog[language].api_google_error),'Start-sign-in errors must not imply a personal client is required');
+  }
+ }
+ vm.runInContext("language='en'",ctx);
+ ctx.renderGmail({state:'saved'});ctx.renderGoogle({state:'connected'});
  vm.runInContext("language='es'",ctx);ctx.renderStatus({count:0,complete:true,credits:[]});
  ctx.fetch=async()=>({ok:false,status:409,json:async()=>({error:catalog.es.api_incomplete_error})});
  await element('calendar-download').onclick();assert.equal(element('flash').textContent,catalog.es.api_incomplete_error,'A localized 409 must keep the actionable Refresh instruction');

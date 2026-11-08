@@ -133,7 +133,7 @@ def create_server(port=0,token=None):
                 if url.path=='/api/gmail/status':
                     from . import gmail_auth
                     info=dict(gmail_auth.status)
-                    if info.get('state')=='disconnected' and gmail_auth.connected():info={'state':'saved','message':'Gmail authorization is saved.'}
+                    if info.get('state')=='disconnected' and load(gmail_auth.GMAIL,{}).get('client_id'):info={'state':'saved','message':'Gmail setup is saved. Send a test to check access. To change accounts or recover failed access, disconnect and connect again.'}
                     return self.write(200,info)
                 if url.path=='/api/calendar':
                     snap=read_snapshot()
@@ -204,7 +204,7 @@ def create_server(port=0,token=None):
             except CalendarAccountError as exc:return self.write(409,{'error':exc.code})
             except cli.ProtectedMacLocation:return self.write(400,{'error':'mac_protected_location'})
             except (ValueError,KeyError,TypeError):
-                message='This build needs a Google desktop OAuth client in Developer setup before it can connect.' if self.path in ('/api/google/connect','/api/gmail/connect') else 'Please check your settings and try again.'
+                message='Could not start Google sign-in. Check the connection status and try again.' if self.path in ('/api/google/connect','/api/gmail/connect') else 'Please check your settings and try again.'
                 return self.write(400,{'error':message})
             except Exception:return self.write(503,{'error':'Action failed. Check your settings, permissions, and connection.'})
     server=CallbackServer(('127.0.0.1',port),Handler)
