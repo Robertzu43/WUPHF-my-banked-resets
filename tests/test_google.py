@@ -39,7 +39,7 @@ class CalendarLifecycleTests(unittest.TestCase):
         api=FakeCalendar()
         entry={'event_id':'abcde','expiresAt':2000,'owner':'1'*32,'account_fingerprint':'a'*64,'calendar_id':'owned','etag':'"1"'}
         import hashlib
-        api.events['abcde']={'id':'abcde','status':'confirmed','etag':'"1"','extendedProperties':{'private':{'wuphfSchema':'1','wuphfOwner':'1'*32,'wuphfAccount':'a'*64,'wuphfCredit':hashlib.sha256(b'wuphf-credit-v1\0a').hexdigest()}}}
+        api.events['abcde']={'id':'abcde','status':'confirmed','etag':'"1"','start':{'dateTime':'1970-01-01T00:33:20+00:00'},'end':{'dateTime':'1970-01-01T00:34:20+00:00'},'extendedProperties':{'private':{'wuphfSchema':'1','wuphfOwner':'1'*32,'wuphfAccount':'a'*64,'wuphfCredit':hashlib.sha256(b'wuphf-credit-v1\0a').hexdigest()}}}
         self.assertEqual(reconcile(reading(),{'a':entry},api,lambda _:None,account_fingerprint='a'*64),{})
 
     def run_sync(self,snap,mapping,api,saves=None,now=1000):
@@ -124,6 +124,58 @@ class CalendarLifecycleTests(unittest.TestCase):
                     else:event[change]=[{'email':'someone@example.test'}] if change=='attendees' else ['RRULE:FREQ=DAILY']
                     self.conflict(snap,mapping,api)
                     self.assertFalse(any(c[0] in ('update','delete') for c in api.calls))
+
+    def malformed_event_fields(self):
+        fields=[('start',...),('end',...),('start',None),('end',[]),('start',{}),('end',{}),
+                ('start',{'dateTime':None}),('end',{'dateTime':True}),
+                ('start',{'dateTime':'not-a-time'}),('end',{'dateTime':'1970-01-01T00:34:20'}),
+                ('start',{'dateTime':'1970-01-01 00:33:20+00:00'}),
+                ('start',{'dateTime':'1970-01-01T00:33:20+00'}),
+                ('start',{'dateTime':'1970-02-30T00:33:20+00:00'}),
+                ('end',{'dateTime':'1970-01-01T00:33:19+00:00'}),
+                ('end',{'dateTime':'1970-01-01T00:33:20+00:00'}),
+                ('start',{'date':'1970-01-01'}),
+                ('start',{'dateTime':'1970-01-01T00:33:20+00:00','date':'1970-01-01'}),
+                ('start',{'dateTime':'1970-01-01T00:33:20+00:00','timeZone':False})]
+        return fields+[(key,value) for key in ('attendees','recurrence') for value in (None,{},False,0,'')]
+
+    def test_malformed_confirmed_event_shape_never_authorizes_update_or_delete(self):
+        for field,value in self.malformed_event_fields():
+            for snap in (reading(),reading({'id':'private-a','expiresAt':3000})):
+                with self.subTest(field=field,value=value,snap=snap):
+                    api,mapping,_=self.managed();eid=mapping['private-a']['event_id'];api.calls=[]
+                    if value is ...:api.events[eid].pop(field,None)
+                    else:api.events[eid][field]=value
+                    self.conflict(snap,mapping,api)
+                    self.assertEqual(api.calls,[('get',eid)])
+        api,mapping,_=self.managed();eid=mapping['private-a']['event_id'];api.calls=[]
+        api.events[eid].update(start=None,end=[],attendees={},recurrence=False)
+        self.conflict(reading(),mapping,api);self.assertEqual(api.calls,[('get',eid)])
+
+    def test_malformed_insert_update_response_does_not_persist_new_etag(self):
+        from wuphf.google import CalendarSyncError
+        for operation in ('insert','update'):
+            for field,value in self.malformed_event_fields():
+                with self.subTest(operation=operation,field=field,value=value):
+                    api,mapping,_=self.managed();saves=[]
+                    if operation=='insert':api=FakeCalendar();mapping={}
+                    before=copy.deepcopy(mapping);write=getattr(api,operation)
+                    def malformed(*args,**kwargs):
+                        response=write(*args,**kwargs)
+                        if value is ...:response.pop(field,None)
+                        else:response[field]=value
+                        return response
+                    with patch.object(api,operation,side_effect=malformed):
+                        with self.assertRaises(CalendarSyncError) as caught:self.run_sync(reading({'id':'private-a','expiresAt':3000}),mapping,api,saves)
+                    self.assertEqual(caught.exception.code,'calendar_event_conflict');self.assertEqual(mapping,before)
+                    if operation=='insert':self.assertEqual(len(saves),1);self.assertNotIn('etag',saves[0]['private-a'])
+                    else:self.assertEqual(saves,[])
+
+    def test_normal_offset_times_and_empty_optional_lists_remain_eligible(self):
+        api,mapping,_=self.managed();eid=mapping['private-a']['event_id']
+        api.events[eid].update(start={'dateTime':'1970-01-01T06:03:20+05:30','timeZone':'Asia/Kolkata'},
+                               end={'dateTime':'1970-01-01T00:34:20Z'},attendees=[],recurrence=[])
+        self.assertEqual(self.run_sync(reading(),mapping,api),{})
 
     def test_bad_local_bindings_shapes_and_duplicate_ids_block_before_remote_calls(self):
         api,mapping,_=self.managed()

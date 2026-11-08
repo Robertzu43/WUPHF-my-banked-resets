@@ -96,8 +96,20 @@ def check_event(event,ident,entry,*,saved_etag=False):
             or not isinstance(private,dict) or any(private.get(key)!=value for key,value in markers(ident,entry).items())
             or not isinstance(event.get('etag'),str) or not event['etag']
             or (saved_etag and event['etag']!=entry.get('etag'))
-            or event.get('attendees') or event.get('recurrence') or event.get('eventType','default')!='default'):
+            or any(not isinstance(event.get(key,[]),list) or event.get(key) for key in ('attendees','recurrence'))
+            or event.get('eventType','default')!='default'):
         raise CalendarSyncError('calendar_event_conflict')
+    try:
+        times=[]
+        for key in ('start','end'):
+            value=event.get(key)
+            if (not isinstance(value,dict) or 'date' in value or not isinstance(value.get('dateTime'),str)
+                    or re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})',value['dateTime']) is None
+                    or ('timeZone' in value and (not isinstance(value['timeZone'],str) or not value['timeZone']))):
+                raise ValueError
+            times.append(datetime.datetime.fromisoformat(value['dateTime'].replace('Z','+00:00')))
+        if times[1]<=times[0]:raise ValueError
+    except (ValueError,TypeError,OverflowError):raise CalendarSyncError('calendar_event_conflict') from None
 
 
 def reconcile(snap,mapping,api,save_mapping,*,account_fingerprint=None,now=None):
