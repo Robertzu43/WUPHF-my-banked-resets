@@ -118,7 +118,10 @@ Concrete design: keep the approved pixel layout and global Save. Add an initiall
 - [x] Verify dirty/revision/error guards, keyboard/mobile layout and all eight catalogs; independent code/browser review.
 
 ### Task 10: Integrate, re-review and publish corrected binaries
-- [ ] Run relevant/full tests, native CI, package/artifact and frozen transport checks from the integrated immutable candidate.
-- [ ] Obtain whole-branch and fresh first-use review; fix evidenced defects without forcing scores or claiming real users/providers were tested by mocks.
-- [ ] Version next beta, update guide/changelog/evidence, merge under existing authorization, build exact merged commit, verify checksums/notices and publish immutable new assets.
-- [ ] Keep external signing/provider/real-user/long-running evidence gates open until actually proved; no global OS bypass, purchase, secret publication or release blocked solely on Google verification.
+- [x] Run relevant/full tests, native CI, package/artifact and frozen transport checks from the integrated immutable candidate.
+- [x] Obtain whole-branch and fresh first-use review; fix evidenced defects without forcing scores or claiming real users/providers were tested by mocks.
+- [x] Version next beta, update guide/changelog/evidence, merge under existing authorization, build exact merged commit, verify checksums/notices and publish immutable new assets.
+- [x] Keep external signing/provider/real-user/long-running evidence gates open until actually proved; no global OS bypass, purchase, secret publication or release blocked solely on Google verification.
+
+
+Beta.3 publication completed November 8, 2026 at 16:21:43 UTC from merged commit55f92fd31958b4702370b036c13c20b560902518. Exact-commit release workflow 42499099672 passed all 6 jobs; final downloaded archives/notice inventories/help/UI/private-file checks passed, native Mac install/background smoke and default verified TLS passed, and anonymous public downloads/checksums were verified. Prior beta tags/assets remain unchanged. Task10 completion is this authorized beta milestone; external evidence for the full 10/10 goal remains unproved and is not represented as passed.

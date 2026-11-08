@@ -8,6 +8,14 @@ Task7 trust initialization and Task8 Calendar lifecycle passed independent code/
 
 The integrated source test run at166209a passed (workflow42497534682) and all three package jobs passed (42497534694); the later native-validation fixf71b01a passed focusedNode and Python checks. Independent whole-branch review approved runtime f71b01a for final CI/builds with no remaining release-blocking code findings. Final source-freeze CI is required before merge. The [beta.3 release notes](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.3) record the exact merged build commit, workflow, artifact audit and publication checks when released. Each download includes build-info.json and is covered by SHA256SUMS; use those to identify the actual binary rather than a moving branch. The owner authorized beta publication after those gates without waiting for Google approval or a new tester.
 
+## Published beta.3
+
+[Beta.3 is public](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.3), published November 8, 2026 at 16:21:43 UTC from `55f92fd31958b4702370b036c13c20b560902518`. Source-freeze, post-merge and [release workflow 42499099672](https://github.com/Robertzu43/WUPHF-my-banked-resets/actions/runs/42499099672) passed. The [artifact audit](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/docs/releases/0.1.0-beta.3-audit.json) records matching checksums/manifests, safe paths/links, absent user files, matching packaged UI/catalog/font/help and collected native notices (Linux 65, Mac 53, Windows 18) with none missing/uncollected.
+
+The final Mac download passed actual frozen local installation/repeat/launcher/help/assets and isolated synthetic-background checks. Default certificate-verified handshakes passed for Telegram and the two Google token flows using fake credentials; a separate real read-only Codex check returned complete reset details while WUPHF settings/state/job fingerprints stayed unchanged. No reset was used and no real message or Calendar mutation was performed by these final checks.
+
+Anonymous HTTP checks passed for the release, source ZIP, version-pinned guide and all four assets. The public checksum file matched audited bytes; beta.1/beta.2 tags, publication timestamps and asset IDs/digests were unchanged. Publication does not establish signing, a clean new-user installation, full keyboard traversal, real-device delivery, native-speaker approval, live Calendar cleanup or long-term refresh/sleep/offline recovery. Those limits are separate from owner-authorized beta publication.
+
 ---
 
 # Release readiness — 0.1.0-beta.2
