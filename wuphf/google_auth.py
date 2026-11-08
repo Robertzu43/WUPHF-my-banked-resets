@@ -7,7 +7,7 @@ import threading
 import time
 import urllib.parse
 import webbrowser
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from . import cli
 from .google import SCOPE, GoogleCalendar, create_calendar, reconcile, token_request
@@ -42,24 +42,33 @@ def start_connect(raw):
 def _connect(ident,secret):
     state=secrets.token_urlsafe(32);verifier=secrets.token_urlsafe(48)
     challenge=base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b'=').decode()
-    result={}
+    result={};result_lock=threading.Lock()
     class Callback(BaseHTTPRequestHandler):
         def log_message(self,*args):pass
         def do_GET(self):
             parsed=urllib.parse.urlsplit(self.path)
             values=urllib.parse.parse_qs(parsed.query)
-            if parsed.path!='/oauth/callback' or values.get('state',[''])[0]!=state:
+            states=values.get('state',[]);codes=values.get('code',[]);errors=values.get('error',[])
+            if (parsed.path!='/oauth/callback' or len(states)!=1 or not secrets.compare_digest(states[0].encode(),state.encode())
+                    or not ((len(codes)==1 and not errors) or (len(errors)==1 and not codes))):
                 self.send_error(400);return
-            result.update({k:v[0] for k,v in values.items()})
+            with result_lock:
+                if result or time.monotonic()>=deadline:
+                    self.send_error(400);return
+                result.update({k:v[0] for k,v in values.items()})
             body=b'Google authorization response received. Return to WUPHF.'
             self.send_response(200);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
     server=None
     try:
-        server=HTTPServer(('127.0.0.1',0),Callback);server.timeout=180
+        server=ThreadingHTTPServer(('127.0.0.1',0),Callback);deadline=time.monotonic()+180
         redirect=f'http://127.0.0.1:{server.server_port}/oauth/callback'
         query={'client_id':ident,'redirect_uri':redirect,'response_type':'code','scope':SCOPE,'access_type':'offline','prompt':'consent','state':state,'code_challenge':challenge,'code_challenge_method':'S256'}
         webbrowser.open('https://accounts.google.com/o/oauth2/v2/auth?'+urllib.parse.urlencode(query))
-        server.handle_request()
+        while not result:
+            remaining=deadline-time.monotonic()
+            if remaining<=0:break
+            server.timeout=min(remaining,0.25)
+            server.handle_request()
         if result.get('error') or not result.get('code'):raise RuntimeError('Google authorization was declined or timed out.')
         data=token_request({'client_id':ident,'client_secret':secret,'code':result['code'],'code_verifier':verifier,'redirect_uri':redirect,'grant_type':'authorization_code'})
         if not data.get('refresh_token'):raise RuntimeError('Google did not issue a refresh token; reconnect and allow access.')
