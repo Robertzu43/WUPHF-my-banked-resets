@@ -11,13 +11,63 @@
   <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/actions"><img alt="Build and test results" src="https://img.shields.io/badge/checks-GitHub%20Actions-2454dd?style=flat-square"></a>
 </p>
 <p align="center">
-  <a href="#install-and-get-started"><strong>Install</strong></a> ·
+  <a href="#let-codex-set-it-up-for-you"><strong>Set up with Codex</strong></a> ·
+  <a href="#install-and-get-started"><strong>Install manually</strong></a> ·
   <a href="#connect-your-own-accounts"><strong>Connect your accounts</strong></a> ·
   <a href="#help-and-troubleshooting"><strong>Get help</strong></a> ·
   <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.1"><strong>Release notes</strong></a>
 </p>
 
 WUPHF checks your available **banked Codex resets** and reminds you before known expiry dates. It never uses a reset for you. Choose **Gmail, other email, Telegram, calendar dates, or any combination**. There is no WUPHF account or hosted reminder service to sign up for.
+
+## Let Codex set it up for you
+
+Copy the prompt below into a **local Codex session on the computer that will run WUPHF**. Codex can handle the technical setup when that session has terminal and browser access. You choose the channels and complete any required sign-in or permission prompts. No passwords or bot tokens belong in the chat.
+
+```text
+Install and configure WUPHF for Codex Banked Resets on this computer for me.
+Official project: https://github.com/Robertzu43/WUPHF-my-banked-resets
+Setup guide: https://github.com/Robertzu43/WUPHF-my-banked-resets#install-and-get-started
+
+Do the setup work using your available tools. First check that you can access
+my local computer; a cloud workspace cannot install my local background job.
+If local access is unavailable, explain the smallest step I need to take.
+
+Ask which options I want: Gmail, other email (SMTP), Telegram, Google Calendar
+sync, or an ICS calendar file. I can choose one or several. Offer reminders
+starting 7 days before expiry and repeating every 24 hours, and let me change
+those settings and the interface language. Preserve existing settings unless
+I request changes.
+
+Detect my OS and architecture. Read the official setup guide and release notes.
+Use the newest published compatible release, including betas, verify its
+archive against that release's SHA256SUMS, and install the complete folder in
+a permanent user-owned location. Use the source-install instructions if no
+compatible package exists; explain any untested compatibility. Check the
+Codex CLI and help install it from its official source if missing. Use my own
+ChatGPT sign-in without exposing its credentials or consuming any reset.
+
+Open WUPHF's local setup page and configure only my selected options with my
+own accounts. Keep the setup process running through browser authorization.
+Guide me to enter private tokens/passwords directly in WUPHF, never in chat,
+logs or committed files. Pause for sign-in and approvals that require me.
+For Telegram, guide creation of my own bot and use WUPHF's pairing flow.
+If a provider blocks connection, explain the exact issue and continue with
+my other selected options. Never disable OS security protections.
+
+Save my settings. Send one labeled test through each selected notification
+channel and ask me to confirm receipt. For Calendar sync, verify a sync;
+for ICS, export the file and help me import it. Enable background checks for
+ongoing reminders/sync, avoiding duplicate jobs. For ICS-only setup, leave
+background checks off. Verify the scheduler when enabled and the
+last successful check; do not claim delivery from provider acceptance alone.
+
+Finish with a short checklist of what is installed, connected, tested or still
+blocked, how to reopen WUPHF and how to stop it. Explain that this computer
+must stay awake, online and logged in. Make no purchases or paid subscriptions.
+```
+
+This is guided setup, not an unattended installer: sign-in, private credential entry, OS approvals and provider restrictions can still require your participation. If you prefer to install manually, follow the steps below.
 
 ## Install and get started
 
