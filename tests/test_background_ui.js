@@ -3,14 +3,14 @@ const vm = require('vm');
 const assert = require('assert');
 const html = fs.readFileSync('wuphf/web.html', 'utf8');
 const render = html.match(/function renderBackground\(s\)\{[\s\S]*?\n\}/)[0];
-const poll = html.match(/async function backgroundStatus\(\)\{[^\n]*\}/)[0];
+const poll = html.match(/async function backgroundStatus\([^)]*\)\{[^\n]*\}/)[0];
 const elements = {};
 let timer, timeout, calls = 0;
 const states = [
   {scheduler:'enabled',last_check:100,check_status:'recent',last_error:false,failures:['gmail']},
   {scheduler:'disabled',last_check:100,check_status:'stale',last_error:false,failures:['gmail']}
 ];
-const ctx = {renderSetup(){},Date, Number, AbortController, lastBackground:null, backgroundTimer:null, backgroundInFlight:false,
+const ctx = {renderSetup(){},Date, Number, AbortController, lastBackground:null, backgroundTimer:null, backgroundInFlight:null,backgroundRevision:0,
   $:id=>elements[id]||(elements[id]={textContent:''}),
   t:(key,values={})=>key+(values.channels?' '+values.channels:''),locale:()=> 'en',
   api:async()=>states[calls++], setTimeout:(fn,ms)=>(ms===60000?timer=fn:timeout=fn,1),clearTimeout:()=>{}};
@@ -35,5 +35,13 @@ vm.createContext(ctx);vm.runInContext(html.match(/function dateTime\(value\)\{[^
   assert.equal(typeof timeout,'function');
   timeout(); await hung;
   assert.equal(elements['scheduler-status'].textContent,'scheduler_unknown');
+  let refreshReads=0;const rendered=[],renderBackground=ctx.renderBackground;
+  ctx.renderBackground=s=>{rendered.push(s.scheduler);renderBackground(s)};
+  ctx.api=(path,method,data,signal)=>++refreshReads===1?new Promise((resolve,reject)=>signal.addEventListener('abort',()=>reject(Error('old timeout')))):Promise.resolve(states[0]);
+  const slow=ctx.backgroundStatus(),fresh=ctx.backgroundStatus(true);
+  assert.equal(refreshReads,1,'Forced refresh must wait for the pending request timeout');
+  timeout();await slow;await fresh;
+  assert.equal(refreshReads,2);assert.deepEqual(rendered,['enabled'],'Timed-out old state must not replace a fresh action result');
+  assert.equal(elements['scheduler-status'].textContent,'scheduler_enabled');
   console.log('Background polling updates scheduler, age and channel failures without overlapping or hanging.');
 })().catch(e=>{console.error(e);process.exitCode=1});

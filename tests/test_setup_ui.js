@@ -86,6 +86,11 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
   ctx.api=async(path)=>path.endsWith('/connect')?{ok:true}:{state:'connected'};await element(provider+'-connect').onclick();
   lateReject(Error('old request failed'));await lateFailure;assert(!element(action).disabled,'Old failures must not erase successful reauthorization');
  }
+ vm.runInContext("language='es'",ctx);ctx.renderStatus({count:0,complete:true,credits:[]});
+ ctx.fetch=async()=>({ok:false,status:409,json:async()=>({error:catalog.es.api_incomplete_error})});
+ await element('calendar-download').onclick();assert.equal(element('flash').textContent,catalog.es.api_incomplete_error,'A localized 409 must keep the actionable Refresh instruction');
+ assert.equal(downloads.length,0,'A localized rejection must keep the setup page and skip download');
+ vm.runInContext("language='en'",ctx);
  ctx.backgroundStatus=originalBackgroundStatus;
  element('setup-ack').checked=true;await element('setup-ack').dispatch('change');
  ctx.api=async()=>({scheduler:'disabled',last_check:null,check_status:'never',last_error:false,failures:[]});await ctx.backgroundStatus();
@@ -94,6 +99,27 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  await element('install').onclick();await Promise.resolve();assert(element('install').disabled,'Enabled scheduler must not offer Enable again');assert(!element('uninstall').disabled);assert.equal(element('setup-next').textContent,catalog.en.setup_checks_on);
  await element('uninstall').onclick();await Promise.resolve();assert(!element('install').disabled);assert(element('uninstall').disabled);
  ctx.api=async()=>{throw Error('background unavailable')};await ctx.backgroundStatus();assert(!element('uninstall').disabled,'Unknown scheduler must still allow disabling an existing job');
+ for(const action of ['install','uninstall'])for(const oldFails of [false,true])for(const freshFails of [false,true]){
+  const before=action==='install'?'disabled':'enabled',after=action==='install'?'enabled':'disabled';
+  const report=scheduler=>({scheduler,last_check:null,check_status:'never',last_error:false,failures:[]});
+  ctx.renderBackground(report(before));
+  let settleOld,active=0,maxActive=0,reads=0,posted=false;
+  ctx.api=async(path)=>{
+   if(path==='/api/'+action){posted=true;return {ok:true}}
+   assert.equal(path,'/api/background');reads++;active++;maxActive=Math.max(maxActive,active);
+   if(reads===1)return new Promise((resolve,reject)=>{settleOld=()=>{active--;oldFails?reject(Error('old poll failed')):resolve(report(before))}});
+   assert(posted,'Fresh read must follow the successful scheduler action');active--;
+   if(freshFails)throw Error('fresh poll failed');return report(after);
+  };
+  const old=ctx.backgroundStatus(),changing=element(action).onclick();await Promise.resolve();await Promise.resolve();
+  assert(posted,action+' must be available in its starting state');assert.equal(reads,1,'Post-action refresh must wait for the old poll without overlap');
+  settleOld();await old;await changing;
+  assert.equal(reads,2,action+' must always get a fresh scheduler read after a pending poll');assert.equal(maxActive,1,'Scheduler reads must not overlap');
+  if(freshFails){assert.equal(element('scheduler-status').textContent,catalog.en.scheduler_unknown);assert(!element('uninstall').disabled,'Unknown state must preserve the stop action');ctx.api=async()=>report(after);await ctx.backgroundStatus()}
+  assert.equal(element('install').disabled,after==='enabled',action+' must use the fresh scheduler state');
+  assert.equal(element('uninstall').disabled,after==='disabled',action+' must keep the correct stop action after an old success/error and refresh recovery');
+ }
+
  ctx.renderStatus({count:0,complete:true,credits:[]});assert(!element('calendar-download').disabled,'Complete zero balance can export');
  ctx.URL={createObjectURL:()=> 'blob:calendar',revokeObjectURL(){}};
  ctx.fetch=async()=>({ok:true,blob:async()=>({})});await element('calendar-download').onclick();assert.deepEqual(downloads,['wuphf-resets.ics']);
