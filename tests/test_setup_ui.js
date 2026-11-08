@@ -34,7 +34,7 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  ctx.renderGoogle({state:'disconnected',message:'Not connected'});assert(element('google-sync').disabled);assert(element('google-disconnect').disabled);
  ctx.renderGoogle({state:'saved'});assert(element('google-sync').disabled,'Incomplete Codex data cannot sync');
  ctx.renderStatus({count:0,complete:true,credits:[]});assert.equal(element('count').textContent,0);assert.equal(element('status-note').textContent,catalog.en.status_zero);assert(!element('google-sync').disabled);
- ctx.renderStatus({count:null,complete:false,credits:[{expires:null}]});assert.equal(element('count').textContent,'?');assert.equal(element('status-note').textContent,catalog.en.status_incomplete);assert.equal(element('dates').children[0].textContent,catalog.en.expiry_unknown);assert(element('google-sync').disabled);
+ ctx.renderStatus({count:null,complete:false,credits:[{expires:null}]});assert.equal(element('count').textContent,'?');assert.equal(element('status-note').textContent,catalog.en.status_unavailable);assert.equal(element('dates').children[0].textContent,catalog.en.expiry_unknown);assert(element('google-sync').disabled);
  ctx.renderStatus({count:1,complete:true,credits:[{expires:'2026-11-20T12:00:00Z'}]});assert(/2026/.test(element('dates').children[0].textContent));assert(/UTC|GMT/.test(element('dates').children[0].textContent),'Expiry includes an explicit timezone');
  const normalApi=ctx.api;let release;
  ctx.api=async(path,...args)=>path==='/api/test'?new Promise(resolve=>{release=resolve}):normalApi(path,...args);
@@ -127,5 +127,20 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  ctx.fetch=async()=>{throw Error('offline')};await element('calendar-download').onclick();assert.equal(element('flash').textContent,catalog.en.api_error);assert(!element('calendar-download').disabled,'Download transport errors allow retry');
  ctx.renderStatus({count:null,complete:false,credits:[]});assert(element('calendar-download').disabled);await element('calendar-download').onclick();assert.equal(downloads.length,1);
  ctx.api=async()=>{throw Error('Codex unavailable')};await ctx.status();assert(element('calendar-download').disabled,'Failed Codex refresh must disable export');
+ const unavailable=new Set(),calendarSaved=new Set();
+ for(const language of Object.keys(catalog)){
+  vm.runInContext('language='+JSON.stringify(language),ctx);
+  ctx.renderStatus({count:null,complete:false,credits:[]});
+  assert.equal(element('status-note').textContent,catalog[language].status_unavailable,'Unknown balance must name unavailable balance information');
+  assert(catalog[language].status_unavailable);unavailable.add(catalog[language].status_unavailable);
+  ctx.renderStatus({count:2,complete:false,credits:[]});assert.equal(element('status-note').textContent,catalog[language].status_incomplete,'A known count retains the narrower expiry-details guidance');
+  for(const name of ['telegram','email','gmail','ntfy'])element('use-'+name).checked=false;
+  await element('settings').dispatch('change');ctx.api=async()=>({ok:true});await element('settings').dispatch('submit');
+  assert.equal(element('flash').textContent,catalog[language].saved_calendar,'Calendar-only saves must guide calendar use instead of a notification test');
+  assert(catalog[language].saved_calendar);calendarSaved.add(catalog[language].saved_calendar);
+ }
+ assert.equal(unavailable.size,8);assert.equal(calendarSaved.size,8,'Calendar-only save guidance must be localized in all languages');
+ vm.runInContext("language='en'",ctx);element('use-telegram').checked=true;await element('settings').dispatch('change');await element('settings').dispatch('submit');
+ assert.equal(element('flash').textContent,catalog.en.saved,'Notification settings retain the send-test next step');
  console.log('Guided setup prevents stale sends and false readiness, recovers after save/test failures, and gates disconnected/incomplete actions.');
 })().catch(e=>{console.error(e);process.exitCode=1});
