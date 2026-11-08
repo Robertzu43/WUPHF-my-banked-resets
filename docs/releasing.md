@@ -38,4 +38,6 @@ Check `build-info.json` against the selected SHA/version and smoke-test the extr
 
 The Windows build restricts DLL discovery to Python and Windows directories and applies the UCRT exclusion in its generated PyInstaller spec before collection. This follows [Microsoft's Windows 10+ UCRT deployment behavior](https://learn.microsoft.com/en-us/cpp/windows/universal-crt-deployment) and [PyInstaller's documented spec customization](https://pyinstaller.org/en/stable/spec-files.html). Do not extend this package's support to older Windows without revisiting those runtime dependencies.
 
+Google verification is a disclosed integration limitation, not a prerequisite for an explicitly authorized beta with all existing options. Do not imply Google approval, unlimited Google onboarding, or shared maintainer accounts. Each installation connects its own accounts.
+
 Only publish after reviewing the release conditions and final notes. Include supported architectures, dependencies (the signed-in Codex CLI remains required), unsigned status, setup, upgrade/removal instructions and known limits. Then verify the public download links and update README status. Draft creation may reserve a version tag; never reuse or move a published version. A stable release needs additional beta evidence.
