@@ -12,7 +12,7 @@
 
 ## Global constraints
 
-- Users can select any combination of Telegram, Gmail/SMTP, ntfy, and calendar; calendars alone remain valid.
+- New setups support Telegram and Gmail/SMTP; calendar remains separate and can be used alone. Existing ntfy users retain a visible option to disable their previously saved channel.
 - Never consume a reset, invent an expiry, treat incomplete results as zero, leak credentials, or promise delivery.
 - Keep credentials in supported OS secure stores; no public shared Telegram bot token or centralized user database.
 - Background checks require an awake, online, logged-in computer; explain that the computer may sleep and checks cannot run then.
@@ -29,7 +29,7 @@
 
 ## Current baseline
 
-The original developer Mac read real Codex data and received Gmail and Telegram tests. The current cross-platform branch has 102 automated tests passing in CI across macOS, Windows and Ubuntu on Python 3.11 and 3.13. A Windows runner exercised Credential Manager and Task Scheduler registration; a Linux container exercised Secret Service. None of these establishes full reminder delivery on real Windows/Linux accounts. The public repository has no releases or tags; PRs #2–#5 are stacked, with #3–#5 drafts. Google verification and production Gmail reauthorization remain outstanding, and Google Calendar live sync and ntfy phone delivery have not been established.
+The original developer Mac read real Codex data and received Gmail and Telegram tests. The current cross-platform branch has 102 automated tests passing in CI across macOS, Windows and Ubuntu on Python 3.11 and 3.13. A Windows runner exercised Credential Manager and Task Scheduler registration; a Linux container exercised Secret Service. None of these establishes full reminder delivery on real Windows/Linux accounts. The public repository has no releases or tags; PRs #2–#5 are stacked, with #3–#5 drafts. Google verification and production Gmail reauthorization remain outstanding, and Google Calendar live sync has not been established. ntfy is outside the new release scope; legacy settings remain manageable.
 
 ## Task 1: Establish a safe baseline and integrate changes
 
@@ -63,10 +63,10 @@ The original developer Mac read real Codex data and received Gmail and Telegram 
 
 **Files:** `wuphf/channels.py`, `wuphf/web.html`, `wuphf/web.py`, `wuphf/translations.json`, `tests/test_channels.py`, `tests/test_web.py`, `tests/test_i18n.py`, `README.md`.
 
-- [ ] Walk through Gmail, SMTP, Telegram and ntfy with a new user; identify every required field and failure. Add concise, translated, step-by-step inline help and test actions for saved destinations.
+- [ ] Walk through Gmail, SMTP and Telegram with a new user; identify every required field and failure. Add concise, translated, step-by-step inline help and test actions for saved destinations.
 - [ ] Simplify Telegram setup using a user's own bot and a safe way to obtain the chat ID. Verify any auto-discovery against the Bot API and avoid shipping a shared secret. Document unavoidable BotFather and start-chat steps; do not promise one-click setup without a tested implementation.
 - [ ] Test provider errors, invalid credentials and timeout handling with mocks; ensure no tokens appear in responses, logs or issue templates.
-- [ ] With authorized destinations, receive real Telegram, Gmail, SMTP and ntfy messages on the intended devices and exercise a scheduled reminder for each enabled channel. Keep the beta blocked for any advertised channel without an end-to-end test, or explicitly exclude it from beta claims.
+- [ ] With authorized destinations, receive real Telegram, Gmail and SMTP messages on the intended devices and exercise a scheduled reminder for each enabled channel. Keep the beta blocked for any advertised channel without an end-to-end test, or explicitly exclude it from beta claims.
 
 ## Task 5: Easy installation and release packages
 

@@ -4,7 +4,7 @@
 
 **Your reset bank called. It wants you to use it.**
 
-WUPHF helps you keep track of available Codex banked resets and reminds you before known expiry dates. Pick the channels you want: Gmail or other email, Telegram, ntfy, and calendar events. WUPHF never uses a reset on your behalf.
+WUPHF helps you keep track of available Codex banked resets and reminds you before known expiry dates. Pick the channels you want: Gmail or other email, Telegram, and calendar events. WUPHF never uses a reset on your behalf.
 
 > **Status: early prototype.** There is no published release yet. This branch adds Windows and Linux support and is still under review. Live setup and background delivery have not been fully verified on every platform or for every channel. Keep a backup reminder until they have been tested for your account.
 
@@ -60,13 +60,9 @@ Enable **Email** and enter your provider's SMTP SSL server and port, username, s
 
 The optional lookup checks pending updates only when you click the button and does not confirm those updates. It accepts only an exact match for the current single-use pairing phrase in a private message. If multiple chats match, too many updates are pending, or a webhook or another bot client prevents polling, enter your private chat ID manually. Telegram was tested on the developer's Mac; broader delivery testing is still needed.
 
-### ntfy
+### Existing ntfy alerts
 
-1. Install an ntfy client on your device. Enable **ntfy push** in WUPHF and enter your HTTPS server (the default is `https://ntfy.sh`).
-2. Click **Generate a topic** or enter your own. Subscribe to the same topic in the ntfy app. If your server uses an access token, enter it in WUPHF too.
-3. Save settings and send a test. Confirm it arrives on your device.
-
-Anyone who knows an unprotected topic can read its notifications. A random topic name is not access control: use an authenticated topic for privacy. Live phone delivery still needs testing.
+New setups offer email and Telegram. If an older installation already has ntfy configured, WUPHF shows a legacy control: uncheck it and save settings to stop those alerts. Its saved token remains in your operating system's credential store until you remove it there.
 
 ## Calendar
 

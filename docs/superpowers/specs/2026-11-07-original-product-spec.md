@@ -1,4 +1,4 @@
-> Historical approved spec: the later release plan supersedes macOS-only scope and updates the evidence for live tests.
+> Historical approved spec: the later release plan supersedes macOS-only scope, removes ntfy from new setups, and updates the evidence for live tests.
 
 # WUPHF My Resets — product and technical specification
 

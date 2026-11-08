@@ -133,13 +133,13 @@ class WebTests(unittest.TestCase):
         result=subprocess.run(['node','tests/test_background_ui.js'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
 
-    def test_ntfy_topic_generation_is_safe_and_accessible(self):
+    def test_legacy_ntfy_is_hidden_for_new_users_and_existing_settings_can_be_disabled(self):
         import shutil, subprocess
         res,body=self.request('GET','/',headers={'Cookie':'wuphf_session=test-token'})
-        self.assertIn(b'id="ntfy-generate"',body)
-        self.assertIn(b'aria-describedby="ntfy-steps"',body)
+        self.assertIn(b'id="ntfy-legacy" hidden',body)
+        self.assertNotIn(b'id="ntfy-generate"',body)
         if not shutil.which('node'):self.skipTest('Node is unavailable')
-        result=subprocess.run(['node','tests/test_ntfy_ui.js'],capture_output=True,text=True)
+        result=subprocess.run(['node','tests/test_legacy_ntfy_ui.js'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
 
     def test_telegram_discovery_requires_explicit_request_and_does_not_expose_token(self):

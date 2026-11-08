@@ -144,3 +144,17 @@ class CliTests(unittest.TestCase):
             job=plistlib.loads(plist.read_bytes())
             self.assertEqual(job['ProgramArguments'],['python-example','-m','wuphf.cli','run'])
             self.assertEqual(job['WorkingDirectory'],str(root))
+
+    def test_new_cli_setup_does_not_offer_ntfy_but_existing_users_can_disable_it(self):
+        from wuphf import cli
+        def exercise(channels):
+            prompts=[]
+            def answer(label,default=''):
+                prompts.append(label)
+                return 'n' if label.startswith('Enable ') else default
+            with patch.object(cli,'load',return_value={'advance_days':7,'repeat_hours':24,'channels':channels}),patch.object(cli,'prompt',side_effect=answer),patch.object(cli,'save') as save:
+                cli.configure()
+            return prompts,save.call_args.args[1]
+        prompts,_=exercise({});self.assertNotIn('Enable ntfy? (y/n)',prompts)
+        prompts,settings=exercise({'ntfy':{'url':'https://example.test','topic':'legacy'}})
+        self.assertIn('Enable ntfy? (y/n)',prompts);self.assertNotIn('ntfy',settings['channels'])

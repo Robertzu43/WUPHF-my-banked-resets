@@ -36,7 +36,8 @@ def configure():
     settings['advance_days']=float(prompt('Start reminding this many days before expiry',str(settings['advance_days'])))
     settings['repeat_hours']=float(prompt('Repeat every how many hours',str(settings['repeat_hours'])))
     channels={}
-    for channel in ('telegram','email','ntfy','gmail'):
+    available=('telegram','email')+(('ntfy',) if 'ntfy' in settings['channels'] else ())+('gmail',)
+    for channel in available:
         enabled=prompt('Enable '+channel+'? (y/n)','y' if channel in settings['channels'] else 'n').lower()=='y'
         if not enabled: continue
         old=settings['channels'].get(channel,{})
