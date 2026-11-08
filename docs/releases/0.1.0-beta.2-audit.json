@@ -1,0 +1,86 @@
+{
+  "version": "0.1.0-beta.2",
+  "source_commit": "95925e1e5ac35bc5080a1366803f8b46f6cb78da",
+  "workflow": "https://github.com/Robertzu43/WUPHF-my-banked-resets/actions/runs/42457381734",
+  "all_checks_passed": true,
+  "archives": [
+    {
+      "archive": "wuphf-0.1.0-beta.2-linux-x86_64-unsigned.tar.gz",
+      "bytes": 27487807,
+      "sha256": "40b55499d9a18faac74bca3dcbc15b3be0e427b89f595e9e4e5239e5e5b0c564",
+      "manifest": {
+        "version": "0.1.0-beta.2",
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "architecture": "x86_64",
+        "python": "3.11.18",
+        "os": "linux",
+        "commit": "95925e1e5ac35bc5080a1366803f8b46f6cb78da",
+        "unsigned": true
+      },
+      "entries": 317,
+      "safe_internal_links": 0,
+      "native_notice_entries": 65,
+      "missing_notices": [],
+      "uncollected_native_binaries": [],
+      "private_files_absent": true,
+      "help_matches_source_and_internal_copies": true,
+      "source_text_matches_after_only_platform_newline_normalization": []
+    },
+    {
+      "archive": "wuphf-0.1.0-beta.2-macos-arm64-unsigned.tar.gz",
+      "bytes": 8925281,
+      "sha256": "c833931648ac72dd2c5b9902f03c43d635ff1aa1eb9ab08defd98284ccb0907b",
+      "manifest": {
+        "version": "0.1.0-beta.2",
+        "platform": "macOS-26.7.2-arm64-arm-64bit",
+        "architecture": "arm64",
+        "python": "3.11.9",
+        "os": "macos",
+        "commit": "95925e1e5ac35bc5080a1366803f8b46f6cb78da",
+        "unsigned": true
+      },
+      "entries": 177,
+      "safe_internal_links": 4,
+      "native_notice_entries": 53,
+      "missing_notices": [],
+      "uncollected_native_binaries": [],
+      "private_files_absent": true,
+      "help_matches_source_and_internal_copies": true,
+      "source_text_matches_after_only_platform_newline_normalization": []
+    },
+    {
+      "archive": "wuphf-0.1.0-beta.2-windows-x86_64-unsigned.zip",
+      "bytes": 9378921,
+      "sha256": "762889a58d2d6614d3a5c1f5f7868e1c2ed71340af3717fbcde05c2956723c3b",
+      "manifest": {
+        "version": "0.1.0-beta.2",
+        "platform": "Windows-10-10.0.26100-SP0",
+        "architecture": "AMD64",
+        "python": "3.11.9",
+        "os": "windows",
+        "commit": "95925e1e5ac35bc5080a1366803f8b46f6cb78da",
+        "unsigned": true
+      },
+      "entries": 208,
+      "safe_internal_links": 0,
+      "native_notice_entries": 18,
+      "missing_notices": [],
+      "uncollected_native_binaries": [],
+      "private_files_absent": true,
+      "help_matches_source_and_internal_copies": true,
+      "source_text_matches_after_only_platform_newline_normalization": [
+        "LICENSE",
+        "VERSION",
+        "README.md",
+        "CHANGELOG.md",
+        "docs/user-guide.md",
+        "docs/google-production.md",
+        "docs/release-readiness.md",
+        "docs/releasing.md"
+      ]
+    }
+  ],
+  "limitations": [
+    "Unsigned/unnotarized; this audit does not prove clean first-time-user installation or real provider delivery."
+  ]
+}
