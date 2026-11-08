@@ -1,11 +1,11 @@
 import datetime
 import hashlib
-import math
-from .core import due
+from .core import due, valid_expiry
 from .i18n import translate
 
 
 def pending(snap, channels, ledger, now, advance, repeat):
+    if not snap.get('complete'): return []
     result=[]
     for credit in snap.get('credits') or []:
         if credit.get('status', 'available') != 'available': continue
@@ -41,7 +41,7 @@ def ics(snap, language='en'):
     for row in snap.get('credits') or []:
         if row.get('status','available') != 'available': continue
         expiry=row.get('expiresAt')
-        if not isinstance(expiry,(int,float)) or isinstance(expiry,bool) or not math.isfinite(expiry) or expiry > 253402300739 or expiry <= datetime.datetime.now().timestamp(): continue
+        if not valid_expiry(expiry) or expiry <= datetime.datetime.now().timestamp(): continue
         stamp=datetime.datetime.fromtimestamp(expiry,datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')
         end=datetime.datetime.fromtimestamp(expiry+60,datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')
         uid=hashlib.sha256(row['id'].encode()).hexdigest()+'@wuphf'

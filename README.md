@@ -8,35 +8,38 @@
 <p align="center">A local, open-source reminder for the Codex banked resets you don't want to miss.</p>
 
 <p align="center">
-  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases"><img alt="Version: unreleased prototype" src="https://img.shields.io/badge/version-unreleased%20prototype-2454dd?style=flat-square"></a>
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases"><img alt="Version: 0.1.0-beta.1 candidate (unreleased)" src="https://img.shields.io/badge/version-0.1.0--beta.1%20candidate-2454dd?style=flat-square"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2454dd?style=flat-square"></a>
-  <img alt="Cross-platform support in review" src="https://img.shields.io/badge/desktop-cross--platform%20preview-2454dd?style=flat-square">
+  <img alt="Desktop: macOS, Windows and Linux preview" src="https://img.shields.io/badge/desktop-macOS%20%7C%20Windows%20%7C%20Linux-2454dd?style=flat-square">
   <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/checks-GitHub%20Actions-2454dd?style=flat-square"></a>
 </p>
 
 <p align="center">
-  <a href="#installation-and-setup-preview"><strong>Installation &amp; setup</strong></a> ·
-  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/tree/feature/cross-platform"><strong>Cross-platform preview</strong></a> ·
-  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/feature/cross-platform/docs/superpowers/plans/2026-11-07-public-beta-release.md"><strong>Release plan</strong></a> ·
+  <a href="#installation-and-setup-preview"><strong>Get started</strong></a> ·
+  <a href="#3-choose-how-to-receive-reminders"><strong>Connect notifications</strong></a> ·
+  <a href="docs/superpowers/plans/2026-11-07-public-beta-release.md"><strong>Release plan</strong></a> ·
   <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/issues"><strong>Report an issue</strong></a>
 </p>
 
-> **Early prototype · No release published yet.** The default branch is the earlier macOS prototype. Windows, Linux, Gmail sign-in and the pixel interface are in the [cross-platform development branch](https://github.com/Robertzu43/WUPHF-my-banked-resets/tree/feature/cross-platform) and are not released. Google verification remains in progress. Windows and Linux passed automated checks, but real-account and background-delivery tests were not performed. Keep a backup reminder until WUPHF is tested for your account.
+> **Release candidate · Not published yet.** Version `0.1.0-beta.1` is being prepared; see the [release readiness report](docs/release-readiness.md) for evidence and remaining gates. Windows and Linux passed automated checks; real-account and background-delivery tests were not performed. Google verification is pending. Keep a backup reminder until WUPHF is tested for your account.
 
-WUPHF helps you track available Codex banked resets and remember known expiry dates. The planned release focuses on **email** and **Telegram**, with calendar export available. You choose when reminders start and how often they repeat. WUPHF never uses a reset for you.
+WUPHF checks your available Codex banked resets and reminds you before known expiry dates through **email**, **Telegram**, or both. You can also add expiry dates to your calendar. WUPHF never uses a reset for you.
 
-## At a glance
+## What you can do
 
-- **Stay informed:** View available banked resets and known deadlines from your signed-in Codex CLI.
-- **Choose your WUPHF:** Configure email, Telegram, or both, and send a test to each destination.
-- **Save the date:** Export an `.ics` snapshot for compatible calendars; the preview also includes experimental Google Calendar sync.
-- **Keep it local:** Your computer runs the checks and stores credentials in its secure credential store.
+- See your available banked reset count and known expiry dates using your existing Codex CLI sign-in.
+- Choose when reminders start and how often they repeat. Use any combination of supported channels.
+- Export an `.ics` snapshot for Google Calendar, Apple Calendar, Outlook, and other compatible calendars. Experimental Google Calendar sync can add events to a separate WUPHF calendar.
+- Use English, Spanish, German, Portuguese, French, Japanese, Korean, or Simplified Chinese. Translations are machine-assisted.
 
-Your computer must be awake, online, and logged in for background reminders. Incomplete Codex data or provider failures can prevent an alert.
+WUPHF runs locally. Your computer must be awake, online, and logged in for background checks and messages to run. Unknown or incomplete Codex data cannot be treated as a confirmed expiry or a used reset. Delivery depends on your selected services.
+
+When Codex supplies an account identifier, WUPHF uses a local fingerprint to avoid carrying reminder state between different accounts. Codex may omit that identifier. While it is unavailable, WUPHF cannot send alerts for newly detected resets or reliably detect account or workspace switches; expiry reminders for known deadlines can still run. Check your account and reminders after switching, and keep a backup reminder.
 
 ## Installation and setup (preview)
 
-This guide is for the **cross-platform development preview**. There is no finished installer or published release yet. Windows and Linux real-account and background-delivery tests were not performed; the project owner chose not to require them for this release. The app remains a prototype on every platform. If you would rather run the older macOS-only default branch, see [the default-branch instructions](#open-wuphf) below.
+
+These instructions run WUPHF from source. Python is required for this method; the experimental packaged builds include Python. Windows and Linux real-device tests were skipped at the project owner’s request; automated checks remain required.
 
 ### 1. Install the prerequisites
 
@@ -48,12 +51,12 @@ This guide is for the **cross-platform development preview**. There is no finish
 
 ### 2. Download and open WUPHF
 
-1. [Download the cross-platform preview as a ZIP](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/heads/feature/cross-platform.zip), then extract it. This is source code from a development branch, not a signed installer.
+1. [Download the source preview as a ZIP](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/heads/wuphf-initial.zip), then extract it. This is an unpublished development preview, not a signed installer.
 2. Move the extracted folder to a location where it can stay; background checks use that folder. On macOS, keep WUPHF, its Python executable and the Codex CLI outside **Documents**, **Desktop**, and **Downloads**. For example, use `~/Library/Application Support/WUPHF`. The preview blocks background installation from those folders; other macOS privacy settings can still affect execution.
 3. Open the folder and start the launcher for your computer:
    - **macOS:** Double-click `Start WUPHF.command`. If macOS blocks the unsigned launcher, open Terminal in the folder and run `python3 -m wuphf.web`.
    - **Windows:** Double-click `Start WUPHF.bat`. Keep the window open while using the setup page.
-   - **Linux:** Open a terminal in the folder and run `./Start\ WUPHF.sh`.
+   - **Linux:** Open a terminal in the folder and run `sh "Start WUPHF.sh"`.
 4. WUPHF opens a local setup page in your browser. Choose a language and check that your available reset count appears. If it does not, check your Codex sign-in and use **Refresh**.
 
 ### 3. Choose how to receive reminders
@@ -106,64 +109,47 @@ Experimental Google Calendar sync requires a Google desktop OAuth client with th
 - **WUPHF doesn't open:** Check Python and Codex CLI are installed and available in your session. On Linux, check the `venv` package, systemd user session and unlocked keyring. On macOS, move the project out of protected folders before enabling background checks.
 - **No resets or dates:** Confirm the CLI is signed in to the intended account. If Codex does not supply details, WUPHF displays them as unknown; it cannot invent an expiry.
 - **No notification:** Save settings, run **Send test**, check the destination and displayed error, and ensure your computer is awake and online. A provider accepting a message does not guarantee it reached your device.
-- **Stop checks:** Click **Disable** under Background checks. This leaves your settings and credentials in place.
+- **Stop checks:** Click **Disable** under Background checks. This leaves your settings and credentials in place. On Windows, a check already in progress may finish.
 - **Remove local data:** After disabling checks, remove WUPHF's entries from macOS Keychain, Windows Credential Manager, or Linux Secret Service, then remove `~/.local/share/wuphf-resets/` (under your user profile on Windows). Remove an app-created Google calendar separately if desired.
 - **Need help:** [Open an issue](https://github.com/Robertzu43/WUPHF-my-banked-resets/issues). Never include tokens, passwords, OAuth client files, raw auth files, or reset identifiers.
 
-## Older macOS-only default branch
+## Upgrade safely
 
-The following sections describe the older default branch, not the cross-platform preview above.
+Before replacing or moving WUPHF, click **Disable** and close its setup process. Keep your existing data folder and OS credentials. Download the new source or package into its permanent location, reopen it, review your settings, send a test, then enable checks again. Do not run two copies against the same settings at once. If you move the app, reinstall its background job so it points to the new location.
 
-### Open WUPHF
+## Privacy and limitations
 
-These steps describe the **default-branch macOS prototype**. For the newer Windows, Linux, Gmail and pixel-interface preview, follow the [development branch setup guide](https://github.com/Robertzu43/WUPHF-my-banked-resets/tree/feature/cross-platform#try-the-prototype).
+WUPHF runs locally and never redeems a reset. It stores credentials in macOS Keychain, Windows Credential Manager, or Linux Secret Service; insecure plaintext keyring backends are rejected. Reset identifiers, settings and reminder history stay in `~/.local/share/wuphf-resets/`. Your chosen provider receives the notification contents. There is no central WUPHF account database or telemetry.
 
-1. Install Python 3.11 or newer and the [Codex CLI](https://developers.openai.com/codex/cli/), sign in, and make sure `codex` is available in Terminal.
-2. Keep the project in a background-accessible location such as `~/Library/Application Support/WUPHF`, outside Documents, Desktop and Downloads. In Finder, open `Start WUPHF.command`. Leave its Terminal window open while using the setup page.
-3. Choose your notification channels, enter their details, and save. Send a test for each enabled channel.
-4. To run checks in the background, choose **Enable checks**. The Mac must stay awake, online, and logged in. The project folder must stay in the same place.
+Gmail and Telegram test messages were received on the developer’s Mac. Generic SMTP delivery, live Google Calendar sync and imports into calendar applications remain unverified. Google Calendar sync is experimental: disconnecting removes local credentials and mappings, but leaves the calendar and its events in Google. Reconnecting can create a new WUPHF calendar.
 
-If Finder blocks an unsigned download, open Terminal, change into the project folder, and run `python3 -m wuphf.web`. You need Python 3.11 or newer and the signed-in Codex CLI. Checks run approximately every 10 minutes, so shorter intervals cannot be guaranteed.
+An older ntfy configuration remains visible so its owner can disable it. New setups offer email and Telegram. Disabling a channel does not erase its saved secret; remove the WUPHF entry from your OS credential store to erase it.
 
-## Languages
+Eight languages are available: English, Spanish, German, Portuguese, French, Japanese, Korean and Simplified Chinese. Translations are machine-assisted and have not received a complete native-speaker review. Keyboard focus and reduced-motion support are included.
 
-Choose English, Spanish, German, Portuguese, French, Japanese, Korean, or Simplified Chinese in the setup page. Your choice is saved and applies to the interface, reminders, and calendar events. Translations are machine-assisted; contributions from native speakers are welcome.
+## Versioning and development
 
-## Notifications
+[`VERSION`](VERSION) identifies the candidate: **0.1.0-beta.1**. It is not a published release. See the [changelog](CHANGELOG.md), [release readiness report](docs/release-readiness.md), and [implementation plan](docs/superpowers/plans/2026-11-07-public-beta-release.md). We use Semantic Versioning with explicit prerelease tags; a version badge is not evidence that an installer has shipped.
 
-The default branch includes legacy ntfy support. New release setup focuses on email and Telegram. Gmail and Telegram test messages were received on the developer’s Mac using the development version.
+Run the checks from the repository root:
 
-- **Telegram:** Create a bot using Telegram's @BotFather, start a conversation with it, and enter its bot token and chat ID.
-- **Email:** Supply an SMTP SSL server, login, sender, recipient and an app password or other provider-compatible credential. The prototype supports SSL SMTP, typically port 465.
-- **ntfy:** Supply an HTTPS server and topic. Public topics can be read by anyone who knows their name; use an authenticated topic for privacy.
+```sh
+python3 -m unittest discover -s tests -v
+```
 
-Secrets are stored in macOS Keychain under `WUPHF My Resets`. A provider accepting a message is not proof that it reached your device. Each channel has a test button.
+Install Node.js to include the frontend behavioral checks. CI requires Node and runs Python tests on macOS, Windows and Ubuntu. Tests use mocks for external providers; passing them does not prove live delivery. Contributions and translation corrections are welcome. Keep secrets and private reset identifiers out of bug reports.
 
-## Calendar
+### Build an experimental package
 
-Download an `.ics` file for a one-time snapshot compatible with Google, Apple and Outlook calendars. Imported events do not update automatically.
+Build on the operating system you want to target. Use Python 3.11+ in an isolated virtual environment, install `requirements.txt` and `pyinstaller>=6.17,<7`, then run:
 
-To try automatic Google Calendar synchronization, WUPHF needs a registered **desktop OAuth client** in a Google Cloud project with the Google Calendar API enabled. In this prototype, download the client JSON from Google Cloud and select it once under Developer setup; do not paste its contents into chat. A distributor can instead include an appropriately registered `google-client.json` when packaging the app, so users can simply choose Connect Google. Complete Google's consent screen, then select **Sync now**. WUPHF requests permission for an app-created secondary calendar and creates or updates only its own reset events. It checks again with each background run. Because WUPHF cannot reliably detect every Codex account or workspace switch, it does not automatically delete calendar events: remove used or expired reset entries manually in Google Calendar. If your Google app is in testing mode, your account may need to be listed as a test user; Google authorization or verification requirements can apply. This integration has automated mock coverage but has not yet been tested with a live Google account. Your Google Calendar connection inside ChatGPT cannot be reused by the standalone app.
+```sh
+python scripts/build_package.py --output /path/to/empty/dist --work /path/to/empty/build
+python scripts/smoke_package.py /path/to/empty/dist/WUPHF
+```
 
-**Disconnect** removes local Google credentials and mappings; it does not delete the previously created Google calendar or its events. Remove that calendar separately in Google if desired. Reconnecting creates a new WUPHF calendar.
+Linux also requires `objdump` (usually from `binutils`). The one-folder package includes Python but still requires the signed-in Codex CLI; Linux also needs an unlocked Secret Service keyring and a systemd user session. Keep the whole package folder together. Run `WUPHF` (`WUPHF.exe` on Windows) inside it to open setup. `--version` shows its candidate version; `--check-codex` performs a read-only account check without sending messages.
 
-## Stop and uninstall
+These packages are **unsigned and unnotarized**. They are development artifacts, not universal installers. CI builds for its runner’s architecture; support for other architectures or older OS versions is not established. POSIX packages must use an archive format that preserves symbolic links, such as `tar.gz`; Windows packages use ZIP. A packaging smoke check uses temporary data and a synthetic Codex process. See the readiness report for exact build evidence and limitations. Packages include `third-party-notices/` with Python and build-environment distribution notices and an inventory; this is not an exhaustive native-library audit. Each CI artifact includes `SHA256SUMS` for its archive and `build-info.json` inside the package. On macOS verify with `shasum -a 256 -c SHA256SUMS`; on Linux use `sha256sum -c SHA256SUMS`; on Windows compare `Get-FileHash .\wuphf-beta.zip -Algorithm SHA256` with `SHA256SUMS`. Public release downloads will only appear when a release is actually published.
 
-Use **Disable** on the setup page, or run `python3 -m wuphf.cli uninstall` from the project folder. This stops the background job but leaves settings and Keychain entries intact. Delete the `WUPHF My Resets` entries using Keychain Access and remove `~/.local/share/wuphf-resets/` if you want to remove local data. No Google calendar is deleted by uninstalling.
-
-## Reliability and privacy
-
-WUPHF uses the signed-in local Codex CLI and never redeems resets. If expiry details are missing, it shows them as unknown. The Mac cannot check or send alerts while asleep, off, disconnected, or logged out. Use your Mac power settings or `caffeinate` if you choose to keep it awake. Local state contains opaque credit identifiers for deduplication; do not share it or your Codex credentials.
-
-## Versions and contributing
-
-There is **no published release or version tag yet**. The planned first beta is a pre-release, such as `v0.1.0-beta.1`; development is tracked in the [release plan](https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/feature/cross-platform/docs/superpowers/plans/2026-11-07-public-beta-release.md).
-
-Contributions and translation corrections are welcome. Open an [issue](https://github.com/Robertzu43/WUPHF-my-banked-resets/issues) without sharing credentials or private reset identifiers.
-
-WUPHF is free and open source under the [MIT License](LICENSE). It is an independent project inspired by *The Office* and is not affiliated with OpenAI or the show.
-
-
-## Tests and current limits
-
-Run `python3 -m unittest discover -s tests -v` from this folder. The automated suite uses mocks for external providers and does not prove notification or calendar delivery. A live Codex read, a temporary macOS launch agent, and a temporary Keychain item were tested on the developer's Mac. Telegram, SMTP email, ntfy phone delivery and Google Calendar still need end-to-end tests with the user's own services. The separate Sign in with ChatGPT authorization did not provide account data through the tested configuration, so WUPHF uses your existing Codex CLI sign-in. Public distribution would need release signing, a simpler shared OAuth setup, and any applicable Google app verification.
+WUPHF is free and open source under the [MIT License](LICENSE). The bundled Geist Pixel font uses the [SIL Open Font License](wuphf/assets/geist-pixel-OFL.txt). WUPHF is an independent project inspired by *The Office* and is not affiliated with OpenAI or the show.

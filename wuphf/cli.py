@@ -23,7 +23,7 @@ DATA=Path.home()/'.local'/'share'/'wuphf-resets'
 SETTINGS=DATA/'settings.json'
 STATE=DATA/'state.json'
 PLIST=Path.home()/'Library'/'LaunchAgents'/'com.wuphf.resets.plist'
-SECRET_FIELDS={'telegram':['token'], 'email':['password'], 'ntfy':['token']}
+SECRET_FIELDS={'telegram':['token'], 'email':['password'], 'ntfy':['token'], 'gmail':[]}
 
 
 def prompt(label, default=''):
@@ -36,10 +36,14 @@ def configure():
     settings['advance_days']=float(prompt('Start reminding this many days before expiry',str(settings['advance_days'])))
     settings['repeat_hours']=float(prompt('Repeat every how many hours',str(settings['repeat_hours'])))
     channels={}
-    for channel in ('telegram','email','ntfy'):
+    available=('telegram','email')+(('ntfy',) if 'ntfy' in settings['channels'] else ())+('gmail',)
+    for channel in available:
         enabled=prompt('Enable '+channel+'? (y/n)','y' if channel in settings['channels'] else 'n').lower()=='y'
         if not enabled: continue
         old=settings['channels'].get(channel,{})
+        if channel=='gmail':
+            channels[channel]={'to':prompt('Gmail recipient address',old.get('to',''))}
+            continue
         if channel=='telegram':
             data={'chat_id':prompt('Telegram chat ID',old.get('chat_id',''))};secret='token'
             text='Telegram bot token'
@@ -55,6 +59,10 @@ def configure():
 
 
 def send_with_secrets(name, config, text):
+    if name=='gmail':
+        from . import gmail_auth
+        gmail_auth.send(config['to'],config['to'],text,config.get('language','en'))
+        return
     item=dict(config)
     for field in SECRET_FIELDS[name]:
         value=get_secret(name+'.'+field)
@@ -62,18 +70,39 @@ def send_with_secrets(name, config, text):
     send(name,item,text)
 
 
+class ProtectedMacLocation(RuntimeError):
+    pass
+
+
 def install_agent():
-    if sys.platform!='darwin': raise RuntimeError('Background installation is supported on macOS only.')
-    if not shutil.which('codex'): raise RuntimeError('Codex CLI was not found in PATH.')
+    codex=shutil.which('codex')
+    if not codex: raise RuntimeError('Codex CLI was not found in PATH.')
+    if sys.platform!='darwin':
+        from . import platform_jobs
+        platform_jobs.install()
+        print('Background job installed. Keep your computer awake, online, and logged in.')
+        return
     if PLIST.exists(): raise RuntimeError('Background job is already installed; uninstall before reinstalling.')
+    frozen=getattr(sys,'frozen',False)
+    arguments=[sys.executable,'--background'] if frozen else [sys.executable,'-m','wuphf.cli','run']
+    directory=Path(sys.executable).parent if frozen else ROOT
+    folders=[(Path.home()/name).absolute() for name in ('Documents','Desktop','Downloads')]
+    protected=folders+[folder.resolve() for folder in folders]
+    locations=[directory.absolute(),Path(sys.executable).absolute(),Path(codex).absolute()]
+    paths=locations+[path.resolve() for path in locations]
+    # macOS privacy rules can also block other locations; status still needs monitoring.
+    if any(path==folder or folder in path.parents for path in paths for folder in protected):
+        raise ProtectedMacLocation('Move WUPHF and its Python environment out of Documents, Desktop, or Downloads, for example to ~/Library/Application Support/WUPHF. If Codex is in one of these folders, move or reinstall it elsewhere. Reopen WUPHF and enable checks again.')
     PLIST.parent.mkdir(parents=True,exist_ok=True)
-    job={'Label':'com.wuphf.resets','ProgramArguments':[sys.executable,'-m','wuphf.cli','run'],'WorkingDirectory':str(ROOT),'RunAtLoad':True,'StartInterval':600,'EnvironmentVariables':{'PATH':os.environ.get('PATH','/usr/bin:/bin')}}
+    job={'Label':'com.wuphf.resets','ProgramArguments':arguments,'WorkingDirectory':str(directory),'RunAtLoad':True,'StartInterval':600,'EnvironmentVariables':{'PATH':os.environ.get('PATH','/usr/bin:/bin')}}
     with open(PLIST,'wb') as f: plistlib.dump(job,f)
     os.chmod(PLIST,0o600)
-    result=subprocess.run(['launchctl','bootstrap',f'gui/{os.getuid()}',str(PLIST)],capture_output=True,text=True)
-    if result.returncode:
+    try:
+        result=subprocess.run(['launchctl','bootstrap',f'gui/{os.getuid()}',str(PLIST)],capture_output=True,text=True)
+        if result.returncode:raise RuntimeError('Could not start the background job; it may already be installed.')
+    except (OSError,RuntimeError):
         PLIST.unlink(missing_ok=True)
-        raise RuntimeError('Could not start the background job; it may already be installed.')
+        raise RuntimeError('Could not start the background job; it may already be installed.') from None
     print('Background job installed. Keep your Mac awake, online, and logged in.')
 
 
@@ -106,10 +135,13 @@ def main(argv=None):
                 state=check(snap,settings,STATE,deliver=send_with_secrets)
                 try:
                     from . import google_auth
-                    google_auth.sync(snap)
+                    synced=google_auth.sync(snap)
+                    if snap.get('complete') or synced:state['failures'].pop('google',None)
                 except Exception:
                     state['failures']['google']='Google Calendar sync failed; reconnect or check your connection.'
-                state.pop('last_error',None);save(STATE,state)
+                if snap.get('complete'):state.pop('last_error',None)
+                else:state['last_error']='Reset details are incomplete; background reminders are paused.'
+                save(STATE,state)
             except Exception:
                 # Preserve corrupt state rather than silently replacing it.
                 try:
@@ -128,11 +160,17 @@ def main(argv=None):
         target.write_bytes(ics(snap,load(SETTINGS,{}).get('language','en')));print('Calendar snapshot saved to',target)
     elif args.command=='install':install_agent()
     elif args.command=='uninstall':
+        if sys.platform!='darwin':
+            from . import platform_jobs
+            platform_jobs.uninstall()
+            print('Background job removed. Settings and credentials remain.')
+            return
         if PLIST.exists():
             result=subprocess.run(['launchctl','bootout',f'gui/{os.getuid()}',str(PLIST)],capture_output=True)
             if result.returncode:
                 active=subprocess.run(['launchctl','print',f'gui/{os.getuid()}/com.wuphf.resets'],capture_output=True)
-                if active.returncode==0:raise RuntimeError('Could not stop the background job; no files were removed.')
+                if active.returncode==0 or subprocess.run(['launchctl','print',f'gui/{os.getuid()}'],capture_output=True).returncode!=0:
+                    raise RuntimeError('Could not stop the background job; no files were removed.')
             PLIST.unlink();print('Background job removed. Settings and Keychain entries remain.')
         else: print('No background job installed.')
 

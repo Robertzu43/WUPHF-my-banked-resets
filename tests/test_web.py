@@ -19,6 +19,26 @@ class WebTests(unittest.TestCase):
         res,_=self.request('GET','/api/settings');self.assertEqual(res.status,403)
         res,_=self.request('POST','/api/settings',{}, {'Cookie':'wuphf_session=test-token','Origin':'https://other.example','X-WUPHF-Token':'test-token'})
         self.assertEqual(res.status,403)
+    def test_protected_mac_install_explains_how_to_move_app(self):
+        from pathlib import Path
+        import tempfile
+        from wuphf import cli
+        with tempfile.TemporaryDirectory() as d:
+            home=Path(d)
+            with patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',home/'agent.plist'),patch.object(cli,'ROOT',home/'Documents'/'WUPHF'),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.shutil,'which',return_value='/usr/bin/codex'):
+                res,body=self.request('POST','/api/install',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+            self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'mac_protected_location')
+            self.assertFalse((home/'agent.plist').exists())
+
+    def test_pixel_font_is_same_origin_and_requires_session(self):
+        res,_=self.request('GET','/assets/geist-pixel-square.woff2')
+        self.assertEqual(res.status,403)
+        res,body=self.request('GET','/assets/geist-pixel-square.woff2',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,200)
+        self.assertEqual(res.getheader('Content-Type'),'font/woff2')
+        self.assertTrue(body.startswith(b'wOF2'))
+        res,_=self.request('GET','/assets/not-a-font.woff2',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,404)
     def test_only_safe_status_is_exposed(self):
         sample={'count':1,'complete':True,'credits':[{'id':'SECRET-ID','status':'available','expiresAt':1796070020}]}
         with patch('wuphf.web.read_snapshot',return_value=sample),patch('wuphf.web.load',return_value={}):
@@ -63,3 +83,212 @@ class WebTests(unittest.TestCase):
             res,body=self.request('GET','/api/calendar',headers={'Cookie':'wuphf_session=test-token'})
         self.assertEqual(res.status,409)
         self.assertIn('incompletos',json.loads(body)['error'].lower())
+
+    def test_gmail_channel_settings_save_recipient(self):
+        payload={'advance_days':7,'repeat_hours':24,'channels':{'gmail':{'to':'person@example.com'}}}
+        with patch('wuphf.web.save') as save:
+            res,_=self.request('POST','/api/settings',payload,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,200)
+        self.assertEqual(save.call_args.args[1]['channels']['gmail'],{'to':'person@example.com'})
+
+    def test_gmail_rejects_injected_recipient(self):
+        payload={'advance_days':7,'repeat_hours':24,'channels':{'gmail':{'to':'person@example.com\nBcc: other@example.com'}}}
+        with patch('wuphf.web.save') as save:
+            res,_=self.request('POST','/api/settings',payload,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+        self.assertEqual(res.status,400);save.assert_not_called()
+
+    def test_gmail_connect_requires_session_and_starts_oauth(self):
+        client={'installed':{'client_id':'id.apps.googleusercontent.com','client_secret':'secret'}}
+        with patch('wuphf.gmail_auth.start_connect') as start:
+            res,_=self.request('POST','/api/gmail/connect',client)
+            self.assertEqual(res.status,403);start.assert_not_called()
+            res,data=self.request('POST','/api/gmail/connect',client,{'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+            self.assertEqual(res.status,200);start.assert_called_once_with(client);self.assertNotIn(b'secret',data)
+
+    def test_gmail_status_and_disconnect_use_separate_authorization(self):
+        with patch('wuphf.gmail_auth.status',{'state':'disconnected','message':'Not connected'}), patch('wuphf.gmail_auth.connected',return_value=True),patch('wuphf.gmail_auth.disconnect') as disconnect,patch('wuphf.google_auth.disconnect') as calendar_disconnect,patch('wuphf.web.check_lock') as lock:
+            res,body=self.request('GET','/api/gmail/status',headers={'Cookie':'wuphf_session=test-token'})
+            self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['state'],'saved')
+            res,_=self.request('POST','/api/gmail/disconnect',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+            self.assertEqual(res.status,200);disconnect.assert_called_once_with();calendar_disconnect.assert_not_called()
+
+    def test_background_status_is_independent_of_live_codex_read(self):
+        with patch('wuphf.web.read_snapshot',side_effect=RuntimeError('offline')),patch('wuphf.web.load',return_value={'last_check':100,'last_error':'check failed','failures':{'gmail':'private provider error','telegram':'private token'}}),patch('wuphf.platform_jobs.monitoring_status',return_value='enabled',create=True):
+            res,data=self.request('GET','/api/background',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,200)
+        status=json.loads(data)
+        self.assertEqual(status['scheduler'],'enabled')
+        self.assertEqual(status['last_check'],100)
+        self.assertTrue(status['last_error'])
+        self.assertEqual(status.get('failures',[]),['gmail','telegram'])
+        self.assertNotIn(b'private',data)
+
+    def test_background_status_has_its_own_accessible_display(self):
+        res,body=self.request('GET','/',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,200)
+        self.assertIn(b'id="background-status"',body)
+        self.assertIn(b'/api/background',body)
+
+    def test_background_check_age_and_failure_are_reported_separately(self):
+        from wuphf import web
+        background_check_status=getattr(web,"background_check_status",lambda state,now:"not implemented")
+        self.assertEqual(background_check_status({},now=2000),'never')
+        self.assertEqual(background_check_status({'last_check':1000},now=2000),'recent')
+        self.assertEqual(background_check_status({'last_check':100},now=2000),'stale')
+        self.assertEqual(background_check_status({'last_check':3000},now=2000),'unknown')
+        self.assertEqual(background_check_status({'last_check':float('nan')},now=2000),'unknown')
+
+    def test_background_poll_updates_scheduler_age_and_failures(self):
+        import shutil, subprocess
+        if not shutil.which('node'):self.skipTest('Node is unavailable')
+        result=subprocess.run(['node','tests/test_background_ui.js'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_legacy_ntfy_is_hidden_for_new_users_and_existing_settings_can_be_disabled(self):
+        import shutil, subprocess
+        res,body=self.request('GET','/',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertIn(b'id="ntfy-legacy" hidden',body)
+        self.assertNotIn(b'id="ntfy-generate"',body)
+        if not shutil.which('node'):self.skipTest('Node is unavailable')
+        result=subprocess.run(['node','tests/test_legacy_ntfy_ui.js'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_telegram_discovery_requires_explicit_request_and_does_not_expose_token(self):
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        with patch('wuphf.channels.telegram_chat_id',return_value='12345',create=True) as lookup,patch('wuphf.web.load',return_value={'channels':{'telegram':{}}}):
+            res,_=self.request('POST','/api/telegram/discover',{'token':'123:secret'})
+            self.assertEqual(res.status,403);lookup.assert_not_called()
+            res,body=self.request('POST','/api/telegram/pair',{},headers)
+            self.assertEqual(res.status,200);phrase=json.loads(body)['phrase']
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+            self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['chat_id'],'12345')
+            self.assertNotIn(b'secret',body);lookup.assert_called_once_with('123:secret',phrase)
+
+    def test_telegram_discovery_button_behaviour(self):
+        import shutil, subprocess
+        res,body=self.request('GET','/',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertTrue(b'id="telegram-discover"' in body)
+        if not shutil.which('node'):self.skipTest('Node is unavailable')
+        result=subprocess.run(['node','tests/test_telegram_ui.js'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_telegram_discovery_uses_saved_token_and_redacts_errors(self):
+        from wuphf.channels import ChannelError
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        res,body=self.request('POST','/api/telegram/pair',{},headers)
+        phrase=json.loads(body)['phrase']
+        with patch('wuphf.cli.get_secret',return_value='123:saved-secret') as secret,patch('wuphf.channels.telegram_chat_id',side_effect=ChannelError('token or id: saved-secret')) as lookup:
+            res,body=self.request('POST','/api/telegram/discover',{},headers)
+        self.assertEqual(res.status,400)
+        self.assertEqual(json.loads(body)['error'],'telegram_unavailable')
+        self.assertNotIn(b'saved-secret',body)
+        secret.assert_called_once_with('telegram.token');lookup.assert_called_once_with('123:saved-secret',phrase)
+
+    def test_telegram_pairing_rotates_and_expires_before_lookup(self):
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        with patch('wuphf.web.time.monotonic',return_value=100),patch('wuphf.web.secrets.token_urlsafe',side_effect=['first','second']):
+            res,body=self.request('POST','/api/telegram/pair',{},headers)
+            self.assertEqual(res.status,200);first=json.loads(body)['phrase']
+            res,body=self.request('POST','/api/telegram/pair',{},headers)
+            self.assertEqual(res.status,200);second=json.loads(body)['phrase']
+        self.assertNotEqual(first,second)
+        with patch('wuphf.web.time.monotonic',return_value=701),patch('wuphf.channels.telegram_chat_id') as lookup:
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+        self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'telegram_pair_expired')
+        lookup.assert_not_called()
+
+    def test_telegram_pairing_is_single_use(self):
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        res,body=self.request('POST','/api/telegram/pair',{},headers)
+        self.assertEqual(res.status,200);phrase=json.loads(body)['phrase']
+        self.assertTrue(phrase.startswith('WUPHF-'))
+        with patch('wuphf.channels.telegram_chat_id',return_value='12345') as lookup:
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+            self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['chat_id'],'12345')
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+            self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'telegram_pair_expired')
+            lookup.assert_called_once_with('123:secret',phrase)
+
+    def test_telegram_replaced_pairing_during_lookup_never_returns_old_chat(self):
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        self.request('POST','/api/telegram/pair',{},headers)
+        def replace(*args):
+            res,_=self.request('POST','/api/telegram/pair',{},headers)
+            self.assertEqual(res.status,200)
+            return '98765'
+        with patch('wuphf.channels.telegram_chat_id',side_effect=replace):
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+        self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'telegram_pair_expired')
+        self.assertNotIn(b'98765',body)
+
+    def test_status_does_not_expose_account_fingerprint(self):
+        sample={'count':1,'complete':True,'account_fingerprint':'private-fingerprint','credits':[{'id':'private-credit','expiresAt':1796070020}]}
+        with patch('wuphf.web.read_snapshot',return_value=sample),patch('wuphf.web.load',return_value={}):
+            res,data=self.request('GET','/api/status',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,200)
+        self.assertNotIn(b'private-fingerprint',data);self.assertNotIn(b'private-credit',data)
+
+    def test_rejected_small_post_waits_briefly_for_body_before_closing(self):
+        import socket
+        headers=(f'POST /api/settings HTTP/1.1\r\nHost: 127.0.0.1:{self.port}\r\n'
+                 'Origin: https://other.example\r\nContent-Length: 2\r\n\r\n').encode()
+        with socket.create_connection(('127.0.0.1',self.port),timeout=2) as conn:
+            conn.sendall(headers);conn.settimeout(0.1)
+            with self.assertRaises(socket.timeout):conn.recv(1024)
+            conn.sendall(b'{}');conn.settimeout(2)
+            self.assertIn(b' 403 ',conn.recv(1024))
+
+    def test_rejected_oversized_post_does_not_wait_for_body(self):
+        import socket
+        headers=(f'POST /api/settings HTTP/1.1\r\nHost: 127.0.0.1:{self.port}\r\n'
+                 'Origin: https://other.example\r\nContent-Length: 99999999\r\n\r\n').encode()
+        with socket.create_connection(('127.0.0.1',self.port),timeout=1) as conn:
+            conn.sendall(headers)
+            self.assertIn(b' 403 ',conn.recv(1024))
+
+    def test_rejected_partial_post_is_bounded(self):
+        import socket,time
+        headers=(f'POST /api/settings HTTP/1.1\r\nHost: 127.0.0.1:{self.port}\r\n'
+                 'Origin: https://other.example\r\nContent-Length: 16384\r\n\r\n').encode()
+        with socket.create_connection(('127.0.0.1',self.port),timeout=2) as conn:
+            started=time.monotonic();conn.sendall(headers+b'{')
+            self.assertIn(b' 403 ',conn.recv(1024))
+            self.assertLess(time.monotonic()-started,1.5)
+
+    def test_incomplete_unauthenticated_request_releases_connection(self):
+        import socket
+        with socket.create_connection(('127.0.0.1',self.port),timeout=7) as conn:
+            conn.sendall(b'GET / HTTP/1.1\r\n')
+            try:closed=conn.recv(1)
+            except socket.timeout:self.fail('Incomplete request kept its worker past the read deadline')
+            self.assertEqual(closed,b'')
+        res,_=self.request('GET','/api/settings')
+        self.assertEqual(res.status,403)
+
+    def test_setup_server_bounds_concurrent_workers(self):
+        import socket
+        entered=threading.Condition();release=threading.Event();workers=[];connections=[]
+        def hold(handler):
+            with entered:
+                workers.append(handler)
+                entered.notify_all()
+            release.wait(3)
+        try:
+            with patch.object(self.server.RequestHandlerClass,'handle',hold):
+                for count in range(1,9):
+                    connections.append(socket.create_connection(('127.0.0.1',self.port),timeout=2))
+                    with entered:self.assertTrue(entered.wait_for(lambda:len(workers)>=count,timeout=2))
+                with socket.create_connection(('127.0.0.1',self.port),timeout=1) as excess:
+                    try:closed=excess.recv(1)
+                    except socket.timeout:self.fail('Excess connection started an unbounded worker')
+                    self.assertEqual(closed,b'')
+                self.assertEqual(len(workers),8)
+        finally:
+            release.set()
+            for conn in connections:conn.close()
+
+    def test_failed_refresh_cannot_restore_stale_status_on_language_change(self):
+        import shutil, subprocess
+        if not shutil.which('node'):self.skipTest('Node is unavailable')
+        result=subprocess.run(['node','tests/test_status_ui.js'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)

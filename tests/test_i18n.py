@@ -41,10 +41,10 @@ class LanguageTests(unittest.TestCase):
         import tempfile
         from pathlib import Path
         from wuphf.runner import check
-        snap={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':1000}]}
+        snap={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':87400}]}
         settings={'advance_days':1,'repeat_hours':1,'channels':{'ntfy':{}},'language':'es'};sent=[]
         with tempfile.TemporaryDirectory() as d:
-            check(snap,settings,Path(d)/'state.json',now=900,deliver=lambda *a:sent.append(a))
+            check(snap,settings,Path(d)/'state.json',now=87300,deliver=lambda *a:sent.append(a))
         self.assertEqual(len(sent),1)
         self.assertIn('caduca',sent[0][2].lower())
         self.assertEqual(sent[0][1]['language'],'es')
@@ -61,3 +61,15 @@ class LanguageTests(unittest.TestCase):
         from wuphf.reminders import ics
         output=ics({'credits':[],'complete':True},'es').decode()
         self.assertIn('X-WR-CALNAME:WUPHF · reinicios guardados de Codex',output)
+    def test_telegram_guidance_says_to_start_the_bot_before_pairing(self):
+        from wuphf.web import PAGE
+        expected={'en':'press Start','es':'pulsa Iniciar','de':'drücke Start','pt':'pressione Iniciar','fr':'appuyez sur Démarrer','ja':'開始を押して','ko':'시작을 누르고','zh':'点击开始'}
+        for language,phrase in expected.items():
+            with self.subTest(language=language):self.assertIn(phrase,catalog(language)['telegram_help'])
+        self.assertIn(catalog('en')['telegram_help'],PAGE.read_text(encoding='utf-8'))
+    def test_missing_account_identity_limitation_is_shown_in_all_languages(self):
+        from wuphf.web import PAGE
+        expected={'en':'New-reset alerts','es':'nuevos reinicios','de':'neue Resets','pt':'novos resets','fr':'nouvelles réinitialisations','ja':'新しいリセット','ko':'새 리셋','zh':'新重置'}
+        for language,phrase in expected.items():
+            with self.subTest(language=language):self.assertIn(phrase,catalog(language).get('identity_limit',''))
+        self.assertIn(catalog('en').get('identity_limit','MISSING_IDENTITY_LIMIT'),PAGE.read_text(encoding='utf-8'))

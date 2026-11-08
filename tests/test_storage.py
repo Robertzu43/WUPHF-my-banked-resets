@@ -9,7 +9,15 @@ class StorageTests(unittest.TestCase):
             self.assertEqual(load(p, {}), {})
             save(p, {'last': 1})
             self.assertEqual(load(p, {}), {'last': 1})
-            self.assertEqual(p.stat().st_mode & 0o777, 0o600)
+            import os
+            if os.name!='nt': self.assertEqual(p.stat().st_mode & 0o777, 0o600)
+    def test_atomic_save_when_fchmod_is_unavailable(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/'state.json'
+            with patch('wuphf.storage.os.fchmod',None,create=True):
+                save(path,{'value':1})
+            self.assertEqual(load(path,{}),{'value':1})
     def test_corrupt_state_is_not_silently_reset(self):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'state.json';p.write_text('{')
