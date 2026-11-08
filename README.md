@@ -21,7 +21,7 @@
   <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/issues"><strong>Report an issue</strong></a>
 </p>
 
-> **Early prototype · No release published yet.** The default branch is the earlier macOS prototype. Windows, Linux, Gmail sign-in and the pixel interface are in the [cross-platform development branch](https://github.com/Robertzu43/WUPHF-my-banked-resets/tree/feature/cross-platform) and are not released. Google verification and real-device testing remain in progress. Keep a backup reminder until WUPHF is tested for your account.
+> **Early prototype · No release published yet.** The default branch is the earlier macOS prototype. Windows, Linux, Gmail sign-in and the pixel interface are in the [cross-platform development branch](https://github.com/Robertzu43/WUPHF-my-banked-resets/tree/feature/cross-platform) and are not released. Google verification remains in progress. Windows and Linux passed automated checks, but real-account and background-delivery tests were not performed. Keep a backup reminder until WUPHF is tested for your account.
 
 WUPHF helps you track available Codex banked resets and remember known expiry dates. The planned release focuses on **email** and **Telegram**, with calendar export available. You choose when reminders start and how often they repeat. WUPHF never uses a reset for you.
 
@@ -36,7 +36,7 @@ Your computer must be awake, online, and logged in for background reminders. Inc
 
 ## Installation and setup (preview)
 
-This guide is for the **cross-platform development preview**. There is no finished installer or published release yet. Windows and Linux need real-account and background-delivery testing; the app remains a prototype on every platform. If you would rather run the older macOS-only default branch, see [the default-branch instructions](#open-wuphf) below.
+This guide is for the **cross-platform development preview**. There is no finished installer or published release yet. Windows and Linux real-account and background-delivery tests were not performed; the project owner chose not to require them for this release. The app remains a prototype on every platform. If you would rather run the older macOS-only default branch, see [the default-branch instructions](#open-wuphf) below.
 
 ### 1. Install the prerequisites
 
