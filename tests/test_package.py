@@ -18,6 +18,54 @@ class PackageTests(unittest.TestCase):
         self.assertIn('Synthetic child marker: synthetic marker',output.getvalue())
         self.assertIn('Synthetic child stderr: synthetic failure',output.getvalue())
 
+
+    def test_smoke_installs_and_repeats_before_checking_installed_background(self):
+        import io,json,os,shutil,subprocess
+        from scripts import build_package,smoke_package
+        from wuphf.install import install_bundle
+        commands=[];checked=[];native_run=subprocess.run
+        with tempfile.TemporaryDirectory() as tmp:
+            package=Path(tmp)/'extracted package é';package.mkdir()
+            build_package.copy_package_files(package)
+            for relative in build_package.PUBLIC_FILES:
+                target=package/'_internal'/relative;target.parent.mkdir(parents=True,exist_ok=True)
+                shutil.copyfile(package/relative,target)
+            for relative in ('web.html','translations.json','oauth-client.json','assets/geist-pixel-square.woff2','assets/geist-pixel-OFL.txt'):
+                target=package/'_internal'/'wuphf'/relative;target.parent.mkdir(parents=True,exist_ok=True)
+                shutil.copyfile(build_package.ROOT/'wuphf'/relative,target)
+            executable=package/('WUPHF.exe' if os.name=='nt' else 'WUPHF')
+            executable.write_bytes(b'synthetic placeholder; never execute');executable.chmod(0o755)
+            notices=package/'third-party-notices';(notices/'python').mkdir(parents=True)
+            (notices/'python'/'LICENSE.txt').write_text('synthetic public notice',encoding='utf-8')
+            (notices/'index.json').write_text(json.dumps({'python':{'notice':'python/LICENSE.txt'}}),encoding='utf-8')
+            (package/'build-info.json').write_text(json.dumps({'version':(package/'VERSION').read_text().strip(),'os':{'darwin':'macos','linux':'linux','win32':'windows'}[sys.platform]}),encoding='utf-8')
+            def run(command,**kwargs):
+                if command[0]=='/usr/bin/ditto':return native_run(command,**kwargs)
+                if command[-1] not in ('--install','--version','--check-assets','--background'):
+                    return subprocess.CompletedProcess(command,0,stdout='',stderr='')
+                home=Path(kwargs['env']['HOME'])
+                installed=(home/'Library'/'Application Support'/'WUPHF' if sys.platform=='darwin' else
+                           home/'AppData'/'Local'/'WUPHF' if os.name=='nt' else home/'.local'/'opt'/'WUPHF')
+                current=Path(command[0]).parent
+                commands.append((command[-1],current==installed))
+                if command[-1]=='--install':
+                    if os.name=='nt':self.assertEqual(kwargs['env']['LOCALAPPDATA'],str(home/'AppData'/'Local'))
+                    with patch.object(Path,'home',return_value=home),patch.dict(os.environ,kwargs['env']):
+                        install_bundle(current,installed)
+                elif command[-1]=='--background':
+                    self.assertEqual(current,installed,'smoke must exercise the permanent installed copy')
+                    checked.append((installed/executable.name).read_bytes())
+                    state=home/'.local'/'share'/'wuphf-resets'/'state.json';state.parent.mkdir(parents=True)
+                    state.write_text(json.dumps({'last_check':1}),encoding='utf-8')
+                    (home.parent/'codex-was-run').write_text('synthetic completed',encoding='utf-8')
+                return subprocess.CompletedProcess(command,0,stdout='',stderr='')
+            with patch.object(sys,'argv',['smoke_package',str(package)]),patch.object(subprocess,'run',side_effect=run),patch('sys.stdout',new_callable=io.StringIO):
+                smoke_package.main()
+        self.assertEqual(checked,[b'synthetic placeholder; never execute'])
+        self.assertEqual([installed for flag,installed in commands if flag=='--install'],[False,False,True])
+        self.assertIn(('--check-assets',True),commands)
+        self.assertIn(('--version',True),commands)
+
     def test_build_bundles_only_explicit_asset_files(self):
         from scripts import build_package
         with tempfile.TemporaryDirectory() as tmp:
