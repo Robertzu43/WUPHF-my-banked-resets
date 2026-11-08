@@ -86,3 +86,14 @@ There are **no published releases or version tags yet**. The planned first publi
 Contributions and translation corrections are welcome. Run the automated tests with `python3 -m unittest discover -s tests -v`. These tests use provider mocks and do not prove live delivery. Please review the [release plan](docs/superpowers/plans/2026-11-07-public-beta-release.md) before changing release behavior.
 
 WUPHF is free and open source under the [MIT License](LICENSE). It is an independent project inspired by *The Office* and is not affiliated with OpenAI or the show.
+
+### Experimental package builds
+
+The repository can build **unsigned, unnotarized prototype** one-folder artifacts with PyInstaller; these are development checks, not published installers. Install Python 3.11+ and the signed-in Codex CLI first. Building on Linux also requires `objdump` (usually provided by `binutils`). In an isolated virtual environment, install `pyinstaller>=6.17,<7` and `requirements.txt`, then run:
+
+```sh
+python scripts/build_package.py --output /path/to/empty/dist --work /path/to/empty/build
+python scripts/smoke_package.py /path/to/empty/dist/WUPHF
+```
+
+The smoke check uses a synthetic Codex process and temporary user directory. POSIX packages need an archive format that preserves symbolic links, such as `tar.gz`; do not use a ZIP that dereferences them. The packages have not been validated for real accounts, signed, notarized, or released. Frozen-process library-search behavior for external Codex still needs native validation on every platform.
