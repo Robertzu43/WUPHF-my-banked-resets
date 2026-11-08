@@ -2,6 +2,7 @@ import json
 import re
 import smtplib
 import ssl
+import urllib.error
 import urllib.parse
 import urllib.request
 from email.message import EmailMessage
@@ -10,6 +11,40 @@ from .i18n import translate
 
 class ChannelError(Exception):
     pass
+
+
+def telegram_chat_id(token):
+    if not isinstance(token,str) or not re.fullmatch(r'[0-9]+:[A-Za-z0-9_-]+',token):
+        raise ChannelError('telegram_invalid')
+    request=urllib.request.Request('https://api.telegram.org/bot'+token+'/getUpdates',
+                                   data=b'limit=100&timeout=0',method='POST')
+    try:
+        with urllib.request.urlopen(request,timeout=15) as response:
+            body=response.read(1000001)
+        if len(body)>1000000:raise ChannelError('telegram_ambiguous')
+        data=json.loads(body)
+        if not isinstance(data,dict):raise ChannelError('telegram_unavailable')
+        if data.get('ok') is not True:
+            raise ChannelError('telegram_webhook' if data.get('error_code')==409 else 'telegram_unavailable')
+        updates=data.get('result')
+        if not isinstance(updates,list):raise ChannelError('telegram_unavailable')
+        if len(updates)>=100:raise ChannelError('telegram_ambiguous')
+        ids=set()
+        for update in updates:
+            message=update.get('message') if isinstance(update,dict) else None
+            chat=message.get('chat') if isinstance(message,dict) else None
+            if isinstance(chat,dict) and chat.get('type')=='private':
+                ident=chat.get('id')
+                if isinstance(ident,int) and not isinstance(ident,bool) and ident>0:ids.add(str(ident))
+        if len(ids)>1:raise ChannelError('telegram_ambiguous')
+        if not ids:raise ChannelError('telegram_no_messages')
+        return ids.pop()
+    except urllib.error.HTTPError as exc:
+        raise ChannelError('telegram_webhook' if exc.code==409 else 'telegram_unavailable') from None
+    except ChannelError:
+        raise
+    except Exception:
+        raise ChannelError('telegram_unavailable') from None
 
 
 def send(channel, config, text):

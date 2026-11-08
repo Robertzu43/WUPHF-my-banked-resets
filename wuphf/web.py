@@ -135,6 +135,16 @@ def create_server(port=0,token=None):
                     name=payload.get('channel');settings=load(cli.SETTINGS,{})
                     if name not in settings.get('channels',{}):raise ValueError('Save this channel first')
                     cli.send_with_secrets(name,{**settings['channels'][name],'language':settings.get('language','en')},translate('test_message',settings.get('language','en')))
+                elif self.path=='/api/telegram/discover':
+                    from .channels import telegram_chat_id, ChannelError
+                    supplied=payload.get('token','')
+                    if not isinstance(supplied,str) or len(supplied)>2048:raise ValueError('Invalid token')
+                    try:chat_id=telegram_chat_id(supplied or cli.get_secret('telegram.token'))
+                    except ChannelError as exc:
+                        code=str(exc)
+                        if code not in ('telegram_invalid','telegram_no_messages','telegram_ambiguous','telegram_webhook','telegram_unavailable'):code='telegram_unavailable'
+                        return self.write(400,{'error':code})
+                    return self.write(200,{'chat_id':chat_id})
                 elif self.path=='/api/gmail/connect':
                     from . import gmail_auth
                     gmail_auth.start_connect(payload)

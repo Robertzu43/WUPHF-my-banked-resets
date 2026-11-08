@@ -52,7 +52,11 @@ Enable **Email** and enter your provider's SMTP SSL server and port, username, s
 
 ### Telegram
 
-In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and follow its prompts to choose a name and a username ending in `bot`. Keep the resulting bot token private. Open your new bot and press **Start**. For a private chat, use a Telegram user-ID lookup bot to obtain your numeric user ID; this is the private chat ID. Enter the bot token and chat ID in WUPHF, save, and send a test. The current setup is technical; simplifying it is part of the release plan. Telegram was tested on the developer's Mac; broader delivery testing is still needed.
+1. In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and follow its prompts to create your own bot. Keep the resulting bot token private.
+2. Open your bot, press **Start**, and send it a message. Enable Telegram in WUPHF and paste the token.
+3. Click **Find my chat ID**, check that the displayed private chat ID is yours, and click **Save settings**. Then send a test. You can enter the ID manually instead.
+
+The optional lookup checks pending updates only when you click the button and does not confirm those updates. If multiple private chats or too many updates are pending, or a webhook or another bot client prevents polling, enter your private chat ID manually. Telegram was tested on the developer's Mac; broader delivery testing is still needed.
 
 ### ntfy
 

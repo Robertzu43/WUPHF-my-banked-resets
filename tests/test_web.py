@@ -141,3 +141,30 @@ class WebTests(unittest.TestCase):
         if not shutil.which('node'):self.skipTest('Node is unavailable')
         result=subprocess.run(['node','tests/test_ntfy_ui.js'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_telegram_discovery_requires_explicit_request_and_does_not_expose_token(self):
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        with patch('wuphf.channels.telegram_chat_id',return_value='12345',create=True) as lookup,patch('wuphf.web.load',return_value={'channels':{'telegram':{}}}):
+            res,_=self.request('POST','/api/telegram/discover',{'token':'123:secret'})
+            self.assertEqual(res.status,403);lookup.assert_not_called()
+            res,body=self.request('POST','/api/telegram/discover',{'token':'123:secret'},headers)
+            self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['chat_id'],'12345')
+            self.assertNotIn(b'secret',body);lookup.assert_called_once_with('123:secret')
+
+    def test_telegram_discovery_button_behaviour(self):
+        import shutil, subprocess
+        res,body=self.request('GET','/',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertTrue(b'id="telegram-discover"' in body)
+        if not shutil.which('node'):self.skipTest('Node is unavailable')
+        result=subprocess.run(['node','tests/test_telegram_ui.js'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_telegram_discovery_uses_saved_token_and_redacts_errors(self):
+        from wuphf.channels import ChannelError
+        headers={'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'}
+        with patch('wuphf.cli.get_secret',return_value='123:saved-secret') as secret,patch('wuphf.channels.telegram_chat_id',side_effect=ChannelError('token or id: saved-secret')) as lookup:
+            res,body=self.request('POST','/api/telegram/discover',{},headers)
+        self.assertEqual(res.status,400)
+        self.assertEqual(json.loads(body)['error'],'telegram_unavailable')
+        self.assertNotIn(b'saved-secret',body)
+        secret.assert_called_once_with('telegram.token');lookup.assert_called_once_with('123:saved-secret')
