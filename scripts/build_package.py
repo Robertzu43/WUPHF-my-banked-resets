@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import shutil
 import subprocess
 import sys
 
@@ -13,6 +14,20 @@ else:
     from package_notices import collect_notices
 
 ROOT=Path(__file__).resolve().parent.parent
+PUBLIC_FILES=('LICENSE','VERSION','README.md','CHANGELOG.md','docs/user-guide.md',
+              'docs/google-production.md','docs/release-readiness.md','docs/releasing.md','docs/images/setup-example.jpg')
+
+
+def copy_package_files(package):
+    for relative in PUBLIC_FILES:
+        target=package/relative
+        target.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(ROOT/relative,target)
+    if sys.platform in ('darwin','linux'):
+        name='Start WUPHF.command' if sys.platform=='darwin' else 'Start WUPHF.sh'
+        launcher=package/name
+        shutil.copyfile(ROOT/'scripts'/'package'/'start-wuphf.sh',launcher)
+        launcher.chmod(0o755)
 
 
 def validate_public_client(path):
@@ -38,8 +53,8 @@ def main():
     for source,dest in (('wuphf/web.html','wuphf'),('wuphf/translations.json','wuphf'),
                         ('wuphf/oauth-client.json','wuphf'),
                         ('wuphf/assets/geist-pixel-square.woff2','wuphf/assets'),
-                        ('wuphf/assets/geist-pixel-OFL.txt','wuphf/assets'),('LICENSE','.'),
-                        ('VERSION','.'),('README.md','.'),('CHANGELOG.md','.')):
+                        ('wuphf/assets/geist-pixel-OFL.txt','wuphf/assets'),
+                        *((source,str(Path(source).parent)) for source in PUBLIC_FILES)):
         command+=['--add-data',str(ROOT/source)+':'+dest]
     if sys.platform in ('win32','linux'):
         command+=['--collect-all','keyring','--hidden-import',
@@ -62,6 +77,7 @@ a.binaries = [entry for entry in a.binaries if not re.fullmatch(
         subprocess.run([sys.executable,'-m','PyInstaller',*build_options,str(spec)],cwd=ROOT,env=env,check=True)
     else:
         subprocess.run([*command,*build_options],cwd=ROOT,check=True)
+    copy_package_files(output/'WUPHF')
     collect_notices(output/'WUPHF'/'third-party-notices',output/'WUPHF',work/'build'/'WUPHF'/'COLLECT-00.toc')
     manifest={'version':(ROOT/'VERSION').read_text(encoding='utf-8').strip(),
               'platform':platform.platform(),'architecture':platform.machine(),

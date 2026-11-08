@@ -13,7 +13,7 @@ class PackageTests(unittest.TestCase):
                 (root/'synthetic-child-stderr.txt').write_text('synthetic failure')
                 raise subprocess.CalledProcessError(1,command)
             return subprocess.CompletedProcess(command,0,stdout='',stderr='')
-        with tempfile.TemporaryDirectory() as tmp,patch.object(sys,'argv',['smoke_package',tmp]),patch('scripts.smoke_package.subprocess.run',side_effect=run),patch('sys.stdout',new_callable=io.StringIO) as output:
+        with tempfile.TemporaryDirectory() as tmp,patch.object(sys,'argv',['smoke_package',tmp]),patch('scripts.smoke_package.validate_package'),patch('scripts.smoke_package.subprocess.run',side_effect=run),patch('sys.stdout',new_callable=io.StringIO) as output:
             with self.assertRaises(subprocess.CalledProcessError):smoke_package.main()
         self.assertIn('Synthetic child marker: synthetic marker',output.getvalue())
         self.assertIn('Synthetic child stderr: synthetic failure',output.getvalue())
@@ -41,7 +41,7 @@ class PackageTests(unittest.TestCase):
         self.assertFalse(any(Path(path).name=='google-client.json' for path in sources))
         self.assertIn('oauth-client.json',[Path(path).name for path in sources])
         self.assertIn('geist-pixel-square.woff2',[Path(path).name for path in sources])
-        self.assertTrue({'VERSION','README.md','CHANGELOG.md','LICENSE'}.issubset({Path(path).name for path in sources}))
+        self.assertTrue({'VERSION','README.md','CHANGELOG.md','LICENSE','user-guide.md','google-production.md','setup-example.jpg'}.issubset({Path(path).name for path in sources}))
 
     def test_windows_build_uses_python_system_path_and_omits_only_os_ucrt_dlls(self):
         import os
@@ -111,9 +111,62 @@ class PackageTests(unittest.TestCase):
             path=Path(tmp)/'oauth-client.json'
             client={'installed':{'client_id':'public.apps.googleusercontent.com','client_secret':'public-desktop-value'}}
             path.write_text(json.dumps(client))
-            with patch.object(sys,'argv',['smoke_package',tmp]),patch('scripts.smoke_package.tempfile.TemporaryDirectory',side_effect=RuntimeError('synthetic smoke boundary')):
+            with patch.object(sys,'argv',['smoke_package',tmp]),patch('scripts.smoke_package.validate_package'),patch('scripts.smoke_package.tempfile.TemporaryDirectory',side_effect=RuntimeError('synthetic smoke boundary')):
                 with self.assertRaisesRegex(RuntimeError,'synthetic smoke boundary'):smoke_package.main()
             path.write_text(json.dumps({'installed':{**client['installed'],'refresh_token':'user-token'}}))
             with patch.object(sys,'argv',['smoke_package',tmp]),patch('scripts.smoke_package.subprocess.run') as run:
                 with self.assertRaises(ValueError):smoke_package.main()
                 run.assert_not_called()
+
+
+class PackageLayoutTests(unittest.TestCase):
+    def make_package(self, package):
+        import os, shutil
+        from scripts import build_package, smoke_package
+        build_package.copy_package_files(package)
+        for relative in build_package.PUBLIC_FILES:
+            target=package/'_internal'/relative
+            target.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copyfile(package/relative,target)
+        executable=package/('WUPHF.exe' if os.name=='nt' else 'WUPHF')
+        executable.write_text('');executable.chmod(0o755)
+        smoke_package.validate_package(package)
+
+    def test_public_help_is_reachable_beside_executable_and_internal_readme(self):
+        import re
+        from urllib.parse import unquote, urlsplit
+        from scripts import build_package
+        with tempfile.TemporaryDirectory() as tmp:
+            package=Path(tmp)
+            self.make_package(package)
+            for relative in ['README.md','LICENSE','CHANGELOG.md','VERSION','docs/user-guide.md','docs/google-production.md','docs/images/setup-example.jpg']:
+                self.assertEqual((package/relative).read_bytes(),(build_package.ROOT/relative).read_bytes())
+            for base in [package,package/'_internal']:
+                for relative in (path for path in build_package.PUBLIC_FILES if path.endswith('.md')):
+                    document=base/relative
+                    links=re.findall(r'\]\(([^)]+)\)|(?:href|src)="([^"]+)"',document.read_text())
+                    for markdown,html in links:
+                        link=urlsplit(markdown or html)
+                        if link.scheme or link.netloc or not link.path:continue
+                        self.assertTrue((document.parent/unquote(link.path)).is_file(),(relative,link.path))
+
+    def test_smoke_rejects_missing_bundle_files_before_running_executable(self):
+        from scripts import build_package, smoke_package
+        import os, shutil
+        missing_files=['WUPHF.exe' if os.name=='nt' else 'WUPHF','_internal','docs/user-guide.md','docs/images/setup-example.jpg','_internal/docs/user-guide.md']
+        if sys.platform in ('darwin','linux'):missing_files.append('Start WUPHF.command' if sys.platform=='darwin' else 'Start WUPHF.sh')
+        for missing in missing_files:
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as tmp:
+                package=Path(tmp);self.make_package(package)
+                member=package/missing
+                shutil.rmtree(member) if member.is_dir() else member.unlink()
+                with patch.object(sys,'argv',['smoke_package',str(package)]),patch('scripts.smoke_package.subprocess.run') as run:
+                    with self.assertRaisesRegex(SystemExit,'incomplete'):smoke_package.main()
+                    run.assert_not_called()
+
+    def test_smoke_rejects_inconsistent_help_copies(self):
+        from scripts import smoke_package
+        with tempfile.TemporaryDirectory() as tmp:
+            package=Path(tmp);self.make_package(package)
+            (package/'docs/user-guide.md').write_text('stale help')
+            with self.assertRaisesRegex(SystemExit,'copies differ'):smoke_package.validate_package(package)

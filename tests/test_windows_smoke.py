@@ -32,7 +32,7 @@ class WindowsSmokeTests(unittest.TestCase):
                     state.write_text(json.dumps({'last_check':1}))
                 return subprocess.CompletedProcess(command,0,stdout='',stderr='')
 
-            with self.subTest(directory=directory),tempfile.TemporaryDirectory() as tmp,patch.object(sys,'argv',['smoke_package',tmp]),patch.object(subprocess,'run',side_effect=run),patch('sys.stdout',new_callable=io.StringIO):
+            with self.subTest(directory=directory),tempfile.TemporaryDirectory() as tmp,patch.object(sys,'argv',['smoke_package',tmp]),patch.object(subprocess,'run',side_effect=run),patch.object(smoke_package,'validate_package'),patch('sys.stdout',new_callable=io.StringIO):
                 if directory:
                     with self.assertRaisesRegex(AssertionError,'DLL directory'):smoke_package.main()
                 else:smoke_package.main()
