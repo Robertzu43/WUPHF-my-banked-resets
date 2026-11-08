@@ -100,3 +100,27 @@ class WebTests(unittest.TestCase):
             self.assertEqual(res.status,200);self.assertEqual(json.loads(body)['state'],'saved')
             res,_=self.request('POST','/api/gmail/disconnect',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
             self.assertEqual(res.status,200);disconnect.assert_called_once_with();calendar_disconnect.assert_not_called()
+
+    def test_background_status_is_independent_of_live_codex_read(self):
+        with patch('wuphf.web.read_snapshot',side_effect=RuntimeError('offline')),patch('wuphf.web.load',return_value={'last_check':100,'last_error':'check failed'}),patch('wuphf.platform_jobs.monitoring_status',return_value='enabled',create=True):
+            res,data=self.request('GET','/api/background',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,200)
+        status=json.loads(data)
+        self.assertEqual(status['scheduler'],'enabled')
+        self.assertEqual(status['last_check'],100)
+        self.assertTrue(status['last_error'])
+
+    def test_background_status_has_its_own_accessible_display(self):
+        res,body=self.request('GET','/',headers={'Cookie':'wuphf_session=test-token'})
+        self.assertEqual(res.status,200)
+        self.assertIn(b'id="background-status"',body)
+        self.assertIn(b'/api/background',body)
+
+    def test_background_check_age_and_failure_are_reported_separately(self):
+        from wuphf import web
+        background_check_status=getattr(web,"background_check_status",lambda state,now:"not implemented")
+        self.assertEqual(background_check_status({},now=2000),'never')
+        self.assertEqual(background_check_status({'last_check':1000},now=2000),'recent')
+        self.assertEqual(background_check_status({'last_check':100},now=2000),'stale')
+        self.assertEqual(background_check_status({'last_check':3000},now=2000),'unknown')
+        self.assertEqual(background_check_status({'last_check':float('nan')},now=2000),'unknown')

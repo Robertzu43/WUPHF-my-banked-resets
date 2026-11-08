@@ -2,8 +2,10 @@
 import datetime
 import hmac
 import json
+import math
 import secrets
 import threading
+import time
 import urllib.parse
 import webbrowser
 from http.cookies import SimpleCookie
@@ -54,6 +56,15 @@ def safe_status():
     return {'count':snap['count'],'complete':snap['complete'],'credits':entries,'last_check':old.get('last_check'),'last_error':old.get('last_error'),'failures':list(old.get('failures',{}))}
 
 
+def background_check_status(state,now=None):
+    last=state.get('last_check')
+    if last is None:return 'never'
+    if not isinstance(last,(int,float)) or isinstance(last,bool) or not math.isfinite(last):return 'unknown'
+    age=(time.time() if now is None else now)-last
+    if age<0:return 'unknown'
+    return 'stale' if age>1800 else 'recent'
+
+
 def create_server(port=0,token=None):
     token=token or secrets.token_urlsafe(32)
     class Handler(BaseHTTPRequestHandler):
@@ -82,6 +93,12 @@ def create_server(port=0,token=None):
                 if url.path=='/assets/geist-pixel-square.woff2':return self.write(200,PIXEL_FONT.read_bytes(),'font/woff2')
                 if url.path=='/api/settings':return self.write(200,load(cli.SETTINGS,{'advance_days':7,'repeat_hours':24,'channels':{}}))
                 if url.path=='/api/translations':return self.write(200,_all())
+                if url.path=='/api/background':
+                    from .platform_jobs import monitoring_status
+                    state=load(cli.STATE,{})
+                    last=state.get('last_check')
+                    if not isinstance(last,(int,float)) or isinstance(last,bool) or not math.isfinite(last):last=None
+                    return self.write(200,{'scheduler':monitoring_status(),'last_check':last,'check_status':background_check_status(state),'last_error':bool(state.get('last_error'))})
                 if url.path=='/api/status':return self.write(200,safe_status())
                 if url.path=='/api/google/status':
                     from . import google_auth

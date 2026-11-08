@@ -2,11 +2,35 @@
 import os
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parent.parent
 UNITS=Path(os.environ.get('XDG_CONFIG_HOME',Path.home()/'.config'))/'systemd'/'user'
 TASK='WUPHF Banked Resets'
+
+
+def monitoring_status():
+    try:
+        def query(args):return subprocess.run(args,capture_output=True,text=True,timeout=3)
+        if sys.platform=='darwin':
+            domain='gui/'+str(os.getuid())
+            if query(['launchctl','print',domain+'/com.wuphf.resets']).returncode==0:return 'enabled'
+            return 'disabled' if query(['launchctl','print',domain]).returncode==0 else 'unknown'
+        if sys.platform=='linux':
+            enabled=query(['systemctl','--user','is-enabled','wuphf-resets.timer'])
+            if enabled.stdout.strip()=='disabled':return 'disabled'
+            if enabled.returncode!=0 or enabled.stdout.strip()!='enabled':return 'unknown'
+            active=query(['systemctl','--user','is-active','wuphf-resets.timer'])
+            return 'enabled' if active.returncode==0 and active.stdout.strip()=='active' else 'unknown'
+        if sys.platform=='win32':
+            result=query(['schtasks','/Query','/TN',TASK,'/XML'])
+            if result.returncode!=0:return 'unknown'
+            value=ET.fromstring(result.stdout).findtext('{*}Settings/{*}Enabled')
+            return {'true':'enabled','false':'disabled'}.get((value or '').lower(),'unknown')
+    except (OSError,subprocess.SubprocessError,ET.ParseError,ValueError):
+        pass
+    return 'unknown'
 
 
 def _quote(value):

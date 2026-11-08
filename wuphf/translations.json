@@ -109,7 +109,15 @@
     "gmail_disconnect_confirm": "Disconnect Gmail? Your saved reminder settings will remain.",
     "gmail_connected": "Gmail connected.",
     "gmail_saved": "Gmail authorization is saved.",
-    "gmail_match": "Use the Gmail address you sign in with."
+    "gmail_match": "Use the Gmail address you sign in with.",
+    "scheduler_enabled": "Background checks: enabled",
+    "scheduler_disabled": "Background checks: disabled",
+    "scheduler_unknown": "Background checks: status unavailable",
+    "check_never": "No successful background check yet.",
+    "check_recent": "Last successful background check: {date}",
+    "check_stale": "Last successful background check: {date} (more than 30 minutes ago).",
+    "check_unknown": "Background check time is unavailable.",
+    "check_error": "The last background check failed or returned incomplete data."
   },
   "es": {
     "language": "Idioma",
@@ -221,7 +229,15 @@
     "gmail_disconnect_confirm": "¿Desconectar Gmail? Se conservará la configuración de recordatorios.",
     "gmail_connected": "Gmail conectado.",
     "gmail_saved": "La autorización de Gmail está guardada.",
-    "gmail_match": "Usa la dirección de Gmail con la que inicies sesión."
+    "gmail_match": "Usa la dirección de Gmail con la que inicies sesión.",
+    "scheduler_enabled": "Comprobaciones en segundo plano: activadas",
+    "scheduler_disabled": "Comprobaciones en segundo plano: desactivadas",
+    "scheduler_unknown": "Comprobaciones en segundo plano: estado no disponible",
+    "check_never": "Aún no hay ninguna comprobación en segundo plano correcta.",
+    "check_recent": "Última comprobación correcta en segundo plano: {date}",
+    "check_stale": "Última comprobación correcta en segundo plano: {date} (hace más de 30 minutos).",
+    "check_unknown": "La hora de la comprobación no está disponible.",
+    "check_error": "La última comprobación en segundo plano falló o devolvió datos incompletos."
   },
   "de": {
     "language": "Sprache",
@@ -333,7 +349,15 @@
     "gmail_disconnect_confirm": "Gmail trennen? Ihre Erinnerungseinstellungen bleiben erhalten.",
     "gmail_connected": "Gmail verbunden.",
     "gmail_saved": "Die Gmail-Autorisierung ist gespeichert.",
-    "gmail_match": "Verwenden Sie die Gmail-Adresse, mit der Sie sich anmelden."
+    "gmail_match": "Verwenden Sie die Gmail-Adresse, mit der Sie sich anmelden.",
+    "scheduler_enabled": "Hintergrundprüfungen: aktiviert",
+    "scheduler_disabled": "Hintergrundprüfungen: deaktiviert",
+    "scheduler_unknown": "Hintergrundprüfungen: Status nicht verfügbar",
+    "check_never": "Noch keine erfolgreiche Hintergrundprüfung.",
+    "check_recent": "Letzte erfolgreiche Hintergrundprüfung: {date}",
+    "check_stale": "Letzte erfolgreiche Hintergrundprüfung: {date} (vor mehr als 30 Minuten).",
+    "check_unknown": "Der Zeitpunkt der Hintergrundprüfung ist nicht verfügbar.",
+    "check_error": "Die letzte Hintergrundprüfung ist fehlgeschlagen oder hat unvollständige Daten geliefert."
   },
   "pt": {
     "language": "Idioma",
@@ -445,7 +469,15 @@
     "gmail_disconnect_confirm": "Desconectar o Gmail? Suas configurações de lembrete serão mantidas.",
     "gmail_connected": "Gmail conectado.",
     "gmail_saved": "A autorização do Gmail foi salva.",
-    "gmail_match": "Use o endereço do Gmail com o qual você entra."
+    "gmail_match": "Use o endereço do Gmail com o qual você entra.",
+    "scheduler_enabled": "Verificações em segundo plano: ativadas",
+    "scheduler_disabled": "Verificações em segundo plano: desativadas",
+    "scheduler_unknown": "Verificações em segundo plano: estado indisponível",
+    "check_never": "Ainda não houve uma verificação em segundo plano bem-sucedida.",
+    "check_recent": "Última verificação bem-sucedida em segundo plano: {date}",
+    "check_stale": "Última verificação bem-sucedida em segundo plano: {date} (há mais de 30 minutos).",
+    "check_unknown": "O horário da verificação em segundo plano não está disponível.",
+    "check_error": "A última verificação em segundo plano falhou ou retornou dados incompletos."
   },
   "fr": {
     "language": "Langue",
@@ -557,7 +589,15 @@
     "gmail_disconnect_confirm": "Déconnecter Gmail ? Vos paramètres de rappel seront conservés.",
     "gmail_connected": "Gmail connecté.",
     "gmail_saved": "L’autorisation Gmail est enregistrée.",
-    "gmail_match": "Utilisez l’adresse Gmail avec laquelle vous vous connectez."
+    "gmail_match": "Utilisez l’adresse Gmail avec laquelle vous vous connectez.",
+    "scheduler_enabled": "Vérifications en arrière-plan : activées",
+    "scheduler_disabled": "Vérifications en arrière-plan : désactivées",
+    "scheduler_unknown": "Vérifications en arrière-plan : état indisponible",
+    "check_never": "Aucune vérification en arrière-plan réussie pour le moment.",
+    "check_recent": "Dernière vérification réussie en arrière-plan : {date}",
+    "check_stale": "Dernière vérification réussie en arrière-plan : {date} (il y a plus de 30 minutes).",
+    "check_unknown": "L’heure de la vérification en arrière-plan est indisponible.",
+    "check_error": "La dernière vérification en arrière-plan a échoué ou renvoyé des données incomplètes."
   },
   "ja": {
     "language": "言語",
@@ -669,7 +709,15 @@
     "gmail_disconnect_confirm": "Gmail の接続を解除しますか？リマインダー設定は保持されます。",
     "gmail_connected": "Gmail に接続しました。",
     "gmail_saved": "Gmail の認証が保存されました。",
-    "gmail_match": "ログインする Gmail アドレスを使用してください。"
+    "gmail_match": "ログインする Gmail アドレスを使用してください。",
+    "scheduler_enabled": "バックグラウンド確認：有効",
+    "scheduler_disabled": "バックグラウンド確認：無効",
+    "scheduler_unknown": "バックグラウンド確認：状態を取得できません",
+    "check_never": "バックグラウンド確認の成功履歴はまだありません。",
+    "check_recent": "最後に成功したバックグラウンド確認：{date}",
+    "check_stale": "最後に成功したバックグラウンド確認：{date}（30分以上前）。",
+    "check_unknown": "バックグラウンド確認の時刻を取得できません。",
+    "check_error": "前回のバックグラウンド確認は失敗したか、不完全なデータを返しました。"
   },
   "ko": {
     "language": "언어",
@@ -781,7 +829,15 @@
     "gmail_disconnect_confirm": "Gmail 연결을 해제하시겠습니까? 알림 설정은 유지됩니다.",
     "gmail_connected": "Gmail이 연결되었습니다.",
     "gmail_saved": "Gmail 인증이 저장되었습니다.",
-    "gmail_match": "로그인할 Gmail 주소를 사용하세요."
+    "gmail_match": "로그인할 Gmail 주소를 사용하세요.",
+    "scheduler_enabled": "백그라운드 확인: 활성화됨",
+    "scheduler_disabled": "백그라운드 확인: 비활성화됨",
+    "scheduler_unknown": "백그라운드 확인: 상태를 알 수 없음",
+    "check_never": "성공한 백그라운드 확인이 아직 없습니다.",
+    "check_recent": "마지막으로 성공한 백그라운드 확인: {date}",
+    "check_stale": "마지막으로 성공한 백그라운드 확인: {date} (30분 이상 지남).",
+    "check_unknown": "백그라운드 확인 시간을 알 수 없습니다.",
+    "check_error": "마지막 백그라운드 확인이 실패했거나 불완전한 데이터를 반환했습니다."
   },
   "zh": {
     "language": "语言",
@@ -893,6 +949,14 @@
     "gmail_disconnect_confirm": "断开 Gmail？您的提醒设置将保留。",
     "gmail_connected": "Gmail 已连接。",
     "gmail_saved": "Gmail 授权已保存。",
-    "gmail_match": "请使用您登录时所用的 Gmail 地址。"
+    "gmail_match": "请使用您登录时所用的 Gmail 地址。",
+    "scheduler_enabled": "后台检查：已启用",
+    "scheduler_disabled": "后台检查：已停用",
+    "scheduler_unknown": "后台检查：无法获取状态",
+    "check_never": "尚无成功的后台检查。",
+    "check_recent": "上次成功的后台检查：{date}",
+    "check_stale": "上次成功的后台检查：{date}（超过 30 分钟前）。",
+    "check_unknown": "无法获取后台检查时间。",
+    "check_error": "上次后台检查失败或返回的数据不完整。"
   }
 }

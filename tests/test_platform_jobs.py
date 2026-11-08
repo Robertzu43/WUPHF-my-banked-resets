@@ -55,3 +55,27 @@ class PlatformJobsTests(unittest.TestCase):
     def test_unit_argument_escapes_special_characters(self):
         self.assertEqual(platform_jobs._quote('a %b "c"'), '"a %%b \\"c\\""')
         with self.assertRaises(RuntimeError):platform_jobs._quote('a\nb')
+
+    def test_linux_monitoring_status_distinguishes_enabled_disabled_and_unknown(self):
+        with patch('wuphf.platform_jobs.sys.platform','linux'),patch('wuphf.platform_jobs.subprocess.run') as run:
+            run.side_effect=[SimpleNamespace(returncode=0,stdout='enabled\n'),SimpleNamespace(returncode=0,stdout='active\n')]
+            self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'enabled')
+            run.side_effect=[SimpleNamespace(returncode=1,stdout='disabled\n')]
+            self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'disabled')
+            run.side_effect=OSError('no systemd')
+            self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'unknown')
+
+    def test_mac_monitoring_status_only_asserts_absence_if_domain_accessible(self):
+        with patch('wuphf.platform_jobs.sys.platform','darwin'),patch('wuphf.platform_jobs.os.getuid',return_value=123),patch('wuphf.platform_jobs.subprocess.run') as run:
+            run.side_effect=[SimpleNamespace(returncode=1),SimpleNamespace(returncode=0)]
+            self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'disabled')
+            run.side_effect=[SimpleNamespace(returncode=1),SimpleNamespace(returncode=1)]
+            self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'unknown')
+
+    def test_windows_task_status_requires_valid_scheduler_xml(self):
+        xml='<Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task"><Settings><Enabled>true</Enabled></Settings></Task>'
+        with patch('wuphf.platform_jobs.sys.platform','win32'),patch('wuphf.platform_jobs.subprocess.run') as run:
+            run.return_value=SimpleNamespace(returncode=0,stdout=xml)
+            self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'enabled')
+            run.return_value=SimpleNamespace(returncode=1,stdout='')
+            self.assertEqual(getattr(platform_jobs,"monitoring_status",lambda:"not implemented")(),'unknown')
