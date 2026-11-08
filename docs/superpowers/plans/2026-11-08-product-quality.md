@@ -42,20 +42,20 @@ Consumes POST /api/test, settings persisted through existing storage; produces s
 
 ### Task 3: Reduce installation friction
 Files: scripts/build_package.py, scripts/smoke_package.py, platform launchers, tests/test_package.py/test_launcher.py, README.md/docs/user-guide.md; exact files narrowed by distribution audit before edits.
-- [ ] Audit shipped archive layout/launch behavior and actual supported native launcher options, signing resources and CI coverage.
-- [ ] Write failure tests for missing executable/internal directory, spaces/relocation and safe repeat execution.
-- [ ] Add the smallest usable platform launch entry points and setup diagnostics; preserve bundle contents and credentials. Verify matching checksum/user install path; no security disable.
-- [ ] Exercise built package with isolated HOME and native scheduling stubs; record actual versus simulated evidence.
-- [ ] Independent distribution QA; keep unavailable signing/notarization explicit and unfinished.
+- [x] Audit shipped archive layout/launch behavior and actual supported native launcher options, signing resources and CI coverage.
+- [x] Write failure tests for missing executable/internal directory, spaces/relocation and safe repeat execution.
+- [x] Add the smallest usable platform launch entry points and setup diagnostics; preserve bundle contents and credentials. Verify matching checksum/user install path; no security disable.
+- [x] Exercise built package with isolated HOME and native scheduling stubs; record actual versus simulated evidence.
+- [x] Independent distribution QA; keep unavailable signing/notarization explicit and unfinished.
 
 ### Task 3b: Local permanent installation using the bundled runtime
 Files: new wuphf/install.py, tests/test_install.py, wuphf_launcher.py/tests/test_entrypoint.py. Design: outputs/WUPHF-installation-improvement-design.md (orchestrator-selected package-first local action).
 Consumes a verified, extracted frozen bundle; produces a complete permanent user-owned copy and a qualified reopen path. No network, provider, credential or scheduler changes.
-- [ ] Write failing tests for full/incomplete bundles, safe internal and escaping links, special files, source/destination overlap, spaces/Unicode, identical rerun, different existing target and interrupted staging.
-- [ ] Implement install_bundle(source: Path, destination: Path) -> Path and default_destination() -> Path; expose exact --install dispatcher for frozen bundles only. Defaults: Mac ~/Library/Application Support/WUPHF; Windows %LOCALAPPDATA%/WUPHF; Linux ~/.local/opt/WUPHF.
-- [ ] Stage alongside destination then promote only into absent target; identical existing target is a no-op, different existing target refuses with upgrade guidance. Preserve all existing app/data/jobs on failure and reject ambiguous paths/links.
-- [ ] Return installed path and existing platform launch entry, explicitly not configured/connected. Source installs follow the existing explicit fallback instead.
-- [ ] Run supported-Python installer/entrypoint tests and independent review; integrate package smoke, documentation and exact-commit builds before release.
+- [x] Write failing tests for full/incomplete bundles, safe internal and escaping links, special files, source/destination overlap, spaces/Unicode, identical rerun, different existing target and interrupted staging.
+- [x] Implement install_bundle(source: Path, destination: Path) -> Path and default_destination() -> Path; expose exact --install dispatcher for frozen bundles only. Defaults: Mac ~/Library/Application Support/WUPHF; Windows %LOCALAPPDATA%/WUPHF; Linux ~/.local/opt/WUPHF.
+- [x] Stage alongside destination then promote only into absent target; identical existing target is a no-op, different existing target refuses with upgrade guidance. Preserve all existing app/data/jobs on failure and reject ambiguous paths/links.
+- [x] Return installed path and existing platform launch entry, explicitly not configured/connected. Source installs follow the existing explicit fallback instead.
+- [x] Run supported-Python installer/entrypoint tests and independent review; integrate package smoke, documentation and exact-commit builds before release.
 
 ### Task 4: Reliability and calendar lifecycle audit
 Files: wuphf/runner.py, wuphf/google.py/google_auth.py, tests/test_runner.py/test_google.py plus related modules only for evidenced defects.
@@ -65,14 +65,14 @@ Files: wuphf/runner.py, wuphf/google.py/google_auth.py, tests/test_runner.py/tes
 - [x] Independent code review and full test suite pass.
 
 ### Task 5: Whole-product QA and fresh usability review
-- [ ] Run Python suite, Node behavior, package smoke checks and all supported-platform CI checks on integrated branch.
-- [ ] Inspect actual browser flow with isolated sample data: zero, available, incomplete, provider disconnected/error, unsaved/saved/test states; keyboard and reduced-motion checks; language coverage.
-- [ ] Fresh context-free agent reviews purpose/ease/docs/current alternatives and scores independently; resolve actionable failures and repeat review without prescribing scores.
+- [x] Run Python suite, Node behavior, package smoke checks and all supported-platform CI checks on integrated branch.
+- [x] Inspect actual browser flow with isolated sample data: zero, available, incomplete, provider disconnected/error, unsaved/saved/test states; keyboard and reduced-motion checks; language coverage. (Reduced-motion CSS inspected; actual preference and final disconnect-retry browser action remain unverified, with tool limits recorded.)
+- [x] Fresh context-free agent reviews purpose/ease/docs/current alternatives and scores independently; resolve actionable failures and repeat review without prescribing scores. (Final simulated-browser score 8.5/10; 10/10 and first-time-user evidence remain pending.)
 - [ ] Record first-time-user evidence when available; maintain explicit pending gates rather than inventing 10/10.
 
 ### Task 6: Merge, version and publish
 Files: VERSION, CHANGELOG.md, docs/release-readiness.md, release workflows only as required.
-- [ ] Bump next prerelease after integration, update screenshots/guide and precise evidence.
+- [x] Bump next prerelease after integration, update screenshots/guide and precise evidence.
 - [ ] Commit reviewed changes, open PR, verify checks, merge under user's existing authorization.
 - [ ] Build candidate from immutable commit, inspect archives/checksums/notices, publish next beta with all options and documentation.
 - [ ] Verify public downloads and final independent assessment; audit every spec requirement before marking goal complete.

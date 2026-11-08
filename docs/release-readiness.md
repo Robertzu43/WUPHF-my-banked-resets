@@ -1,6 +1,38 @@
-# Candidate 0.1.0-beta.2: verification in progress
+# Release readiness — 0.1.0-beta.2
 
-The quality branch adds guided setup, complete packaged help, launch entries, and Calendar account binding. Local supported-Python and independent scoped tests pass, but the candidate is not yet released. Windows CI exposed a help-test encoding defect; its fix and further UI corrections require fresh CI. Final immutable package provenance, the new installation action, full-branch QA and public-download verification remain pending. Earlier beta.1 live evidence below is historical and does not certify this candidate. Windows/Linux real-device tests remain waived; signing and first-time-user evidence remain unresolved.
+Updated November 8, 2026. This candidate improves the existing local, independent-account beta. Publication and the final release-archive audit are separate gates; the published tag, build-info.json and SHA256SUMS identify the exact artifacts.
+
+## Completed implementation and review
+
+- Guided setup makes select → save → test → enable explicit in eight languages. Unsaved edits cannot test stale settings; tests record provider acceptance for the current session without claiming inbox/device receipt.
+- Provider and scheduler action states reject stale responses, recover after failed actions and keep Disconnect reachable. Saved Gmail configuration is detected without reading keychain health, so missing credentials can be removed/reconnected. Errors do not falsely tell normal users to create a Google Cloud project.
+- Banked resets, manual redemption, complete-zero versus unknown data, time zones, browser-read freshness, calendar imports and help are explained in the actual UI. Calendar-only saves have calendar guidance; incomplete exports stay in setup with an inline error.
+- Packages contain complete offline help and Mac/Linux launch entries. The frozen local --install action validates and copies the complete bundle to a permanent user location, preserves trust metadata, refuses different existing destinations and uses exclusive promotion. Repeated identical installs are safe no-ops; no account, credential or scheduler setup is performed by installation.
+- Source launchers select an existing compatible Python 3.11+, validate overrides and reused environments, preserve broken environments, and disable both modern and legacy Windows runtime acquisition during discovery.
+- Calendar sync requires a stable Codex identity and refuses mismatched, unknown or legacy ownership before remote writes. Existing remote events are retained. Old connections require reconnect; other channels/ICS remain independent.
+- Independent scoped packaging, setup, source-launcher, installer and whole-branch reviews found and drove fixes before sign-off. The final whole-branch review's two Google recovery defects were resolved at 933ba18022c2a60287c81dc58dfd565b29104a22. A fresh simulated-browser assessment scored the final reviewed candidate 8.5/10 overall (purpose 9, installation 7.5, channel setup 9, daily use 8.5, documentation 9). Its five original UI findings were resolved; final disconnect-failure retry was browser-tool blocked, while independent code/HTTP recovery tests passed. This is not measured novice success or a forced 10/10 rating.
+
+## Automated and native evidence
+
+Runtime candidate **933ba18022c2a60287c81dc58dfd565b29104a22** passed:
+
+- [All six test jobs](https://github.com/Robertzu43/WUPHF-my-banked-resets/actions/runs/42456131003): Python 3.11 and 3.13 on macOS, Windows and Ubuntu. An independent isolated-commit local run discovered 312 tests: 302 passed and ten native Windows cases were skipped on the Mac host; the CI matrix exercises the corresponding native platform cases.
+- [All three package jobs](https://github.com/Robertzu43/WUPHF-my-banked-resets/actions/runs/42456131000): exact-commit frozen build, package layout/help, local installation/repeated installation, installed assets/version and synthetic Codex background checks. These use isolated homes and provider/job doubles, not users' accounts or native scheduled delivery.
+- Native Windows regression cases verified Zone.Identifier stream preservation, source/destination root junction refusal, directory-link copying, and source-launcher flag isolation/restoration. This is CI execution, distinct from the owner-waived real-device tests.
+- An additional Mac build at 3dca793 passed real frozen local install, original/installed repeat modes, installed-copy asset/version and synthetic Codex checks. Native Mac tests preserve quarantine attributes and test exclusive promotion/collision. These are diagnostic candidate checks, not the final downloadable release artifacts or a browser-quarantine approval walkthrough.
+- Read-only live Codex inspection on the maintainer's current CLI returned complete details with a stable account identity. No reset was consumed and no raw account/reset data was published. This does not establish compatibility for every CLI/account.
+
+Documentation and nonbehavioral copy completion commits may follow the tested runtime candidate. Final CI and release jobs must build and validate the selected immutable source commit; consult the release page for its exact workflow and artifact audit. Earlier beta.1 evidence below remains historical.
+
+## Remaining limits and release conditions
+
+- Google verification, unverified-app warnings and account limits remain. Production OAuth status is not approval. Google review does not block the owner-authorized beta publication.
+- Binaries are unsigned/not Apple-notarized; no valid signing identity was available locally. No global security protections or quarantine metadata are removed. Normal per-app trust decisions can still be required.
+- Clean first-time-user installation, actual browser-download trust approval, new-version provider receipt/import alarms, native installed scheduling, later token refresh and sleep/wake behavior are not established by these synthetic checks. Earlier Gmail/Telegram receipt and Calendar source-helper evidence are recorded below, not re-certified for beta.2.
+- Windows/Linux real-device tests remain waived by the owner; they are not described as passed.
+- A Calendar create followed by local persistence failure can leave an empty extra calendar. Existing/stale events and disconnected calendars require manual removal; automatic deletion is intentionally absent without unambiguous ownership and lifecycle evidence.
+- Eight catalogs and automated placeholder/behavior tests are included; native-speaker and full assistive-technology validation remain pending.
+- Final release gate: reviewed source, passing exact-commit CI, inspected versioned archives/notices/checksums, deliberate publication and public-download verification. This report does not replace those checks or prove a 10/10 outcome.
 
 ---
 

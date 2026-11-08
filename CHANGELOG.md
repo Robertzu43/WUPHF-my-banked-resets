@@ -1,13 +1,14 @@
 # Changelog
 
-## 0.1.0-beta.2 — unreleased candidate
+## 0.1.0-beta.2 — 2026-11-08
 
 - Guide channel setup through save, test and background checks, with unsaved-change protection and honest session test acceptance.
 - Explain banked resets and manual redemption in the app; add guide/import help, explicit expiry time zones and read freshness in eight languages.
 - Disable inapplicable provider actions, ignore stale authorization responses, and preserve setup during failed calendar exports.
 - Include complete offline help and native Mac/Linux launch entries in packages.
 - Bind Google Calendar sync to a stable Codex account; refuse ambiguous legacy or changed-account writes while preserving existing remote events. Older connections require reconnect, and missing stable identity pauses Calendar sync.
-- Improve installation placement and reopening; final installer, independent QA, CI and artifact evidence are pending.
+- Add frozen local installation with safe repeat behavior, native trust-metadata preservation, path/link validation and failure cleanup.
+- Improve compatible Python discovery and preserved-environment recovery for source installations; verify native Windows regression cases in CI.
 
 
 ## 0.1.0-beta.1 — 2026-11-08

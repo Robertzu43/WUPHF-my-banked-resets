@@ -65,8 +65,10 @@ my other selected options. Never disable OS security protections.
 Save my settings. Send one labeled test through each selected notification
 channel and ask me to confirm receipt. For Calendar sync, verify a sync;
 for ICS, export the file and help me import it. Enable background checks for
-ongoing reminders/sync, avoiding duplicate jobs. For ICS-only setup, leave
-background checks off. Verify the scheduler when enabled and the
+ongoing reminders/sync, avoiding duplicate jobs. If a job already exists, verify
+its command targets this installed copy; replace an obsolete job through
+Disable/Enable while preserving settings. For ICS-only setup, leave background
+checks off. Verify the scheduler when enabled and the
 last successful check; do not claim delivery from provider acceptance alone.
 
 Finish with a short checklist of what is installed, connected, tested or still
