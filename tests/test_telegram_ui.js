@@ -7,7 +7,7 @@ const discover=html.match(/async function discoverTelegramChat\(\)\{[\s\S]*?\n\}
 assert(pairing&&discover,'Telegram pairing functions are missing');
 const fields={'telegram-chat':{value:'',focus(){}},'telegram-token':{value:'123:secret'},'telegram-discover':{disabled:false},'telegram-pair':{disabled:false},'telegram-phrase':{value:'',focus(){},select(){}}};
 let calls=[], allow=true;const messages=[];
-const ctx={$:id=>fields[id],window:{confirm:()=>allow},t:key=>key,flash:value=>messages.push(value),
+const ctx={$:id=>fields[id],window:{confirm:()=>allow},t:key=>key,flash:value=>messages.push(value),markSettingsDirty(){},
  api:async(path,method,body)=>{calls.push(path);assert.equal(method,'POST');if(path==='/api/telegram/pair')return {phrase:'WUPHF-proof'};assert.equal(body.token,'123:secret');return {chat_id:'12345'}}};
 vm.createContext(ctx);vm.runInContext(pairing[0]+'\n'+discover[0],ctx);
 (async()=>{

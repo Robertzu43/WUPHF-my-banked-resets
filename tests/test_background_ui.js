@@ -14,7 +14,7 @@ const ctx = {Date, Number, AbortController, lastBackground:null, backgroundTimer
   $:id=>elements[id]||(elements[id]={textContent:''}),
   t:(key,values={})=>key+(values.channels?' '+values.channels:''),locale:()=> 'en',
   api:async()=>states[calls++], setTimeout:(fn,ms)=>(ms===60000?timer=fn:timeout=fn,1),clearTimeout:()=>{}};
-vm.createContext(ctx);vm.runInContext(render+'\n'+poll,ctx);
+vm.createContext(ctx);vm.runInContext(html.match(/function dateTime\(value\)\{[^\n]*\}/)[0]+'\n'+render+'\n'+poll,ctx);
 (async()=>{
   await ctx.backgroundStatus();
   assert.equal(elements['scheduler-status'].textContent,'scheduler_enabled');

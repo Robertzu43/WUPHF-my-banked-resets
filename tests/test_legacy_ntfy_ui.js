@@ -20,7 +20,7 @@ const submitHandler=html.match(/\$\('settings'\)\.addEventListener\('submit',asy
 assert(loadSettings&&submitHandler,'settings flow is missing');
 let submitted, handler;const elements={};
 const element=id=>elements[id]||(elements[id]={value:'',checked:false,hidden:false,addEventListener(type,fn){if(type==='submit')handler=fn}});
-const formCtx={legacyNtfy:null,language:'en',translations:{en:{}},$:element,applyLanguage(){},toggle(){},flash(){},
+const formCtx={settingsLoaded:false,settingsDirty:false,setupBusy:false,settingsRevision:0,testResults:{},renderSetup(){element('settings-save').disabled=!formCtx.settingsLoaded},legacyNtfy:null,language:'en',translations:{en:{}},$:element,applyLanguage(){},toggle(){},flash(){},
  api:async(path,method,payload)=>{if(path==='/api/settings'&&method==='POST'){submitted=payload;return {ok:true}}
  return {advance_days:7,repeat_hours:24,channels:{ntfy:{url:'https://example.test',topic:'existing'}}}}};
 vm.createContext(formCtx);vm.runInContext(show[0]+'\n'+retain[0]+'\n'+loadSettings[0]+'\n'+submitHandler[0],formCtx);
