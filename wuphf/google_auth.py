@@ -21,6 +21,23 @@ status={'state':'disconnected','message':'Not connected'}
 _lock=threading.Lock()
 
 
+class CallbackServer(ThreadingHTTPServer):
+    def __init__(self,*args,**kwargs):
+        self._slots=threading.BoundedSemaphore(8)
+        super().__init__(*args,**kwargs)
+
+    def process_request(self,request,client_address):
+        if not self._slots.acquire(blocking=False):
+            self.shutdown_request(request);return
+        try:super().process_request(request,client_address)
+        except BaseException:
+            self._slots.release();raise
+
+    def process_request_thread(self,request,client_address):
+        try:super().process_request_thread(request,client_address)
+        finally:self._slots.release()
+
+
 def parse_client(raw):
     data=raw.get('installed') if isinstance(raw,dict) else None
     if not isinstance(data,dict):raise ValueError('A Google desktop OAuth JSON file is required')
@@ -44,13 +61,15 @@ def _connect(ident,secret):
     challenge=base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b'=').decode()
     result={};result_lock=threading.Lock()
     class Callback(BaseHTTPRequestHandler):
+        def setup(self):
+            super().setup();self.connection.settimeout(5)
         def log_message(self,*args):pass
         def do_GET(self):
             parsed=urllib.parse.urlsplit(self.path)
-            values=urllib.parse.parse_qs(parsed.query)
+            values=urllib.parse.parse_qs(parsed.query,keep_blank_values=True)
             states=values.get('state',[]);codes=values.get('code',[]);errors=values.get('error',[])
             if (parsed.path!='/oauth/callback' or len(states)!=1 or not secrets.compare_digest(states[0].encode(),state.encode())
-                    or not ((len(codes)==1 and not errors) or (len(errors)==1 and not codes))):
+                    or not ((len(codes)==1 and codes[0] and not errors) or (len(errors)==1 and errors[0] and not codes))):
                 self.send_error(400);return
             with result_lock:
                 if result or time.monotonic()>=deadline:
@@ -60,7 +79,7 @@ def _connect(ident,secret):
             self.send_response(200);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
     server=None
     try:
-        server=ThreadingHTTPServer(('127.0.0.1',0),Callback);deadline=time.monotonic()+180
+        server=CallbackServer(('127.0.0.1',0),Callback);deadline=time.monotonic()+180
         redirect=f'http://127.0.0.1:{server.server_port}/oauth/callback'
         query={'client_id':ident,'redirect_uri':redirect,'response_type':'code','scope':SCOPE,'access_type':'offline','prompt':'consent','state':state,'code_challenge':challenge,'code_challenge_method':'S256'}
         webbrowser.open('https://accounts.google.com/o/oauth2/v2/auth?'+urllib.parse.urlencode(query))

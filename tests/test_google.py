@@ -101,30 +101,37 @@ class CalendarTests(unittest.TestCase):
         from pathlib import Path
         from unittest.mock import patch
         from wuphf import google_auth
-        responses=[]
+        responses=[];callback_done=threading.Event()
         def open_browser(url):
             query=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
             redirect=query['redirect_uri'][0]; state=query['state'][0]
             def callbacks():
                 paths=['?state=wrong&code=bad', '?'+urllib.parse.urlencode({'state':'☃','code':'bad'}),
                        '?'+urllib.parse.urlencode([('state',state),('state',state),('code','bad')]),
+                       '?'+urllib.parse.urlencode([('state',state),('state',''),('code','bad')]),
+                       '?'+urllib.parse.urlencode([('state',state),('code','bad'),('code','')]),
+                       '?'+urllib.parse.urlencode([('state',state),('error','denied'),('error','')]),
+                       '?'+urllib.parse.urlencode({'state':state,'code':''}),
+                       '?'+urllib.parse.urlencode({'state':state,'error':''}),
                        '?'+urllib.parse.urlencode({'state':state}),
                        '?'+urllib.parse.urlencode({'state':state,'code':'good'})]
                 for path in paths:
                     try:
                         with urllib.request.urlopen(redirect+path,timeout=2) as response:responses.append(response.status)
                     except urllib.error.HTTPError as error:responses.append(error.code)
-                    except urllib.error.URLError:break
+                    except (urllib.error.URLError,OSError):break
+                callback_done.set()
             threading.Thread(target=callbacks,daemon=True).start()
         with tempfile.TemporaryDirectory() as tmp, patch.object(google_auth,'GOOGLE',Path(tmp)/'google.json'), \
              patch.object(google_auth.webbrowser,'open',side_effect=open_browser), \
              patch.object(google_auth,'token_request',return_value={'refresh_token':'refresh'}) as request, \
              patch.object(google_auth,'set_secret'):
             google_auth._connect('client.apps.googleusercontent.com','secret')
+            self.assertTrue(callback_done.wait(2))
             self.assertEqual(google_auth.status['state'],'connected')
             self.assertEqual(request.call_args.args[0]['code'],'good')
             self.assertEqual(json.loads(google_auth.GOOGLE.read_text()),{'client_id':'client.apps.googleusercontent.com'})
-        self.assertEqual(responses,[400,400,400,400,200])
+        self.assertEqual(responses,[400,400,400,400,400,400,400,400,400,200])
 
     def test_oauth_stray_requests_do_not_extend_deadline(self):
         from unittest.mock import patch
@@ -135,7 +142,7 @@ class CalendarTests(unittest.TestCase):
             def handle_request(self):self.timeouts.append(self.timeout)
             def server_close(self):self.closed=True
         server=Server()
-        with patch.object(google_auth,'ThreadingHTTPServer',return_value=server), \
+        with patch.object(google_auth,'CallbackServer',return_value=server), \
              patch.object(google_auth.webbrowser,'open'), \
              patch.object(google_auth.time,'monotonic',side_effect=[0,100,150,181]), \
              patch.object(google_auth,'token_request') as request:
@@ -174,3 +181,18 @@ class CalendarTests(unittest.TestCase):
             self.assertEqual(google_auth.status['state'],'connected')
         self.assertTrue(callback_done.wait(2))
         self.assertEqual(valid_before_release,[True])
+
+    def test_oauth_callback_server_limits_simultaneous_workers(self):
+        from unittest.mock import patch
+        from wuphf import google_auth
+        cls=getattr(google_auth,'CallbackServer',None)
+        self.assertIsNotNone(cls)
+        with cls(('127.0.0.1',0),google_auth.BaseHTTPRequestHandler) as server:
+            with patch.object(google_auth.ThreadingHTTPServer,'process_request') as dispatch,patch.object(server,'shutdown_request') as close:
+                for _ in range(9):server.process_request(object(),('127.0.0.1',1))
+                self.assertEqual(dispatch.call_count,8)
+                self.assertEqual(close.call_count,1)
+                with patch.object(google_auth.ThreadingHTTPServer,'process_request_thread'):
+                    server.process_request_thread(object(),('127.0.0.1',1))
+                server.process_request(object(),('127.0.0.1',1))
+                self.assertEqual(dispatch.call_count,9)
