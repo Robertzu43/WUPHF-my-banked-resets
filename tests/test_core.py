@@ -146,3 +146,18 @@ class TrackingTests(unittest.TestCase):
         from wuphf.core import _external_environment
         with tempfile.TemporaryDirectory() as bundle,patch.dict(os.environ,{'PATH':bundle},clear=True),patch.object(sys,'frozen',True,create=True),patch.object(sys,'_MEIPASS',bundle,create=True),patch.object(sys,'platform','darwin'):
             self.assertEqual(_external_environment()['PATH'],os.defpath)
+
+    def test_oversized_numeric_expiry_is_unknown(self):
+        from wuphf.core import valid_expiry
+        self.assertFalse(valid_expiry(10**1000))
+        self.assertFalse(due({'expiresAt':10**1000},900,1000,50,None))
+
+    def test_notifications_do_not_extend_account_response_timeout(self):
+        from unittest.mock import MagicMock,patch
+        from wuphf.core import read_snapshot
+        process=MagicMock()
+        process.stdout=iter(['{"id":1,"result":{}}\n','{"method":"progress"}\n',
+            '{"id":2,"result":{"rateLimitResetCredits":{"availableCount":0,"credits":[]}}}\n'])
+        with patch('wuphf.core.subprocess.Popen',return_value=process),patch('time.monotonic',side_effect=[0,0,0,0,2]):
+            with self.assertRaisesRegex(RuntimeError,'timed out'):
+                read_snapshot(timeout=1)

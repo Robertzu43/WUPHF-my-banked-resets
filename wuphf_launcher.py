@@ -1,10 +1,35 @@
 """Entry point for a future packaged WUPHF executable."""
 import sys
+from pathlib import Path
+
+_dll_directory=None
+
+
+def _prepare_windows_dlls():
+    global _dll_directory
+    if sys.platform!='win32' or not getattr(sys,'frozen',False) or _dll_directory is not None:return
+    import ctypes
+    import os
+    kernel=ctypes.WinDLL('kernel32',use_last_error=True)
+    kernel.SetDllDirectoryW.argtypes=[ctypes.c_wchar_p]
+    kernel.SetDllDirectoryW.restype=ctypes.c_int
+    directory=os.add_dll_directory(sys._MEIPASS)
+    # Keep Python's DLL dependencies available without passing the bundle search path to Codex.
+    if not kernel.SetDllDirectoryW(None):
+        directory.close()
+        raise RuntimeError('Could not reset the Windows DLL search path.')
+    _dll_directory=directory
 
 
 def main(argv=None):
+    _prepare_windows_dlls()
+    if sys.platform=='darwin' and getattr(sys,'frozen',False):
+        import os
+        os.environ['PATH']=os.environ.get('PATH','/usr/bin:/bin')+':/opt/homebrew/bin:/usr/local/bin'
     args=sys.argv[1:] if argv is None else argv
-    if args==['--background']:
+    if args==['--version']:
+        print('WUPHF '+(Path(__file__).resolve().parent/'VERSION').read_text(encoding='utf-8').strip())
+    elif args==['--background']:
         from wuphf.cli import main as run_cli
         run_cli(['run'])
     elif args==['--check-codex']:
@@ -16,7 +41,7 @@ def main(argv=None):
         from wuphf.web import PAGE, PIXEL_FONT
         if (b'WUPHF' not in PAGE.read_bytes() or PIXEL_FONT.read_bytes()[:4]!=b'wOF2'
                 or len(languages())!=8 or not (PAGE.parent/'assets'/'geist-pixel-OFL.txt').is_file()
-                or not (PAGE.parent.parent/'LICENSE').is_file()):
+                or not all((PAGE.parent.parent/name).is_file() for name in ('LICENSE','VERSION','README.md','CHANGELOG.md'))):
             raise SystemExit('Packaged assets are incomplete.')
         if getattr(sys,'frozen',False) and sys.platform in ('win32','linux'):
             from importlib import import_module
@@ -28,7 +53,7 @@ def main(argv=None):
         from wuphf.web import main as run_web
         run_web()
     else:
-        raise SystemExit('Usage: WUPHF [--background|--check-assets|--check-codex]')
+        raise SystemExit('Usage: WUPHF [--version|--background|--check-assets|--check-codex]')
 
 
 if __name__=='__main__':

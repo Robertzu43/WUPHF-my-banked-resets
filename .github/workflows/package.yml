@@ -40,9 +40,20 @@ jobs:
           Compress-Archive -Path "$env:RUNNER_TEMP\wuphf-dist\WUPHF" -DestinationPath "$env:RUNNER_TEMP\wuphf-beta.zip"
           Expand-Archive -Path "$env:RUNNER_TEMP\wuphf-beta.zip" -DestinationPath "$env:RUNNER_TEMP\wuphf-extracted"
           python scripts/smoke_package.py "$env:RUNNER_TEMP\wuphf-extracted\WUPHF"
+      - name: Write archive checksum
+        shell: python
+        run: |
+          import hashlib, os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP'])
+          archive = root / ('wuphf-beta.zip' if os.name == 'nt' else 'wuphf-beta.tar.gz')
+          digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+          (root / 'SHA256SUMS').write_text(digest + '  ' + archive.name + '\n', encoding='utf-8')
       - uses: actions/upload-artifact@v4
         with:
           name: unsigned-wuphf-${{ matrix.os }}
-          path: ${{ runner.temp }}/wuphf-beta.*
+          path: |
+            ${{ runner.temp }}/wuphf-beta.*
+            ${{ runner.temp }}/SHA256SUMS
           if-no-files-found: error
           retention-days: 7

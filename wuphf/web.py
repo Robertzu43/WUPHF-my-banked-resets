@@ -9,11 +9,12 @@ import time
 import urllib.parse
 import webbrowser
 from http.cookies import SimpleCookie
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 
 from . import cli
 from .config import validate
+from .google_auth import CallbackServer
 from .core import read_snapshot
 from .keychain import set_secret
 from .storage import load, save, check_lock
@@ -69,6 +70,8 @@ def create_server(port=0,token=None):
     token=token or secrets.token_urlsafe(32)
     pairing={};pair_lock=threading.Lock()
     class Handler(BaseHTTPRequestHandler):
+        def setup(self):
+            super().setup();self.connection.settimeout(5)
         def log_message(self,*args): pass
         def write(self,status,body,content='application/json',headers=None):
             if isinstance(body,dict):body=json.dumps(body).encode()
@@ -202,7 +205,7 @@ def create_server(port=0,token=None):
                 message='This build needs a Google desktop OAuth client in Developer setup before it can connect.' if self.path in ('/api/google/connect','/api/gmail/connect') else 'Please check your settings and try again.'
                 return self.write(400,{'error':message})
             except Exception:return self.write(503,{'error':'Action failed. Check your settings, permissions, and connection.'})
-    server=ThreadingHTTPServer(('127.0.0.1',port),Handler)
+    server=CallbackServer(('127.0.0.1',port),Handler)
     server.daemon_threads=True
     server.session_token=token
     return server

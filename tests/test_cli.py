@@ -3,6 +3,27 @@ from unittest.mock import patch
 from wuphf.cli import main
 
 class CliTests(unittest.TestCase):
+    def test_mac_scheduler_launch_error_cleans_up_new_file(self):
+        import tempfile
+        from pathlib import Path
+        from wuphf import cli
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);plist=root/'agent.plist'
+            with patch.object(cli,'PLIST',plist),patch.object(cli,'ROOT',root),patch.object(cli.sys,'platform','darwin'),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.shutil,'which',return_value='/bin/codex'),patch.object(cli.subprocess,'run',side_effect=OSError('unavailable')):
+                with self.assertRaises(RuntimeError):cli.install_agent()
+            self.assertFalse(plist.exists())
+
+    def test_mac_uninstall_preserves_file_if_scheduler_domain_is_unavailable(self):
+        import tempfile
+        from pathlib import Path
+        from types import SimpleNamespace
+        from wuphf import cli
+        with tempfile.TemporaryDirectory() as d:
+            plist=Path(d)/'agent.plist';plist.write_text('existing')
+            with patch.object(cli,'PLIST',plist),patch.object(cli.sys,'platform','darwin'),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.subprocess,'run',return_value=SimpleNamespace(returncode=1)):
+                with self.assertRaises(RuntimeError):cli.main(['uninstall'])
+            self.assertTrue(plist.exists())
+
     def test_status_displays_available_count_without_raw_credit_id(self):
         snap={'count':1,'complete':True,'credits':[{'id':'sensitive-id','status':'available','expiresAt':None}]}
         with patch('wuphf.cli.read_snapshot',return_value=snap), patch('builtins.print') as output:

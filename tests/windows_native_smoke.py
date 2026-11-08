@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import uuid
+import xml.etree.ElementTree as ET
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parent.parent))
 from wuphf import platform_jobs
@@ -36,8 +37,14 @@ print('Windows Codex launcher round trip passed')
 installed=False
 try:
     platform_jobs.install();installed=True
-    result=subprocess.run(['schtasks','/Query','/TN',platform_jobs.TASK],capture_output=True,text=True)
+    result=subprocess.run(['schtasks','/Query','/TN',platform_jobs.TASK,'/XML'],capture_output=True,check=True)
     assert result.returncode==0,'Windows task was not registered'
-    print('Windows Task Scheduler registration passed')
+    task=ET.fromstring(result.stdout)
+    for name in ('DisallowStartIfOnBatteries','StopIfGoingOnBatteries'):
+        assert task.findtext('{*}Settings/{*}'+name)=='false',name+' must allow battery operation'
+    assert task.findtext('{*}Principals/{*}Principal/{*}LogonType')=='InteractiveToken'
+    assert task.findtext('{*}Triggers/*/{*}Repetition/{*}Interval')=='PT10M'
+    assert task.findtext('{*}Settings/{*}WakeToRun','false')=='false'
+    print('Windows Task Scheduler registration, battery settings, and interactive schedule passed')
 finally:
     if installed:platform_jobs.uninstall()

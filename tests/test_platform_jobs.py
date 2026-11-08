@@ -5,6 +5,49 @@ from unittest.mock import patch
 from wuphf import platform_jobs
 
 class PlatformJobsTests(unittest.TestCase):
+    def test_windows_task_allows_battery_without_changing_other_settings(self):
+        with patch.object(platform_jobs.sys,'platform','win32'),patch.object(platform_jobs,'_run',return_value=True) as run:
+            platform_jobs.install()
+        command=run.call_args.args[0]
+        self.assertEqual(command[:4],['powershell.exe','-NoProfile','-NonInteractive','-Command'])
+        script=command[4]
+        self.assertIn("$ErrorActionPreference='Stop'",script)
+        self.assertIn("Get-ScheduledTask -TaskName 'WUPHF Banked Resets' -TaskPath '\\'",script)
+        self.assertIn('$task.Settings.DisallowStartIfOnBatteries=$false',script)
+        self.assertIn('$task.Settings.StopIfGoingOnBatteries=$false',script)
+        self.assertIn('Set-ScheduledTask -InputObject $task',script)
+        self.assertNotIn('New-ScheduledTaskSettingsSet',script)
+        self.assertNotIn('WakeToRun',script)
+
+    def test_windows_failed_battery_configuration_rolls_back_new_task(self):
+        for failure in (False,RuntimeError('scheduler unavailable')):
+            with self.subTest(failure=failure),patch.object(platform_jobs.sys,'platform','win32'),patch.object(platform_jobs,'_run',side_effect=[True,failure,True]) as run:
+                with self.assertRaisesRegex(RuntimeError,'removed'):platform_jobs.install()
+            self.assertEqual(run.call_args.args[0],['schtasks','/Delete','/TN',platform_jobs.TASK,'/F'])
+
+    def test_windows_failed_battery_rollback_reports_remaining_task(self):
+        with patch.object(platform_jobs.sys,'platform','win32'),patch.object(platform_jobs,'_run',side_effect=[True,False,False]):
+            with self.assertRaisesRegex(RuntimeError,'could not be removed'):platform_jobs.install()
+
+    def test_windows_existing_task_failure_does_not_modify_or_remove_task(self):
+        with patch.object(platform_jobs.sys,'platform','win32'),patch.object(platform_jobs,'_run',return_value=False) as run:
+            with self.assertRaises(RuntimeError):platform_jobs.install()
+        self.assertEqual(run.call_count,1)
+
+    def test_scheduler_commands_cannot_wait_for_interactive_input(self):
+        import subprocess
+        with patch.object(platform_jobs.subprocess,'run',side_effect=subprocess.TimeoutExpired('schtasks',15)) as run:
+            with self.assertRaisesRegex(RuntimeError,'scheduler'):platform_jobs._run(['schtasks','/Create'])
+        self.assertEqual(run.call_args.kwargs['stdin'],subprocess.DEVNULL)
+        self.assertEqual(run.call_args.kwargs['timeout'],15)
+
+    def test_linux_uninstall_preserves_files_if_running_check_cannot_stop(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);(root/'wuphf-resets.service').write_text('service');(root/'wuphf-resets.timer').write_text('timer')
+            with patch.object(platform_jobs.sys,'platform','linux'),patch.object(platform_jobs,'UNITS',root),patch.object(platform_jobs,'_run',side_effect=[True,False]):
+                with self.assertRaisesRegex(RuntimeError,'running'):platform_jobs.uninstall()
+            self.assertTrue((root/'wuphf-resets.service').exists());self.assertTrue((root/'wuphf-resets.timer').exists())
+
     def test_linux_installs_a_user_timer_without_overwriting_existing_units(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d)
@@ -24,7 +67,7 @@ class PlatformJobsTests(unittest.TestCase):
     def test_windows_creates_a_ten_minute_interactive_task(self):
         with patch('wuphf.platform_jobs.sys.platform','win32'),patch('wuphf.platform_jobs.subprocess.run',return_value=SimpleNamespace(returncode=0)) as run:
             platform_jobs.install()
-        args=run.call_args.args[0]
+        args=run.call_args_list[0].args[0]
         self.assertIn('/create',[x.lower() for x in args])
         self.assertIn('/it',[x.lower() for x in args])
         self.assertIn('10',args)
@@ -96,7 +139,7 @@ class PlatformJobsTests(unittest.TestCase):
             exe=Path(d)/'Installed WUPHF'/'WUPHF.exe'
             with patch.object(platform_jobs.sys,'platform','win32'),patch.object(platform_jobs.sys,'frozen',True,create=True),patch.object(platform_jobs.sys,'executable',str(exe)),patch.object(platform_jobs.sys,'_MEIPASS',str(Path(d)/'temporary bundle'),create=True),patch.object(platform_jobs.subprocess,'run',return_value=SimpleNamespace(returncode=0)) as run:
                 platform_jobs.install()
-            args=run.call_args.args[0];command=args[args.index('/TR')+1]
+            args=run.call_args_list[0].args[0];command=args[args.index('/TR')+1]
             self.assertEqual(command,subprocess.list2cmdline([str(exe),'--background']))
             self.assertNotIn('temporary bundle',command);self.assertNotIn('start_background.py',command)
 
@@ -115,7 +158,7 @@ class PlatformJobsTests(unittest.TestCase):
             root=Path(d)/'Source WUPHF';exe=Path(d)/'Python Env'/'python.exe'
             with patch.object(platform_jobs.sys,'platform','win32'),patch.object(platform_jobs.sys,'frozen',False,create=True),patch.object(platform_jobs.sys,'executable',str(exe)),patch.object(platform_jobs,'ROOT',root),patch.object(platform_jobs.subprocess,'run',return_value=SimpleNamespace(returncode=0)) as run:
                 platform_jobs.install()
-            args=run.call_args.args[0]
+            args=run.call_args_list[0].args[0]
             self.assertEqual(args[args.index('/TR')+1],subprocess.list2cmdline([str(exe),str(root/'start_background.py')]))
 
     def test_linux_source_scheduler_escapes_dollar_in_exec_arguments_only(self):

@@ -97,10 +97,12 @@ def install_agent():
     job={'Label':'com.wuphf.resets','ProgramArguments':arguments,'WorkingDirectory':str(directory),'RunAtLoad':True,'StartInterval':600,'EnvironmentVariables':{'PATH':os.environ.get('PATH','/usr/bin:/bin')}}
     with open(PLIST,'wb') as f: plistlib.dump(job,f)
     os.chmod(PLIST,0o600)
-    result=subprocess.run(['launchctl','bootstrap',f'gui/{os.getuid()}',str(PLIST)],capture_output=True,text=True)
-    if result.returncode:
+    try:
+        result=subprocess.run(['launchctl','bootstrap',f'gui/{os.getuid()}',str(PLIST)],capture_output=True,text=True)
+        if result.returncode:raise RuntimeError('Could not start the background job; it may already be installed.')
+    except (OSError,RuntimeError):
         PLIST.unlink(missing_ok=True)
-        raise RuntimeError('Could not start the background job; it may already be installed.')
+        raise RuntimeError('Could not start the background job; it may already be installed.') from None
     print('Background job installed. Keep your Mac awake, online, and logged in.')
 
 
@@ -167,7 +169,8 @@ def main(argv=None):
             result=subprocess.run(['launchctl','bootout',f'gui/{os.getuid()}',str(PLIST)],capture_output=True)
             if result.returncode:
                 active=subprocess.run(['launchctl','print',f'gui/{os.getuid()}/com.wuphf.resets'],capture_output=True)
-                if active.returncode==0:raise RuntimeError('Could not stop the background job; no files were removed.')
+                if active.returncode==0 or subprocess.run(['launchctl','print',f'gui/{os.getuid()}'],capture_output=True).returncode!=0:
+                    raise RuntimeError('Could not stop the background job; no files were removed.')
             PLIST.unlink();print('Background job removed. Settings and Keychain entries remain.')
         else: print('No background job installed.')
 

@@ -254,3 +254,41 @@ class WebTests(unittest.TestCase):
             started=time.monotonic();conn.sendall(headers+b'{')
             self.assertIn(b' 403 ',conn.recv(1024))
             self.assertLess(time.monotonic()-started,1.5)
+
+    def test_incomplete_unauthenticated_request_releases_connection(self):
+        import socket
+        with socket.create_connection(('127.0.0.1',self.port),timeout=7) as conn:
+            conn.sendall(b'GET / HTTP/1.1\r\n')
+            try:closed=conn.recv(1)
+            except socket.timeout:self.fail('Incomplete request kept its worker past the read deadline')
+            self.assertEqual(closed,b'')
+        res,_=self.request('GET','/api/settings')
+        self.assertEqual(res.status,403)
+
+    def test_setup_server_bounds_concurrent_workers(self):
+        import socket
+        entered=threading.Condition();release=threading.Event();workers=[];connections=[]
+        def hold(handler):
+            with entered:
+                workers.append(handler)
+                entered.notify_all()
+            release.wait(3)
+        try:
+            with patch.object(self.server.RequestHandlerClass,'handle',hold):
+                for count in range(1,9):
+                    connections.append(socket.create_connection(('127.0.0.1',self.port),timeout=2))
+                    with entered:self.assertTrue(entered.wait_for(lambda:len(workers)>=count,timeout=2))
+                with socket.create_connection(('127.0.0.1',self.port),timeout=1) as excess:
+                    try:closed=excess.recv(1)
+                    except socket.timeout:self.fail('Excess connection started an unbounded worker')
+                    self.assertEqual(closed,b'')
+                self.assertEqual(len(workers),8)
+        finally:
+            release.set()
+            for conn in connections:conn.close()
+
+    def test_failed_refresh_cannot_restore_stale_status_on_language_change(self):
+        import shutil, subprocess
+        if not shutil.which('node'):self.skipTest('Node is unavailable')
+        result=subprocess.run(['node','tests/test_status_ui.js'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)

@@ -85,21 +85,12 @@ def check(snap, settings, state_path, now=None, deliver=send):
             refreshed.append({'credit':credit,'channel':entry['channel']})
         state['new_queue']=refreshed
     save(state_path,state)
+    notices={}
     for entry in list(state['new_queue']) if snap.get('complete') else []:
         channel=entry['channel']; credit=entry['credit']
         if channel not in settings.get('channels',{}):
             state['new_queue'].remove(entry); continue
-        if not may_send(channel):continue
-        try:
-            deliver(channel, channel_config(channel), translate('reminder_new',language)+' '+(expiry_message(credit) if valid_expiry(credit.get('expiresAt')) else translate('reminder_unknown',language)))
-            state['new_queue'].remove(entry)
-            if valid_expiry(credit.get('expiresAt')):
-                key=credit['id']+':'+channel
-                state['ledger'][key]=now;state['ledger_expiry'][key]=credit['expiresAt']
-            succeeded(channel)
-        except Exception:
-            failed(channel)
-        save(state_path,state)
+        notices.setdefault(channel,[]).append((credit,entry))
 
     queued={(entry['credit']['id'],entry['channel']) for entry in state['new_queue']}
     effective_ledger=dict(state['ledger'])
@@ -113,11 +104,22 @@ def check(snap, settings, state_path, now=None, deliver=send):
     for credit, channel in pending(snap, settings.get('channels',{}), effective_ledger, now,
                                    float(settings.get('advance_days',7))*86400,
                                    float(settings.get('repeat_hours',24))*3600):
-        if (credit['id'],channel) in queued or not may_send(channel):continue
+        if (credit['id'],channel) not in queued:
+            notices.setdefault(channel,[]).append((credit,None))
+    for channel, entries in notices.items():
+        if not may_send(channel):continue
         try:
-            deliver(channel, channel_config(channel), expiry_message(credit))
-            key=credit['id']+':'+channel
-            state['ledger'][key]=now;state['ledger_expiry'][key]=credit['expiresAt']
+            texts=[]
+            for credit,entry in entries:
+                text=expiry_message(credit) if valid_expiry(credit.get('expiresAt')) else translate('reminder_unknown',language)
+                texts.append((translate('reminder_new',language)+' ' if entry is not None else '')+text)
+            # shortcut: Large batches may exceed provider limits; add a localized summary if reset counts grow.
+            deliver(channel, channel_config(channel), '\n\n'.join(texts))
+            for credit,entry in entries:
+                if entry is not None:state['new_queue'].remove(entry)
+                if valid_expiry(credit.get('expiresAt')):
+                    key=credit['id']+':'+channel
+                    state['ledger'][key]=now;state['ledger_expiry'][key]=credit['expiresAt']
             succeeded(channel)
         except Exception:
             failed(channel)
@@ -125,7 +127,7 @@ def check(snap, settings, state_path, now=None, deliver=send):
     if changes is not None:
         for credit_id in changes[1]:
             for channel in list(state['ledger']):
-                if channel.startswith(credit_id+':'):
+                if channel.rsplit(':',1)[0]==credit_id:
                     del state['ledger'][channel];state['ledger_expiry'].pop(channel,None)
     state['last_attempt']=now
     if snap.get('complete'):state['last_check']=now

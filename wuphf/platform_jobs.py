@@ -40,8 +40,8 @@ def _quote(value):
 
 
 def _run(args):
-    try:return subprocess.run(args,capture_output=True,text=True).returncode==0
-    except OSError:raise RuntimeError('Background scheduler is unavailable.') from None
+    try:return subprocess.run(args,capture_output=True,text=True,stdin=subprocess.DEVNULL,timeout=15).returncode==0
+    except (OSError,subprocess.SubprocessError):raise RuntimeError('Background scheduler is unavailable or did not respond.') from None
 
 
 def install():
@@ -50,6 +50,17 @@ def install():
     if sys.platform=='win32':
         if not _run(['schtasks','/Create','/TN',TASK,'/TR',subprocess.list2cmdline(command),'/SC','MINUTE','/MO','10','/IT']):
             raise RuntimeError('Could not create the Windows task; it may already exist.')
+        script=("$ErrorActionPreference='Stop';$task=Get-ScheduledTask -TaskName '"+TASK.replace("'","''")+"' -TaskPath '\\';"
+                '$task.Settings.DisallowStartIfOnBatteries=$false;$task.Settings.StopIfGoingOnBatteries=$false;'
+                'Set-ScheduledTask -InputObject $task | Out-Null')
+        try:
+            if not _run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script]):
+                raise RuntimeError('Could not configure the Windows task.')
+        except RuntimeError:
+            try:removed=_run(['schtasks','/Delete','/TN',TASK,'/F'])
+            except RuntimeError:removed=False
+            if not removed:raise RuntimeError('Windows battery configuration failed and the new task could not be removed; disable it in Task Scheduler.') from None
+            raise RuntimeError('Windows battery configuration failed; the new task was removed.') from None
         return
     if sys.platform!='linux':raise RuntimeError('Background installation is unsupported on this platform.')
     service=UNITS/'wuphf-resets.service';timer=UNITS/'wuphf-resets.timer'
@@ -83,5 +94,6 @@ def uninstall():
     service=UNITS/'wuphf-resets.service';timer=UNITS/'wuphf-resets.timer'
     if not service.exists() and not timer.exists():return
     if not _run(['systemctl','--user','disable','--now',timer.name]):raise RuntimeError('Could not stop the Linux timer; no files were removed.')
+    if not _run(['systemctl','--user','stop',service.name]):raise RuntimeError('Could not stop the running Linux check; no files were removed.')
     service.unlink(missing_ok=True);timer.unlink(missing_ok=True)
     if not _run(['systemctl','--user','daemon-reload']):raise RuntimeError('Timer removed but systemd reload failed.')

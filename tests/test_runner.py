@@ -216,9 +216,9 @@ class RunnerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'state.json'
             check(snap,settings,p,now=now,deliver=deliver)
-            self.assertEqual(calls,['email','ntfy','ntfy'])
+            self.assertEqual(calls,['email','ntfy'])
             state=check(snap,settings,p,now=now+600,deliver=deliver)
-            self.assertEqual(calls.count('email'),3)
+            self.assertEqual(calls.count('email'),2)
             self.assertIn('a:email',state['ledger']);self.assertIn('b:email',state['ledger'])
 
     def test_new_urgent_expiry_shortens_existing_backoff(self):
@@ -373,3 +373,48 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(len(state['new_queue']),1)
             state=check(b,settings,p,now=now+2,deliver=lambda *args:calls.append(args))
             self.assertEqual(state['new_queue'],[]);self.assertEqual(calls,[])
+
+    def test_catch_up_consolidates_new_and_due_credits_per_channel(self):
+        from wuphf.core import snapshot
+        now=1800000000
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'email':{},'ntfy':{}}}
+        first=snapshot({'availableCount':1,'credits':[{'id':'old','expiresAt':now+1000}]},'account-a')
+        current=snapshot({'availableCount':3,'credits':[{'id':'old','expiresAt':now+1000},
+            {'id':'new','expiresAt':now+2000},{'id':'unknown','expiresAt':None}]},'account-a')
+        calls=[]
+        def deliver(channel,config,text):
+            calls.append((channel,text))
+            if channel=='email' and len([c for c in calls if c[0]=='email'])==1:
+                raise RuntimeError('offline')
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            check(first,{**settings,'channels':{}},p,now=now-86400,deliver=deliver)
+            state=check(current,settings,p,now=now,deliver=deliver)
+            self.assertEqual([c[0] for c in calls],['email','ntfy'])
+            self.assertEqual(len(state['new_queue']),2)
+            self.assertIn('old:ntfy',state['ledger'])
+            self.assertIn('new:ntfy',state['ledger'])
+            self.assertNotIn('old:email',state['ledger'])
+            self.assertIn('Expiry is not available',calls[1][1])
+            state=check(current,settings,p,now=now+500,deliver=deliver)
+            self.assertEqual([c[0] for c in calls],['email','ntfy','email'])
+            self.assertEqual(state['new_queue'],[])
+            self.assertIn('old:email',state['ledger'])
+            self.assertIn('new:email',state['ledger'])
+            self.assertNotIn('email',state['failures'])
+            check(current,settings,p,now=now+501,deliver=deliver)
+            self.assertEqual(len(calls),3)
+
+    def test_removing_credit_preserves_ledger_for_id_with_same_prefix(self):
+        from wuphf.core import snapshot
+        now=1800000000
+        settings={'advance_days':1,'repeat_hours':24,'channels':{'ntfy':{}}}
+        rows=[{'id':'a','expiresAt':now+1000},{'id':'a:b','expiresAt':now+1000}]
+        calls=[]
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'state.json'
+            check(snapshot({'availableCount':2,'credits':rows},'account-a'),settings,p,now=now,deliver=lambda *a:calls.append(a))
+            state=check(snapshot({'availableCount':1,'credits':rows[1:]},'account-a'),settings,p,now=now+1,deliver=lambda *a:calls.append(a))
+            self.assertIn('a:b:ntfy',state['ledger'])
+            check(snapshot({'availableCount':1,'credits':rows[1:]},'account-a'),settings,p,now=now+2,deliver=lambda *a:calls.append(a))
+            self.assertEqual(state['ledger']['a:b:ntfy'],now)

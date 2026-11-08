@@ -29,9 +29,13 @@
 
 ## Release decision
 
-On November 7, 2026, the project owner chose to omit real-account, clean-machine and background-delivery tests on Windows and Linux as release gates. Automated CI and package smoke checks remain required. These skipped tests have not been performed; they do not establish end-to-end reliability. The Windows frozen-app DLL search-path issue remains unresolved and must be disclosed.
+On November 7, 2026, the project owner chose to omit real-account, clean-machine and background-delivery tests on Windows and Linux as release gates. Automated CI and package smoke checks remain required. These skipped tests have not been performed; they do not establish end-to-end reliability. The Windows frozen-app DLL search-path fix is included in the fresh review; require automated package validation before treating that code fix as verified. This does not replace waived real-device testing.
 
-## Current baseline
+## Execution evidence
+
+The [release readiness record](../../release-readiness.md) records the fresh whole-tool audit, fixes, exact verification, and remaining external conditions. Checkboxes below describe composite acceptance tasks; an unchecked task can contain completed code work and an unverified external requirement. Do not infer completion from implementation alone.
+
+## Original baseline
 
 The original developer Mac read real Codex data and received Gmail and Telegram tests. The current cross-platform branch has 102 automated tests passing in CI across macOS, Windows and Ubuntu on Python 3.11 and 3.13. A Windows runner exercised Credential Manager and Task Scheduler registration; a Linux container exercised Secret Service. None of these establishes full reminder delivery on real Windows/Linux accounts. The public repository has no releases or tags; PRs #2–#5 are stacked, with #3–#5 drafts. Google verification and production Gmail reauthorization remain outstanding, and Google Calendar live sync has not been established. ntfy is outside the new release scope; legacy settings remain manageable.
 

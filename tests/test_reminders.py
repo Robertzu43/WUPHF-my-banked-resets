@@ -32,3 +32,7 @@ class ReminderTests(unittest.TestCase):
     def test_invalid_expiry_is_not_added_to_calendar(self):
         data=ics({'credits':[{'id':'a','expiresAt':float('inf'),'status':'available'}]}).decode()
         self.assertNotIn('BEGIN:VEVENT',data)
+
+    def test_oversized_numeric_expiry_is_not_added_to_calendar(self):
+        data=ics({'credits':[{'id':'a','expiresAt':10**1000}]}).decode()
+        self.assertNotIn('BEGIN:VEVENT',data)

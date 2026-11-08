@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 
 
 def valid_identity(identity):
@@ -40,7 +41,7 @@ def compare(old, new):
 
 def valid_expiry(expiry):
     return (isinstance(expiry, (int, float)) and not isinstance(expiry, bool)
-            and math.isfinite(expiry) and 0 <= expiry <= 253402300739)
+            and 0 <= expiry <= 253402300739 and math.isfinite(expiry))
 
 
 def due(credit, now, advance, repeat, last):
@@ -88,8 +89,11 @@ def read_snapshot(timeout=20):
     def send(value):
         p.stdin.write(json.dumps(value) + '\n'); p.stdin.flush()
     def response(number):
+        deadline=time.monotonic()+timeout
         while True:
-            value = messages.get(timeout=timeout)
+            remaining=deadline-time.monotonic()
+            if remaining<=0:raise queue.Empty
+            value = messages.get(timeout=remaining)
             if 'error' in value and value.get('id') in (None, number):
                 raise RuntimeError('Codex could not read account limits; check your sign-in.')
             if value.get('id') == number:

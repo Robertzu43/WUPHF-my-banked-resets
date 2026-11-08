@@ -1,6 +1,8 @@
 """Build an unsigned, one-folder WUPHF prototype in explicit output directories."""
 import argparse
+import json
 from pathlib import Path
+import platform
 import subprocess
 import sys
 
@@ -19,13 +21,18 @@ def main():
              '--distpath',str(output),'--workpath',str(work/'build'),'--specpath',str(work)]
     for source,dest in (('wuphf/web.html','wuphf'),('wuphf/translations.json','wuphf'),
                         ('wuphf/assets/geist-pixel-square.woff2','wuphf/assets'),
-                        ('wuphf/assets/geist-pixel-OFL.txt','wuphf/assets'),('LICENSE','.')):
+                        ('wuphf/assets/geist-pixel-OFL.txt','wuphf/assets'),('LICENSE','.'),
+                        ('VERSION','.'),('README.md','.'),('CHANGELOG.md','.')):
         command+=['--add-data',str(ROOT/source)+':'+dest]
     if sys.platform in ('win32','linux'):
         command+=['--collect-all','keyring','--hidden-import',
                   'keyring.backends.Windows' if sys.platform=='win32' else 'keyring.backends.SecretService']
     command.append(str(ROOT/'wuphf_launcher.py'))
     subprocess.run(command,cwd=ROOT,check=True)
+    manifest={'version':(ROOT/'VERSION').read_text(encoding='utf-8').strip(),
+              'platform':platform.platform(),'architecture':platform.machine(),
+              'python':platform.python_version()}
+    (output/'WUPHF'/'build-info.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
 
 
 if __name__=='__main__':main()
