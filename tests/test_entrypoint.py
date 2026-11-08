@@ -4,6 +4,44 @@ import unittest
 from unittest.mock import patch
 
 class EntrypointTests(unittest.TestCase):
+    def test_mac_frozen_launch_sets_os_trust_before_importing_web(self):
+        import builtins, os
+        import wuphf_launcher as launcher
+        original_import=builtins.__import__
+        def check_import(name,*args,**kwargs):
+            if name=='wuphf.web':
+                self.assertEqual(os.environ.get('SSL_CERT_FILE'),'/etc/ssl/cert.pem')
+                self.assertNotIn('SSL_CERT_DIR',os.environ)
+            return original_import(name,*args,**kwargs)
+        with patch('wuphf.web.main'),patch.object(launcher.sys,'platform','darwin'),patch.object(launcher.sys,'frozen',True,create=True),patch.dict(os.environ,{},clear=True),patch.object(launcher.Path,'is_file',return_value=True),patch('builtins.__import__',side_effect=check_import):
+            launcher.main([])
+            self.assertEqual(os.environ['SSL_CERT_FILE'],'/etc/ssl/cert.pem')
+
+    def test_mac_frozen_launch_without_os_ca_file_keeps_trust_environment_unset(self):
+        import os
+        import wuphf_launcher as launcher
+        with patch('wuphf.web.main'),patch.object(launcher.sys,'platform','darwin'),patch.object(launcher.sys,'frozen',True,create=True),patch.dict(os.environ,{},clear=True),patch.object(launcher.Path,'is_file',return_value=False):
+            launcher.main([])
+            self.assertNotIn('SSL_CERT_FILE',os.environ)
+            self.assertNotIn('SSL_CERT_DIR',os.environ)
+
+    def test_mac_frozen_launch_preserves_explicit_trust_including_empty_values(self):
+        import os
+        import wuphf_launcher as launcher
+        for overrides in ({'SSL_CERT_FILE':'/custom/ca.pem'},{'SSL_CERT_DIR':'/custom/certs'},{'SSL_CERT_FILE':''},{'SSL_CERT_DIR':''},{'SSL_CERT_FILE':'/custom/ca.pem','SSL_CERT_DIR':'/custom/certs'}):
+            with self.subTest(overrides=overrides),patch('wuphf.web.main'),patch.object(launcher.sys,'platform','darwin'),patch.object(launcher.sys,'frozen',True,create=True),patch.dict(os.environ,overrides,clear=True),patch.object(launcher.Path,'is_file',return_value=True):
+                launcher.main([])
+                self.assertEqual({key:value for key,value in os.environ.items() if key in ('SSL_CERT_FILE','SSL_CERT_DIR')},overrides)
+
+    def test_source_and_non_mac_launches_keep_trust_environment_unset(self):
+        import os
+        import wuphf_launcher as launcher
+        for platform,frozen in (('darwin',False),('linux',False),('linux',True),('win32',False),('win32',True)):
+            with self.subTest(platform=platform,frozen=frozen),patch('wuphf.web.main'),patch.object(launcher,'_prepare_windows_dlls'),patch.object(launcher.sys,'platform',platform),patch.object(launcher.sys,'frozen',frozen,create=True),patch.dict(os.environ,{},clear=True),patch.object(launcher.Path,'is_file',return_value=True):
+                launcher.main([])
+                self.assertNotIn('SSL_CERT_FILE',os.environ)
+                self.assertNotIn('SSL_CERT_DIR',os.environ)
+
     def test_mac_frozen_launch_finds_homebrew_codex_from_finder(self):
         import os
         import wuphf_launcher as launcher
