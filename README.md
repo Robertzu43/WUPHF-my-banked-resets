@@ -1,14 +1,29 @@
-<p align="center"><img src="docs/images/wuphf-logo.svg" width="128" alt="WUPHF pixel logo"></p>
+<p align="center">
+  <img src="docs/images/wuphf-logo.svg" width="144" alt="WUPHF pixel-art logo">
+</p>
 
-# WUPHF! for Codex Banked Resets
+<h1 align="center">WUPHF! for Codex Banked Resets</h1>
 
-**Your reset bank called. It wants you to use it.**
+<p align="center"><strong>Your reset bank called. It wants you to use it.</strong></p>
+<p align="center">A local, open-source reminder for the Codex banked resets you don't want to miss.</p>
 
-WUPHF helps you keep track of available Codex banked resets and reminds you before known expiry dates. Pick the channels you want: Gmail or other email, Telegram, and calendar events. WUPHF never uses a reset on your behalf.
+<p align="center">
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/releases"><img alt="Version: unreleased prototype" src="https://img.shields.io/badge/version-unreleased%20prototype-2454dd?style=flat-square"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2454dd?style=flat-square"></a>
+  <img alt="Desktop: macOS, Windows and Linux preview" src="https://img.shields.io/badge/desktop-macOS%20%7C%20Windows%20%7C%20Linux-2454dd?style=flat-square">
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/checks-GitHub%20Actions-2454dd?style=flat-square"></a>
+</p>
 
-> **Status: early prototype.** There is no published release yet. This branch adds Windows and Linux support and is still under review. Live setup and background delivery have not been fully verified on every platform or for every channel. Keep a backup reminder until they have been tested for your account.
+<p align="center">
+  <a href="#try-the-prototype"><strong>Get started</strong></a> ·
+  <a href="#connect-your-channels"><strong>Connect notifications</strong></a> ·
+  <a href="docs/superpowers/plans/2026-11-07-public-beta-release.md"><strong>Release plan</strong></a> ·
+  <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/issues"><strong>Report an issue</strong></a>
+</p>
 
-[Release plan](docs/superpowers/plans/2026-11-07-public-beta-release.md) · [Report an issue](https://github.com/Robertzu43/WUPHF-my-banked-resets/issues) · [License](LICENSE)
+> **Early prototype · No release published yet.** This development branch contains the cross-platform work under review. Windows and Linux still need real-account and background-delivery tests. Google verification is pending. Keep a backup reminder until WUPHF is tested for your account.
+
+WUPHF checks your available Codex banked resets and reminds you before known expiry dates through **email**, **Telegram**, or both. You can also add expiry dates to your calendar. WUPHF never uses a reset for you.
 
 ## What you can do
 
