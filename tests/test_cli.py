@@ -117,16 +117,16 @@ class CliTests(unittest.TestCase):
     def test_calendar_account_errors_are_actionable_but_other_errors_are_redacted(self):
         import tempfile
         from pathlib import Path
-        from wuphf.google import CalendarAccountError
+        from wuphf.google import CalendarAccountError,CalendarSyncError
         from wuphf.storage import load
-        for error in (CalendarAccountError('calendar_identity_required'),RuntimeError('PRIVATE-SECRET')):
+        for error in (CalendarAccountError('calendar_identity_required'),CalendarSyncError('calendar_data_required'),CalendarSyncError('calendar_event_conflict'),RuntimeError('PRIVATE-SECRET')):
             with self.subTest(error=type(error).__name__),tempfile.TemporaryDirectory() as d:
                 p=Path(d)/'state.json';snap={'count':0,'complete':True,'credits':[]}
                 with patch('wuphf.cli.DATA',Path(d)),patch('wuphf.cli.STATE',p),patch('wuphf.cli.SETTINGS',Path(d)/'settings.json'),patch('wuphf.cli.read_snapshot',return_value=snap),patch('wuphf.google_auth.sync',side_effect=error),patch('builtins.print'):
                     main(['run'])
                 text=load(p,{})['failures']['google']
                 self.assertNotIn('PRIVATE-SECRET',text)
-                if isinstance(error,CalendarAccountError):self.assertIn('stable account identity',text)
+                if isinstance(error,CalendarSyncError):self.assertEqual(text,str(error))
 
     def test_google_sync_failure_is_recorded_after_successful_read(self):
         import tempfile

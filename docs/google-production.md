@@ -18,6 +18,11 @@ For a fork or an optional personal registration, create a Desktop app client in 
 
 Calendar sync now requires a stable Codex account identifier. Unknown, changed or legacy ownership pauses sync before remote writes. Connections created before this binding require disconnect/reconnect once, preserving existing remote calendars/events. Gmail, other email, Telegram and ICS remain independent.
 
+Calendar lifecycle management applies only to new, locally tracked events with matching private ownership markers, connection binding and saved etag. A complete, semantically valid snapshot of the bound account permits conditional updates and removal of absent credits via `If-Match`. Unknown status or any invalid row pauses all writes. No remote event listing or ownership adoption is performed. Cancelled events are not restored, and disconnect remains local only.
+
+Legacy, edited and ambiguous events are preserved and reported for manual Calendar review. This does not automatically repair stale reminders in the legacy installed population. Alternative A deliberately reports a conflict after a remotely successful insert/update whose response or final local save was lost; it does not refresh ownership or etags silently. Delete/save interruption can recover from an explicit deleted response or cancelled tombstone; an ambiguous 404 or unrecognized 410 keeps tracking. Local state loss/reconnect can leave old calendars reminding. The new conditional transport, restart and failure paths have fake-provider tests; no live-provider lifecycle validation was performed for this change.
+
+
 Saved Gmail configuration is shown without probing the OS credential store on each status poll. A saved state is not proof that credentials remain available or usable: send a test to verify, or disconnect/reconnect to repair missing authorization. Normal setup uses the bundled registration; users are not required to create their own Cloud project.
 
 ## Requested permissions

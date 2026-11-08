@@ -12,6 +12,15 @@ class WebTests(unittest.TestCase):
         self.assertEqual(res.status,409)
         self.assertEqual(json.loads(body),{'error':'calendar_account_mismatch'})
 
+    def test_calendar_data_and_conflicts_return_sanitized_codes(self):
+        from wuphf.google import CalendarSyncError
+        from pathlib import Path
+        import tempfile
+        for code in ('calendar_data_required','calendar_event_conflict'):
+            with self.subTest(code=code),tempfile.TemporaryDirectory() as d,patch('wuphf.web.cli.DATA',Path(d)),patch('wuphf.web.read_snapshot',return_value={'complete':True}),patch('wuphf.google_auth.sync',side_effect=CalendarSyncError(code)):
+                res,body=self.request('POST','/api/google/sync',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+                self.assertEqual(res.status,409);self.assertEqual(json.loads(body),{'error':code})
+
     def setUp(self):
         self.server=create_server(port=0, token='test-token')
         self.thread=threading.Thread(target=self.server.serve_forever,daemon=True);self.thread.start()

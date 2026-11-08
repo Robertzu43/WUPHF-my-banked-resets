@@ -228,7 +228,11 @@ Sync requires Codex to supply a stable account identifier. If that information i
 
 WUPHF requests access to calendars it creates, not your unrelated calendars. Gmail and Calendar authorize independently; you may use either one alone. The bundled registration is selected automatically. An optional Desktop client JSON can be selected under **Developer setup**; its project needs the Calendar API enabled. See [Google registration details](google-production.md).
 
-Synced events request a popup **24 hours before expiry**, independent of your email/Telegram reminder frequency. Check Google Calendar and phone notification settings. Events are created or updated, but old events are not automatically removed when a reset disappears or is used. Disconnecting removes local authorization, not the remote calendar; reconnecting can create another WUPHF calendar. Remove stale events/calendars manually if needed. Avoid importing ICS for the same dates into the synced calendar unless you want duplicate entries.
+Synced events request a popup **24 hours before expiry**, independent of your email/Telegram reminder frequency. Check Google Calendar and phone notification settings. Newly created, unchanged WUPHF events update when expiry dates change and are removed when their reset disappears from a complete, valid reading of the same Codex account. Incomplete data, invalid expiry dates or unsupported reset statuses pause all Calendar writes. A present reset with a past expiry is retained; WUPHF does not create new past events. Changing a date cannot cancel an alert already queued on a calendar device.
+
+**Legacy events from earlier versions are preserved, including existing stale reminders.** They require manual review/removal in Google Calendar and are never silently adopted. Events you edit are also preserved. If sync reports a conflict, review the affected calendar events; reconnecting is not cleanup. If an insert/update succeeded remotely but its response or local save was lost, WUPHF preserves it and requests review rather than guessing its new version. Cancelled events are not restored.
+
+Disconnecting removes local authorization, not the remote calendar; reconnecting can create another WUPHF calendar. Old calendars/events may continue reminding until you remove them manually. Avoid importing ICS for the same dates into the synced calendar unless you want duplicate entries.
 
 ### Existing ntfy installations
 

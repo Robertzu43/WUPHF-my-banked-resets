@@ -49,14 +49,19 @@ class LanguageTests(unittest.TestCase):
         self.assertIn('caduca',sent[0][2].lower())
         self.assertEqual(sent[0][1]['language'],'es')
     def test_google_calendar_event_uses_selected_language(self):
-        from unittest.mock import patch
-        from wuphf.google import GoogleCalendar
-        api=GoogleCalendar('token','calendar','es')
-        with patch.object(api,'request',side_effect=[None,{'id':'abc'}]) as request:
-            api.put('abc',2000)
-        event=request.call_args.args[2]
+        from wuphf.google import event_body
+        event=event_body('a',{'event_id':'abcde','owner':'1'*32,'account_fingerprint':'a'*64},2000,'es')
         self.assertIn('guardado',event['summary'].lower())
         self.assertIn('Codex',event['description'])
+
+    def test_calendar_lifecycle_errors_are_mapped_for_all_languages(self):
+        from wuphf.web import PAGE
+        for key in ('calendar_data_required','calendar_event_conflict'):
+            for language in languages():
+                self.assertIn(key,catalog(language));self.assertTrue(catalog(language)[key])
+            self.assertIn("'"+key+"':'"+key+"'",PAGE.read_text(encoding='utf-8'))
+        self.assertIn('legacy',catalog('en')['google_desc'].lower())
+
     def test_ics_calendar_name_uses_selected_language(self):
         from wuphf.reminders import ics
         output=ics({'credits':[],'complete':True},'es').decode()
