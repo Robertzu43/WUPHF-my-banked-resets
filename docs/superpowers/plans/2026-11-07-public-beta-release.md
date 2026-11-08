@@ -27,6 +27,10 @@
 - Repeated sync, calendar deletion, and incomplete snapshots cannot create duplicates or remove unrelated events.
 - Fresh installs, upgrade and uninstall on each supported platform preserve user data intentionally and never silently change power settings.
 
+## Release decision
+
+On November 7, 2026, the project owner chose to omit real-account, clean-machine and background-delivery tests on Windows and Linux as release gates. Automated CI and package smoke checks remain required. These skipped tests have not been performed; they do not establish end-to-end reliability. The Windows frozen-app DLL search-path issue remains unresolved and must be disclosed.
+
 ## Current baseline
 
 The original developer Mac read real Codex data and received Gmail and Telegram tests. The current cross-platform branch has 102 automated tests passing in CI across macOS, Windows and Ubuntu on Python 3.11 and 3.13. A Windows runner exercised Credential Manager and Task Scheduler registration; a Linux container exercised Secret Service. None of these establishes full reminder delivery on real Windows/Linux accounts. The public repository has no releases or tags; PRs #2–#5 are stacked, with #3–#5 drafts. Google verification and production Gmail reauthorization remain outstanding, and Google Calendar live sync has not been established. ntfy is outside the new release scope; legacy settings remain manageable.
@@ -46,7 +50,7 @@ The original developer Mac read real Codex data and received Gmail and Telegram 
 
 - [ ] Test known expiry, changed expiry, unknown/missing/capped data, time-zone changes, account change, and an unavailable Codex CLI against the approved spec. Verify that the UI displays last successful check, failures and stale data accurately; implement any missing behavior.
 - [ ] Using a controllable clock, test configured lead time and repeat interval, restart persistence, per-channel successes/failures, offline recovery and at most one catch-up per channel. Fix missing coverage or behavior.
-- [ ] On each supported OS, enable background checks, log out/in, restart, sleep/wake, disconnect/reconnect network and disable/uninstall. Verify actual scheduler execution and status, not only registration. Record OS versions and observations; never change power settings without consent.
+- [ ] On macOS, verify background checks, login, restart, sleep/wake, network recovery and disable/uninstall where available. Do not require real-device testing on Windows or Linux for this release; record that it was skipped. Never change power settings without consent.
 - [ ] Compare a live account snapshot with Codex's own display without consuming a reset. A real state change is needed to confirm real new/used/expired behavior; otherwise record that as unverified.
 
 ## Task 3: Google OAuth and calendar
@@ -72,8 +76,8 @@ The original developer Mac read real Codex data and received Gmail and Telegram 
 
 **Files:** `Start WUPHF.command`, `Start WUPHF.bat`, `Start WUPHF.sh`, `requirements.txt`, `.github/workflows/`, `README.md`; add platform packaging files only when needed.
 
-- [ ] Test a clean-machine install for each OS with a person unfamiliar with the project. Record prerequisites and where each person gets stuck. Choose the smallest supported packaging approach that removes Python setup where practical, with a transparent Codex sign-in flow.
-- [ ] Produce and verify packages for Windows, macOS and supported Linux; document architectures, OS floors, dependency/licenses, upgrade/uninstall and checksum generation. Test install, start, monitoring, upgrade, and uninstall without deleting credentials or state unexpectedly.
+- [ ] Test a clean-machine install on macOS where available. Do not require Windows or Linux clean-machine tests for this release; record they were skipped. Choose the smallest supported packaging approach that removes Python setup where practical, with a transparent Codex sign-in flow.
+- [ ] Produce packages for Windows, macOS and supported Linux; run automated CI and package smoke checks, and document architectures, OS floors, dependencies/licenses, upgrade/uninstall and checksums. Do not require Windows or Linux real-device install, monitoring, upgrade or uninstall tests for this release; disclose this limitation.
 - [ ] Assess OS signing/notarization availability and costs; sign where feasible and document warnings and the exact unsigned status otherwise. Do not advertise a polished universal installer before it exists and is tested.
 
 ## Task 6: Documentation, versioning and accessibility
@@ -86,7 +90,7 @@ The original developer Mac read real Codex data and received Gmail and Telegram 
 
 ## Task 7: Release gate
 
-- [ ] Confirm Task 1–6 evidence: merged commit, green CI, real reset tracking, actual background execution, delivered channel tests, calendar tests, working clean installs, privacy/security review and accurate documentation.
+- [ ] Confirm Task 1–6 evidence: merged commit, green CI, real reset tracking, actual background execution on macOS, delivered channel tests, calendar tests, available macOS clean-install evidence, privacy/security review and accurate documentation. Windows/Linux real-device tests are explicitly excluded by the project owner and must not be represented as completed.
 - [ ] Record outstanding third-party conditions, such as Google verification, signing, or device access, and resolve them or narrow the beta's supported claims explicitly. Avoid falsely representing Google approval or external service availability.
-- [ ] Have an independent reviewer check the complete diff and release artifacts, then tag and publish the prerelease with its checksums and changelog. Verify public download and onboarding from a clean environment.
+- [ ] Have an independent reviewer check the complete diff and release artifacts, then tag and publish the prerelease with its checksums and changelog. Verify public download and onboarding where feasible without requiring Windows or Linux real-device testing.
 - [ ] After beta feedback, repeat the gate for a stable release; do not promise a stable date before the external dependencies and real-world tests pass.

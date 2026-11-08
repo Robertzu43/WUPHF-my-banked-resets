@@ -21,7 +21,7 @@
   <a href="https://github.com/Robertzu43/WUPHF-my-banked-resets/issues"><strong>Report an issue</strong></a>
 </p>
 
-> **Early prototype · No release published yet.** This development branch contains the cross-platform work under review. Windows and Linux still need real-account and background-delivery tests. Google verification is pending. Keep a backup reminder until WUPHF is tested for your account.
+> **Early prototype · No release published yet.** This development branch contains the cross-platform work under review. Windows and Linux passed automated checks; real-account and background-delivery tests were not performed. Google verification is pending. Keep a backup reminder until WUPHF is tested for your account.
 
 WUPHF checks your available Codex banked resets and reminds you before known expiry dates through **email**, **Telegram**, or both. You can also add expiry dates to your calendar. WUPHF never uses a reset for you.
 
@@ -38,7 +38,7 @@ When Codex supplies an account identifier, WUPHF uses a local fingerprint to avo
 
 ## Try the prototype
 
-These instructions describe the current **cross-platform development branch**, not a finished installer. Windows and Linux require full real-account testing before release. For a more detailed walkthrough, see the [installation and setup guide](https://github.com/Robertzu43/WUPHF-my-banked-resets#installation-and-setup-preview).
+These instructions describe the current **cross-platform development branch**, not a finished installer. Windows and Linux real-account tests have not been performed; the project owner chose not to require them for this release. For a more detailed walkthrough, see the [installation and setup guide](https://github.com/Robertzu43/WUPHF-my-banked-resets#installation-and-setup-preview).
 
 1. Install [Python 3.11 or newer](https://www.python.org/downloads/) and the [Codex CLI](https://developers.openai.com/codex/cli/). On Windows, add Python to PATH during installation. Run `codex` and sign in with the ChatGPT account whose resets you want to track; verify that `codex --version` works in your terminal.
 2. Download and unzip the [`feature/cross-platform` branch](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/heads/feature/cross-platform.zip). Keep the extracted folder in a permanent location: background checks need it to remain there. On macOS, keep WUPHF, its Python environment and Codex CLI outside Documents, Desktop and Downloads (for example in `~/Library/Application Support/WUPHF`); background installation blocks those protected folders. Other macOS privacy restrictions may still prevent checks, so confirm the background status after enabling.
@@ -111,6 +111,6 @@ python scripts/build_package.py --output /path/to/empty/dist --work /path/to/emp
 python scripts/smoke_package.py /path/to/empty/dist/WUPHF
 ```
 
-The smoke check uses a synthetic Codex process and temporary user directory. POSIX packages need an archive format that preserves symbolic links, such as `tar.gz`; do not use a ZIP that dereferences them. An experimental Mac build completed a read-only real Codex snapshot, but real reminder delivery and installed scheduling remain unverified. Linux needs real-Codex testing; Windows has an unresolved process-wide DLL search-path issue. The packages are not signed, notarized, or released.
+The smoke check uses a synthetic Codex process and temporary user directory. POSIX packages need an archive format that preserves symbolic links, such as `tar.gz`; do not use a ZIP that dereferences them. An experimental Mac build completed a read-only real Codex snapshot, but real reminder delivery and installed scheduling remain unverified. Linux real-Codex testing was not performed; Windows has an unresolved process-wide DLL search-path issue. The packages are not signed, notarized, or released.
 
 For a read-only diagnostic, run the packaged executable with `--check-codex`. It checks whether Codex returns complete reset details without sending reminders.
