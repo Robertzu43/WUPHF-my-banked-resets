@@ -2,7 +2,7 @@
 
 **WUPHF helps you remember to use an available banked Codex reset before it expires.** It runs on your computer and can notify your own email, Telegram, or calendar. Pick one option or combine several. WUPHF never redeems a reset for you.
 
-This guide describes **v0.1.0-beta.2**. Button names below use the English interface. The app also includes Spanish, German, Portuguese, French, Japanese, Korean and Simplified Chinese.
+This guide describes **v0.1.0-beta.3**. Button names below use the English interface. The app also includes Spanish, German, Portuguese, French, Japanese, Korean and Simplified Chinese.
 
 **Start here:** [Let Codex help install it](../README.md#let-codex-set-it-up-for-you), or follow [manual installation](#2-install-on-your-computer). Already installed? Jump to [connect your accounts](#4-connect-only-the-options-you-want) or [fix a problem](#9-fix-a-problem).
 
@@ -58,7 +58,7 @@ Do not copy your ChatGPT password or Codex authentication files into WUPHF or an
 
 ### Download, extract and open WUPHF
 
-Get your archive and `SHA256SUMS` from the [official beta release](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.2). **Check the download before extracting or opening it**, using the steps below. Then keep the **entire extracted WUPHF folder**, including `_internal`. Moving only the executable breaks the package.
+Get your archive and `SHA256SUMS` from the [official beta release](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.3). **Check the download before extracting or opening it**, using the steps below. Then keep the **entire extracted WUPHF folder**, including `_internal`. Moving only the executable breaks the package.
 
 <details>
 <summary>Check the download's SHA-256 checksum</summary>
@@ -83,9 +83,9 @@ The full hash must match (letter case does not matter). If it differs, stop and 
 
 | Computer | Release archive | Where to put it and how to open it |
 | --- | --- | --- |
-| Apple silicon Mac, M1 or newer | `wuphf-0.1.0-beta.2-macos-arm64-unsigned.tar.gz` | Extract it. In Finder, choose **Go → Go to Folder**, enter `~/Library/Application Support/`, and move the extracted `WUPHF` folder there. Open `Start WUPHF.command`, or use the Terminal command below. |
-| Windows 10 or newer, x64 | `wuphf-0.1.0-beta.2-windows-x86_64-unsigned.zip` | Use **Extract All**, put the whole `WUPHF` folder in a permanent location you own, then double-click `WUPHF.exe`. Do not run it inside the ZIP. |
-| Linux x64 desktop, Ubuntu 24.04 build | `wuphf-0.1.0-beta.2-linux-x86_64-unsigned.tar.gz` | Extract it into a permanent folder. Use `Start WUPHF.sh` from a terminal in that folder; your file manager may also offer Run. If needed, run `sh "Start WUPHF.sh"`. |
+| Apple silicon Mac, M1 or newer | `wuphf-0.1.0-beta.3-macos-arm64-unsigned.tar.gz` | Extract it. In Finder, choose **Go → Go to Folder**, enter `~/Library/Application Support/`, and move the extracted `WUPHF` folder there. Open `Start WUPHF.command`, or use the Terminal command below. |
+| Windows 10 or newer, x64 | `wuphf-0.1.0-beta.3-windows-x86_64-unsigned.zip` | Use **Extract All**, put the whole `WUPHF` folder in a permanent location you own, then double-click `WUPHF.exe`. Do not run it inside the ZIP. |
+| Linux x64 desktop, Ubuntu 24.04 build | `wuphf-0.1.0-beta.3-linux-x86_64-unsigned.tar.gz` | Extract it into a permanent folder. Use `Start WUPHF.sh` from a terminal in that folder; your file manager may also offer Run. If needed, run `sh "Start WUPHF.sh"`. |
 
 ### Optional automatic placement
 

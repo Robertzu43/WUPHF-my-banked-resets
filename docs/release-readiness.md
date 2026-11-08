@@ -1,3 +1,13 @@
+# Beta.3 release candidate
+
+Beta.3 includes the frozen macOS trust repair, conservative lifecycle management for newly owned Calendar events and setup-navigation improvements. Google verification and a new external tester do not block this owner-authorized beta. Prior releases remain immutable.
+
+The macOS TLS fix passed independent code review and actual CI-built Python 3.11.9 frozen handshake checks to Telegram and both Google token paths with no trust environment override. Those synthetic requests prove transport on the tested Mac/network, not account authorization or delivery. Legacy/user-edited events and ambiguous remote-success/local-save-loss conflicts require manual Calendar review.
+
+Final integrated tests, independent review, exact-commit build, artifact audit and public download verification are pending below; publication must record their actual results before claiming completion.
+
+---
+
 # Release readiness — 0.1.0-beta.2
 
 Updated November 8, 2026. [Beta.2 is published](https://github.com/Robertzu43/WUPHF-my-banked-resets/releases/tag/v0.1.0-beta.2), built from `95925e1e5ac35bc5080a1366803f8b46f6cb78da`. This release improves the existing local, independent-account beta. Publication and the final release-archive audit are separate gates; the published tag, build-info.json and SHA256SUMS identify the exact artifacts.

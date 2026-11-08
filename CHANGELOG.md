@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-beta.3 — 2026-11-08
+
+- Fix default HTTPS certificate verification in frozen macOS packages using system trust roots while preserving custom trust configuration.
+- Reconcile newly managed Calendar events with ownership markers, saved-version checks and conditional updates/deletion; preserve legacy, edited and ambiguous events.
+- Pause Calendar writes for invalid/incomplete reset data and report actionable conflicts in eight languages.
+- Add nearby Save actions, an at-a-glance background-check summary and Calendar-only setup guidance.
+
+
 ## 0.1.0-beta.2 — 2026-11-08
 
 - Guide channel setup through save, test and background checks, with unsaved-change protection and honest session test acceptance.
