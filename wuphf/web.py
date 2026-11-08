@@ -83,6 +83,24 @@ def create_server(port=0,token=None):
                 cookie=SimpleCookie();cookie.load(self.headers.get('Cookie',''));value=cookie.get('wuphf_session')
                 return bool(value and hmac.compare_digest(value.value,token))
             except Exception:return False
+        def reject_post(self):
+            lengths=self.headers.get_all('Content-Length',[])
+            if (not self.headers.get('Transfer-Encoding') and len(lengths)==1 and
+                    lengths[0].isascii() and lengths[0].isdigit() and len(lengths[0])<=5 and int(lengths[0])<=16384):
+                remaining=int(lengths[0]);deadline=time.monotonic()+0.25
+                timeout=self.connection.gettimeout()
+                try:
+                    while remaining:
+                        wait=deadline-time.monotonic()
+                        if wait<=0:break
+                        self.connection.settimeout(wait)
+                        chunk=self.rfile.read1(min(remaining,4096))
+                        if not chunk:break
+                        remaining-=len(chunk)
+                except OSError:pass
+                finally:self.connection.settimeout(timeout)
+            self.close_connection=True
+            return self.write(403,{'error':'Forbidden'})
         def do_GET(self):
             if not self.valid_host():return self.write(403,{'error':'Forbidden'})
             url=urllib.parse.urlsplit(self.path)
@@ -121,7 +139,7 @@ def create_server(port=0,token=None):
             except Exception:return self.write(503,{'error':'Could not check Codex. Verify sign-in and connection.'})
         def do_POST(self):
             origin=f'http://127.0.0.1:{self.server.server_port}'
-            if not self.valid_host() or not self.authorized() or self.headers.get('Origin')!=origin or not hmac.compare_digest(self.headers.get('X-WUPHF-Token',''),token):return self.write(403,{'error':'Forbidden'})
+            if not self.valid_host() or not self.authorized() or self.headers.get('Origin')!=origin or not hmac.compare_digest(self.headers.get('X-WUPHF-Token',''),token):return self.reject_post()
             try:
                 length=int(self.headers.get('Content-Length','0'))
                 if length<0 or length>16384:raise ValueError('Request too large')

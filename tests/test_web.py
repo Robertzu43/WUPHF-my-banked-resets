@@ -216,3 +216,30 @@ class WebTests(unittest.TestCase):
             res,data=self.request('GET','/api/status',headers={'Cookie':'wuphf_session=test-token'})
         self.assertEqual(res.status,200)
         self.assertNotIn(b'private-fingerprint',data);self.assertNotIn(b'private-credit',data)
+
+    def test_rejected_small_post_waits_briefly_for_body_before_closing(self):
+        import socket
+        headers=(f'POST /api/settings HTTP/1.1\r\nHost: 127.0.0.1:{self.port}\r\n'
+                 'Origin: https://other.example\r\nContent-Length: 2\r\n\r\n').encode()
+        with socket.create_connection(('127.0.0.1',self.port),timeout=2) as conn:
+            conn.sendall(headers);conn.settimeout(0.1)
+            with self.assertRaises(socket.timeout):conn.recv(1024)
+            conn.sendall(b'{}');conn.settimeout(2)
+            self.assertIn(b' 403 ',conn.recv(1024))
+
+    def test_rejected_oversized_post_does_not_wait_for_body(self):
+        import socket
+        headers=(f'POST /api/settings HTTP/1.1\r\nHost: 127.0.0.1:{self.port}\r\n'
+                 'Origin: https://other.example\r\nContent-Length: 99999999\r\n\r\n').encode()
+        with socket.create_connection(('127.0.0.1',self.port),timeout=1) as conn:
+            conn.sendall(headers)
+            self.assertIn(b' 403 ',conn.recv(1024))
+
+    def test_rejected_partial_post_is_bounded(self):
+        import socket,time
+        headers=(f'POST /api/settings HTTP/1.1\r\nHost: 127.0.0.1:{self.port}\r\n'
+                 'Origin: https://other.example\r\nContent-Length: 16384\r\n\r\n').encode()
+        with socket.create_connection(('127.0.0.1',self.port),timeout=2) as conn:
+            started=time.monotonic();conn.sendall(headers+b'{')
+            self.assertIn(b' 403 ',conn.recv(1024))
+            self.assertLess(time.monotonic()-started,1.5)
