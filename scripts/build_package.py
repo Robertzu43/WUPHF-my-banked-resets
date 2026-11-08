@@ -6,6 +6,11 @@ import platform
 import subprocess
 import sys
 
+if __package__:
+    from .package_notices import collect_notices
+else:
+    from package_notices import collect_notices
+
 ROOT=Path(__file__).resolve().parent.parent
 
 
@@ -29,6 +34,7 @@ def main():
                   'keyring.backends.Windows' if sys.platform=='win32' else 'keyring.backends.SecretService']
     command.append(str(ROOT/'wuphf_launcher.py'))
     subprocess.run(command,cwd=ROOT,check=True)
+    collect_notices(output/'WUPHF'/'third-party-notices')
     manifest={'version':(ROOT/'VERSION').read_text(encoding='utf-8').strip(),
               'platform':platform.platform(),'architecture':platform.machine(),
               'python':platform.python_version()}

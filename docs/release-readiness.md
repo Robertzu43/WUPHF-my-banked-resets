@@ -25,9 +25,11 @@ Three fresh agents audited tracking/reminders, security/integrations, and distri
 ## Evidence
 
 - Supported local interpreter: Python 3.14.7 on macOS 26.4 arm64.
-- Full suite: **208 tests passed** in 22.942 seconds, including four Node frontend behavior checks. Command: `python -m unittest discover -s tests -v` using the packaging virtual environment.
+- Full suite: **215 tests passed** in 23.412 seconds, including four Node frontend behavior checks. Command: `python -m unittest discover -s tests -v` using the packaging virtual environment.
 - Fresh PyInstaller one-folder build completed successfully; packaged asset/version checks and isolated background smoke check passed.
+- A temporary user-level launchd job ran the packaged candidate successfully against a synthetic Codex process with isolated data and no notification channels. The job was removed afterward. This verifies background execution on this Mac, not a clean install or real scheduled message delivery.
 - The freshly built candidate performed a read-only real Codex snapshot and reported complete reset details. No message was sent by this diagnostic.
+- A rebuilt package includes 30 Python/build-environment notice files with no missing distribution notices in the local build environment. Native library coverage remains separately qualified below.
 - Documentation file links and `git diff --check` passed.
 - GitHub matrix verification and final integration are recorded in PR #5. Local evidence does not substitute for those checks.
 
@@ -44,7 +46,7 @@ Earlier session evidence: the developer's account returned real banked-reset dat
 | Google Calendar and ICS imports | Automated coverage; live create/update/reconnect and calendar-app import not established. Calendar sync stays experimental and stale events need manual removal. |
 | New packaged Mac scheduled delivery and clean installation | Package/read-only checks are separate from installed scheduling; login, restart, sleep/wake and clean-machine coverage remain incomplete. |
 | Windows/Linux real devices | Skipped by owner decision; not a release gate and not represented as passing. |
-| Binary third-party notices | Complete redistribution notice/license review for bundled Python, keyring dependencies and packaging runtime before public binaries. Source license and bundled font license are included. |
+| Binary third-party notices | Builds now include Python and installed-distribution license notices, including PyInstaller and keyring dependency metadata. The index flags missing distribution notices. OS-specific native binary notice coverage still needs review before public binaries. |
 | OS signing and compatibility | Packages are unsigned/unnotarized; build-info.json records the actual build platform. Older OS and alternate architecture compatibility is not established. |
 | Language review | Eight catalogs and placeholder checks; native-speaker review pending. |
 | Public release and downloads | No public version tag, release assets or permanent download checksums published for this candidate. |

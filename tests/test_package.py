@@ -22,9 +22,10 @@ class PackageTests(unittest.TestCase):
         from scripts import build_package
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
-            with patch.object(sys,'argv',['build_package','--output',str(root/'dist'),'--work',str(root/'work')]),patch('scripts.build_package.subprocess.run') as run:
+            with patch.object(sys,'argv',['build_package','--output',str(root/'dist'),'--work',str(root/'work')]),patch('scripts.build_package.subprocess.run') as run,patch('scripts.build_package.collect_notices') as notices:
                 run.side_effect=lambda *args,**kwargs:(root/'dist'/'WUPHF').mkdir(parents=True)
                 build_package.main()
+                notices.assert_called_once_with((root/'dist'/'WUPHF'/'third-party-notices').resolve())
             import json, platform
             manifest=json.loads((root/'dist'/'WUPHF'/'build-info.json').read_text())
             self.assertEqual(manifest['architecture'],platform.machine())
