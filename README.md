@@ -201,7 +201,7 @@ Install Python **3.11+** and the signed-in Codex CLI. [Download the beta source 
 - **Windows:** Run `Start WUPHF.bat`; Python must be on PATH.
 - **Linux:** Run `sh "Start WUPHF.sh"`. Your distribution may need its Python `venv` package.
 
-The Windows/Linux source launchers create a local virtual environment and install the credential-storage dependency on first run, so internet access is required. The same account setup and background-check instructions above apply.
+The source launchers look for an already installed Python 3.11+ and validate a reused `.venv`. To select a particular interpreter, set `WUPHF_PYTHON` to its executable path. An old or broken environment is preserved with recovery instructions rather than deleted. The Windows/Linux source launchers create a local virtual environment and install the credential-storage dependency on first run, so internet access is required. The same account setup and background-check instructions above apply. The generated GitHub source ZIP is not included in the binary archive `SHA256SUMS`; verify its release tag/commit separately instead of applying a binary checksum to it.
 
 </details>
 

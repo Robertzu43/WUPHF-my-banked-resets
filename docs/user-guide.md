@@ -307,6 +307,8 @@ Close and reopen your terminal, then try `codex --version` again. If the command
 
 To locate the CLI, run `command -v codex` on macOS/Linux or `Get-Command codex` in PowerShell. On Mac, if that installation (or the target of a symbolic link) lives in Documents, Desktop or Downloads, reinstall it in a supported location outside those folders using its installer/package manager. Moving a single executable can break its dependencies. After relocating either app, disable and re-enable WUPHF background checks from the new installation.
 
+For source installation only, the launchers check available Python versions and any existing `.venv`. If an old or broken environment is reported, retain it as a backup in place under a different name, then restart the launcher to create a fresh environment in the final source folder. You can set `WUPHF_PYTHON` to an already installed 3.11+ executable path; it must be one executable, not a command with extra arguments. WUPHF does not install a new Python runtime or replace system Python for you.
+
 On Linux, run WUPHF from your logged-in graphical desktop with its credential store unlocked. A remote shell or headless session may not provide the keyring and user services the desktop package needs.
 
 </details>
