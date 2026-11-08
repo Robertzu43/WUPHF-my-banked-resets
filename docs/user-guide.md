@@ -139,7 +139,7 @@ Choose your interface language, then set:
 
 Click **Save settings** after changing these values or channel details. Tests are unavailable while changes are unsaved; a failed save keeps that protection in place. Use positive values; the UI accepts fractional days and hours. Calendar alarms have their own behavior described below—these two fields do not change them.
 
-**Where to save:** the **Save settings** button is below the notification channel forms. If you expanded several channels, scroll past those forms to find it. **Send test uses saved settings**, so save first, then return to your selected channel's test button.
+**Where to save:** each Telegram, Gmail and SMTP section has **Save settings** beside **Send test**. The shared **Save settings** button remains below all channel forms. Each button saves the whole settings form. **Send test uses saved settings**, so save before testing.
 
 **Example:** with a hypothetical expiry of November 20 at 18:00, `7` days starts the reminder window on November 13 at 18:00. An awake, online computer checks approximately every 10 minutes, so delivery is not exact to the minute. `24` hours repeats after a successful reminder while the reset remains available and unexpired. A separate newly detected reset notice can arrive outside this expiry window when account identity and comparison data are available. The first reading establishes a baseline; do not expect an arrival notice just because you installed WUPHF.
 
@@ -248,6 +248,8 @@ For email, Telegram or automatic Google Calendar sync:
 4. Once verified, you can close the setup page and its process/window. Reopen WUPHF when you need it.
 
 WUPHF installs a background job for your user account: launchd on macOS, Task Scheduler on Windows, or systemd on Linux. It checks approximately every 10 minutes. **Enabled** means the job is installed; a recent successful check and your channel tests give separate evidence that it works.
+
+The summary near your reset balance shows WUPHF's background check health and flags channels needing attention. Its **Background checks** link opens the detailed status below. This summary does not confirm message delivery or calendar alarms; imported .ics snapshots work independently of these checks.
 
 The computer must remain **awake, online and logged in**. WUPHF does not keep it awake or change power settings. While it sleeps or is offline, new checks cannot deliver alerts. When checks resume, still-valid reminders can be sent; WUPHF cannot recover an expired reset. Imported/synced calendar events may still alert through your calendar provider or phone.
 

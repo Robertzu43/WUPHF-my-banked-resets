@@ -166,7 +166,17 @@
     "setup_checks_on": "Background checks are enabled. Check background health below and verify reminders on your device.",
     "calendar_export_help": "Export needs a complete Codex reading. Refresh above if details are missing.",
     "calendar_data_required": "Calendar sync paused. Refresh complete, valid Codex reset details and try again.",
-    "calendar_event_conflict": "Calendar sync needs review. Legacy, edited or uncertain events were preserved; review them in Google Calendar. Reconnecting does not remove old events."
+    "calendar_event_conflict": "Calendar sync needs review. Legacy, edited or uncertain events were preserved; review them in Google Calendar. Reconnecting does not remove old events.",
+    "health_off": "WUPHF background checks are off.",
+    "health_unknown": "WUPHF background check health is unavailable.",
+    "health_waiting": "WUPHF background checks are on; awaiting the first successful check.",
+    "health_stale": "WUPHF background checks are on; the last successful check is over 30 minutes old.",
+    "health_failing": "WUPHF background checks are on; the last check failed or returned incomplete data.",
+    "health_recent": "WUPHF background checks are on; last successful check: {date}.",
+    "health_channel_attention": "Some channels need attention. Review background check details.",
+    "setup_calendar_sync_next": "Next: sync Google Calendar and check its events. Review old, edited or ambiguous events manually. If already checked earlier, acknowledge below.",
+    "setup_calendar_enable_next": "Next: check the events in Google Calendar, then enable background checks for future syncs.",
+    "setup_calendar_checks_on": "WUPHF background checks are enabled. Review background health below and check your calendar events. Imported .ics snapshots do not update."
   },
   "es": {
     "language": "Idioma",
@@ -335,7 +345,17 @@
     "setup_checks_on": "Las comprobaciones están activadas. Revisa su estado abajo y verifica los avisos en tu dispositivo.",
     "calendar_export_help": "La exportación requiere una lectura completa de Codex. Actualiza arriba si faltan datos.",
     "calendar_data_required": "Sincronización del calendario pausada. Actualiza los datos completos y válidos de los reinicios de Codex e inténtalo de nuevo.",
-    "calendar_event_conflict": "La sincronización del calendario requiere revisión. Se conservaron los eventos antiguos, editados o inciertos; revísalos en Google Calendar. Volver a conectar no elimina los eventos anteriores."
+    "calendar_event_conflict": "La sincronización del calendario requiere revisión. Se conservaron los eventos antiguos, editados o inciertos; revísalos en Google Calendar. Volver a conectar no elimina los eventos anteriores.",
+    "health_off": "Las comprobaciones de WUPHF están desactivadas.",
+    "health_unknown": "El estado de las comprobaciones de WUPHF no está disponible.",
+    "health_waiting": "Las comprobaciones de WUPHF están activadas; aún no hay ninguna correcta.",
+    "health_stale": "Las comprobaciones de WUPHF están activadas; la última correcta fue hace más de 30 minutos.",
+    "health_failing": "Las comprobaciones de WUPHF están activadas; la última falló o devolvió datos incompletos.",
+    "health_recent": "Las comprobaciones de WUPHF están activadas; última correcta: {date}.",
+    "health_channel_attention": "Algunos canales necesitan atención. Revisa los detalles de las comprobaciones.",
+    "setup_calendar_sync_next": "Siguiente: sincroniza Google Calendar y revisa sus eventos. Revisa manualmente los eventos antiguos, editados o ambiguos. Si ya lo hiciste antes, confírmalo abajo.",
+    "setup_calendar_enable_next": "Siguiente: revisa los eventos en Google Calendar y activa las comprobaciones para futuras sincronizaciones.",
+    "setup_calendar_checks_on": "Las comprobaciones de WUPHF están activadas. Revisa su estado abajo y los eventos de tu calendario. Las instantáneas .ics importadas no se actualizan."
   },
   "de": {
     "language": "Sprache",
@@ -504,7 +524,17 @@
     "setup_checks_on": "Hintergrundprüfungen sind aktiviert. Prüfe unten ihren Status und die Erinnerungen auf deinem Gerät.",
     "calendar_export_help": "Der Export benötigt vollständige Codex-Daten. Aktualisiere oben, wenn Angaben fehlen.",
     "calendar_data_required": "Kalendersynchronisierung pausiert. Lade vollständige, gültige Codex-Reset-Details neu und versuche es erneut.",
-    "calendar_event_conflict": "Die Kalendersynchronisierung muss geprüft werden. Alte, bearbeitete oder unklare Termine wurden beibehalten; prüfe sie in Google Calendar. Erneutes Verbinden entfernt keine alten Termine."
+    "calendar_event_conflict": "Die Kalendersynchronisierung muss geprüft werden. Alte, bearbeitete oder unklare Termine wurden beibehalten; prüfe sie in Google Calendar. Erneutes Verbinden entfernt keine alten Termine.",
+    "health_off": "WUPHF-Hintergrundprüfungen sind ausgeschaltet.",
+    "health_unknown": "Der Status der WUPHF-Hintergrundprüfungen ist nicht verfügbar.",
+    "health_waiting": "WUPHF-Hintergrundprüfungen sind eingeschaltet; die erste erfolgreiche Prüfung steht noch aus.",
+    "health_stale": "WUPHF-Hintergrundprüfungen sind eingeschaltet; die letzte erfolgreiche Prüfung liegt über 30 Minuten zurück.",
+    "health_failing": "WUPHF-Hintergrundprüfungen sind eingeschaltet; die letzte Prüfung ist fehlgeschlagen oder lieferte unvollständige Daten.",
+    "health_recent": "WUPHF-Hintergrundprüfungen sind eingeschaltet; letzte erfolgreiche Prüfung: {date}.",
+    "health_channel_attention": "Einige Kanäle benötigen Aufmerksamkeit. Prüfe die Details der Hintergrundprüfungen.",
+    "setup_calendar_sync_next": "Nächster Schritt: Google Kalender synchronisieren und Termine prüfen. Alte, bearbeitete oder uneindeutige Termine manuell prüfen. Frühere Prüfung unten bestätigen.",
+    "setup_calendar_enable_next": "Nächster Schritt: Termine im Google Kalender prüfen, dann Hintergrundprüfungen für künftige Synchronisierungen aktivieren.",
+    "setup_calendar_checks_on": "WUPHF-Hintergrundprüfungen sind aktiviert. Prüfe unten ihren Status und deine Kalendertermine. Importierte .ics-Momentaufnahmen werden nicht aktualisiert."
   },
   "pt": {
     "language": "Idioma",
@@ -673,7 +703,17 @@
     "setup_checks_on": "As verificações estão ativadas. Confira o estado abaixo e os lembretes no seu dispositivo.",
     "calendar_export_help": "A exportação precisa de uma leitura completa do Codex. Atualize acima se faltarem dados.",
     "calendar_data_required": "Sincronização do calendário pausada. Atualize os dados completos e válidos dos resets do Codex e tente novamente.",
-    "calendar_event_conflict": "A sincronização do calendário precisa de revisão. Eventos antigos, editados ou incertos foram preservados; revise-os no Google Calendar. Reconectar não remove eventos antigos."
+    "calendar_event_conflict": "A sincronização do calendário precisa de revisão. Eventos antigos, editados ou incertos foram preservados; revise-os no Google Calendar. Reconectar não remove eventos antigos.",
+    "health_off": "As verificações do WUPHF estão desativadas.",
+    "health_unknown": "O estado das verificações do WUPHF está indisponível.",
+    "health_waiting": "As verificações do WUPHF estão ativadas; aguardando a primeira verificação bem-sucedida.",
+    "health_stale": "As verificações do WUPHF estão ativadas; a última bem-sucedida foi há mais de 30 minutos.",
+    "health_failing": "As verificações do WUPHF estão ativadas; a última falhou ou retornou dados incompletos.",
+    "health_recent": "As verificações do WUPHF estão ativadas; última bem-sucedida: {date}.",
+    "health_channel_attention": "Alguns canais precisam de atenção. Confira os detalhes das verificações.",
+    "setup_calendar_sync_next": "Próximo: sincronize o Google Agenda e confira os eventos. Revise manualmente eventos antigos, editados ou ambíguos. Se já conferiu antes, confirme abaixo.",
+    "setup_calendar_enable_next": "Próximo: confira os eventos no Google Agenda e ative as verificações para futuras sincronizações.",
+    "setup_calendar_checks_on": "As verificações do WUPHF estão ativadas. Confira o estado abaixo e os eventos do calendário. Arquivos .ics importados são instantâneos e não se atualizam."
   },
   "fr": {
     "language": "Langue",
@@ -842,7 +882,17 @@
     "setup_checks_on": "Les vérifications sont activées. Consultez leur état ci-dessous et vérifiez les rappels sur votre appareil.",
     "calendar_export_help": "L’export nécessite une lecture complète de Codex. Actualisez ci-dessus si des détails manquent.",
     "calendar_data_required": "Synchronisation du calendrier en pause. Actualisez les détails complets et valides des réinitialisations Codex, puis réessayez.",
-    "calendar_event_conflict": "La synchronisation du calendrier nécessite une vérification. Les événements anciens, modifiés ou incertains ont été conservés ; vérifiez-les dans Google Calendar. Une reconnexion ne supprime pas les anciens événements."
+    "calendar_event_conflict": "La synchronisation du calendrier nécessite une vérification. Les événements anciens, modifiés ou incertains ont été conservés ; vérifiez-les dans Google Calendar. Une reconnexion ne supprime pas les anciens événements.",
+    "health_off": "Les vérifications WUPHF sont désactivées.",
+    "health_unknown": "L’état des vérifications WUPHF est indisponible.",
+    "health_waiting": "Les vérifications WUPHF sont activées ; en attente de la première vérification réussie.",
+    "health_stale": "Les vérifications WUPHF sont activées ; la dernière vérification réussie date de plus de 30 minutes.",
+    "health_failing": "Les vérifications WUPHF sont activées ; la dernière a échoué ou renvoyé des données incomplètes.",
+    "health_recent": "Les vérifications WUPHF sont activées ; dernière vérification réussie : {date}.",
+    "health_channel_attention": "Certains canaux nécessitent votre attention. Consultez les détails des vérifications.",
+    "setup_calendar_sync_next": "Étape suivante : synchronisez Google Agenda et vérifiez les événements. Vérifiez manuellement les événements anciens, modifiés ou ambigus. Si cela a déjà été fait, confirmez-le ci-dessous.",
+    "setup_calendar_enable_next": "Étape suivante : vérifiez les événements dans Google Agenda, puis activez les vérifications pour les prochaines synchronisations.",
+    "setup_calendar_checks_on": "Les vérifications WUPHF sont activées. Consultez leur état ci-dessous et vérifiez vos événements. Les instantanés .ics importés ne sont pas mis à jour."
   },
   "ja": {
     "language": "言語",
@@ -1011,7 +1061,17 @@
     "setup_checks_on": "バックグラウンド確認は有効です。下の動作状況と端末の通知を確認してください。",
     "calendar_export_help": "書き出しには完全な Codex 情報が必要です。詳細が不足している場合は上の更新を押してください。",
     "calendar_data_required": "カレンダーの同期を一時停止しました。Codex の完全で有効なリセット情報を再取得してから、もう一度お試しください。",
-    "calendar_event_conflict": "カレンダーの同期には確認が必要です。従来の予定、編集済みの予定、状態が不明な予定は保持しました。Google Calendar で確認してください。再接続しても古い予定は削除されません。"
+    "calendar_event_conflict": "カレンダーの同期には確認が必要です。従来の予定、編集済みの予定、状態が不明な予定は保持しました。Google Calendar で確認してください。再接続しても古い予定は削除されません。",
+    "health_off": "WUPHF のバックグラウンド確認はオフです。",
+    "health_unknown": "WUPHF のバックグラウンド確認の状態を取得できません。",
+    "health_waiting": "WUPHF のバックグラウンド確認はオンです。最初の正常な確認を待っています。",
+    "health_stale": "WUPHF のバックグラウンド確認はオンですが、最後の正常な確認から30分以上経過しています。",
+    "health_failing": "WUPHF のバックグラウンド確認はオンですが、前回の確認は失敗したか、データが不完全でした。",
+    "health_recent": "WUPHF のバックグラウンド確認はオンです。最後の正常な確認：{date}。",
+    "health_channel_attention": "対応が必要なチャンネルがあります。バックグラウンド確認の詳細をご確認ください。",
+    "setup_calendar_sync_next": "次に Google カレンダーを同期してイベントを確認してください。古い、編集済み、または判別できないイベントは手動で確認してください。確認済みの場合は下でチェックしてください。",
+    "setup_calendar_enable_next": "次に Google カレンダーのイベントを確認し、今後の同期のためにバックグラウンド確認を有効にしてください。",
+    "setup_calendar_checks_on": "WUPHF のバックグラウンド確認は有効です。下の状態とカレンダーのイベントを確認してください。インポートした .ics はその時点の記録で、更新されません。"
   },
   "ko": {
     "language": "언어",
@@ -1180,7 +1240,17 @@
     "setup_checks_on": "백그라운드 확인이 켜져 있습니다. 아래 상태와 기기에서 알림을 확인하세요.",
     "calendar_export_help": "내보내기에는 완전한 Codex 정보가 필요합니다. 정보가 부족하면 위에서 새로고침하세요.",
     "calendar_data_required": "캘린더 동기화가 일시 중지되었습니다. 완전하고 유효한 Codex 리셋 정보를 새로 고친 뒤 다시 시도하세요.",
-    "calendar_event_conflict": "캘린더 동기화를 검토해야 합니다. 이전 일정, 수정한 일정, 상태가 불확실한 일정은 보존되었습니다. Google Calendar에서 확인하세요. 다시 연결해도 이전 일정은 삭제되지 않습니다."
+    "calendar_event_conflict": "캘린더 동기화를 검토해야 합니다. 이전 일정, 수정한 일정, 상태가 불확실한 일정은 보존되었습니다. Google Calendar에서 확인하세요. 다시 연결해도 이전 일정은 삭제되지 않습니다.",
+    "health_off": "WUPHF 백그라운드 확인이 꺼져 있습니다.",
+    "health_unknown": "WUPHF 백그라운드 확인 상태를 알 수 없습니다.",
+    "health_waiting": "WUPHF 백그라운드 확인이 켜져 있으며 첫 성공을 기다리고 있습니다.",
+    "health_stale": "WUPHF 백그라운드 확인이 켜져 있지만 마지막 성공 후 30분 넘게 지났습니다.",
+    "health_failing": "WUPHF 백그라운드 확인이 켜져 있지만 마지막 확인이 실패했거나 데이터가 불완전했습니다.",
+    "health_recent": "WUPHF 백그라운드 확인이 켜져 있습니다. 마지막 성공: {date}.",
+    "health_channel_attention": "일부 채널에 주의가 필요합니다. 백그라운드 확인 세부 정보를 확인하세요.",
+    "setup_calendar_sync_next": "다음: Google Calendar를 동기화하고 이벤트를 확인하세요. 오래되었거나 수정되었거나 모호한 이벤트는 직접 검토하세요. 이미 확인했다면 아래에서 표시하세요.",
+    "setup_calendar_enable_next": "다음: Google Calendar의 이벤트를 확인한 뒤 향후 동기화를 위해 백그라운드 확인을 켜세요.",
+    "setup_calendar_checks_on": "WUPHF 백그라운드 확인이 켜져 있습니다. 아래 상태와 캘린더 이벤트를 확인하세요. 가져온 .ics 스냅샷은 업데이트되지 않습니다."
   },
   "zh": {
     "language": "语言",
@@ -1349,6 +1419,16 @@
     "setup_checks_on": "后台检查已启用。请检查下方运行状态，并在设备上确认提醒。",
     "calendar_export_help": "导出需要完整的 Codex 读取结果。若缺少信息，请在上方刷新。",
     "calendar_data_required": "日历同步已暂停。请刷新完整、有效的 Codex 重置详情，然后重试。",
-    "calendar_event_conflict": "日历同步需要检查。旧版、已编辑或状态不明的事件已保留，请在 Google Calendar 中检查。重新连接不会删除旧事件。"
+    "calendar_event_conflict": "日历同步需要检查。旧版、已编辑或状态不明的事件已保留，请在 Google Calendar 中检查。重新连接不会删除旧事件。",
+    "health_off": "WUPHF 后台检查已关闭。",
+    "health_unknown": "无法获取 WUPHF 后台检查状态。",
+    "health_waiting": "WUPHF 后台检查已开启，正在等待首次成功检查。",
+    "health_stale": "WUPHF 后台检查已开启，但距上次成功检查已超过30分钟。",
+    "health_failing": "WUPHF 后台检查已开启，但上次检查失败或数据不完整。",
+    "health_recent": "WUPHF 后台检查已开启，上次成功检查：{date}。",
+    "health_channel_attention": "部分渠道需要处理。请查看后台检查详情。",
+    "setup_calendar_sync_next": "下一步：同步 Google 日历并检查事件。请手动检查旧事件、编辑过的事件或归属不明的事件。如果之前已检查，请在下方确认。",
+    "setup_calendar_enable_next": "下一步：检查 Google 日历中的事件，然后启用后台检查以便后续同步。",
+    "setup_calendar_checks_on": "WUPHF 后台检查已启用。请查看下方状态并检查日历事件。导入的 .ics 快照不会更新。"
   }
 }

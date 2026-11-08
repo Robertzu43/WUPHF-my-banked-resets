@@ -15,18 +15,28 @@ const googleWarnings=[...html.matchAll(/<p class="warning" data-i18n="google_res
 assert.equal(googleWarnings.length,2);for(const warning of googleWarnings)assert.equal(warning[1],catalog.en.google_restriction,'Inline Google guidance must match the simplified English translation');
 
 const calls=[];let failSave=false,failTest=false;
+const saveIds=['settings-save','telegram-save','gmail-save','email-save'];
+for(const id of saveIds){
+ const button=html.match(new RegExp('<button[^>]*id="'+id+'"[^>]*>'));
+ assert(button,id+' must be a native submitter inside the existing settings form');
+ assert(/type="submit"/.test(button[0])&&!/formnovalidate/.test(button[0]),id+' must retain native form validation');
+ assert(html.indexOf(button[0])>html.indexOf('<form id="settings">')&&html.indexOf(button[0])<html.indexOf('</form>'));
+}
 ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api/settings'&&method==='POST'){if(failSave)throw Error('save failed');return {ok:true}}if(path==='/api/test'){if(failTest)throw Error('test failed');return {ok:true}}if(path==='/api/settings')return {advance_days:7,repeat_hours:24,language:'en',channels:{telegram:{chat_id:'123'}}};throw Error('Unexpected '+path)};
 (async()=>{
  assert(tests.every(b=>b.disabled),'Tests must start disabled while settings are loading');
+ assert(saveIds.every(id=>element(id).disabled),'Every Save must start disabled while settings are loading');
  assert(element('install').disabled,'Enable must start disabled');
  assert(element('calendar-download').disabled,'Calendar export starts unavailable until Codex data is complete');
  await ctx.settings();
+ assert(saveIds.every(id=>!element(id).disabled),'Every Save must become reachable after settings load');
  assert.equal(element('test-telegram').disabled,false);
  assert.equal(element('install').disabled,true,'Saved configuration is not evidence of an accepted test');
  element('telegram-chat').value='456';await element('settings').dispatch('input');
+ assert(saveIds.every(id=>!element(id).disabled),'Dirty settings must remain saveable beside each channel test');
  assert(element('test-telegram').disabled,'Editing must block tests of the stale saved destination');
  const before=calls.length;await element('test-telegram').dispatch('click');assert.equal(calls.length,before,'Guard must prevent stale requests even when invoked programmatically');
- failSave=true;await element('settings').dispatch('submit');assert(element('test-telegram').disabled);assert.equal(element('settings-state').textContent,catalog.en.setup_unsaved);assert.equal(element('flash').dataset.error,'true');assert.equal(element('flash').getAttribute('role'),'alert');assert.equal(element('flash').getAttribute('aria-live'),'assertive');
+ failSave=true;await element('settings').dispatch('submit');assert(saveIds.every(id=>!element(id).disabled),'A failed save must leave every retry reachable');assert(element('test-telegram').disabled);assert.equal(element('settings-state').textContent,catalog.en.setup_unsaved);assert.equal(element('flash').dataset.error,'true');assert.equal(element('flash').getAttribute('role'),'alert');assert.equal(element('flash').getAttribute('aria-live'),'assertive');
  failSave=false;await element('settings').dispatch('submit');assert.equal(calls.at(-1)[2].channels.telegram.chat_id,'456');assert.equal(element('flash').dataset.error,'false');assert.equal(element('flash').getAttribute('role'),'status');assert.equal(element('flash').getAttribute('aria-live'),'polite');assert(/\.flash\[data-error="false"\]\s*\{[^}]*color:\s*var\(--accent\)/.test(html),'Successful status must use the existing blue accent');assert(!element('test-telegram').disabled);
  failTest=true;await element('test-telegram').dispatch('click');assert(element('install').disabled);assert.equal(element('test-state-telegram').textContent,catalog.en.test_failed);assert.equal(element('flash').dataset.error,'true');
  failTest=false;await element('test-telegram').dispatch('click');assert(!element('install').disabled);assert(element('test-state-telegram').textContent.includes('accepted'));assert(!element('test-state-telegram').textContent.includes('received'));
@@ -43,11 +53,11 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
  const normalApi=ctx.api;let release;
  ctx.api=async(path,...args)=>path==='/api/test'?new Promise(resolve=>{release=resolve}):normalApi(path,...args);
  element('use-gmail').checked=false;await element('settings').dispatch('change');await element('settings').dispatch('submit');
- const pending=element('test-telegram').dispatch('click');assert(element('test-telegram').disabled,'A pending test blocks duplicate sends');
+ const pending=element('test-telegram').dispatch('click');assert(element('test-telegram').disabled,'A pending test blocks duplicate sends');assert(saveIds.every(id=>element(id).disabled),'A pending test must disable every Save until its saved revision settles');
  element('telegram-chat').value='789';await element('settings').dispatch('input');release({ok:true});await pending;
  assert(element('install').disabled,'A test of the old revision cannot verify an edited destination');assert.equal(element('test-state-telegram').textContent,catalog.en.test_not_checked);
- let saveRelease;ctx.api=async(path,method,...args)=>path==='/api/settings'&&method==='POST'?new Promise(resolve=>{saveRelease=resolve}):normalApi(path,method,...args);
- const saving=element('settings').dispatch('submit');element('telegram-token').value='newer-secret';await element('settings').dispatch('input');saveRelease({ok:true});await saving;
+ let saveRelease,saveRequests=0;ctx.api=async(path,method,...args)=>{if(path==='/api/settings'&&method==='POST'){saveRequests++;return new Promise(resolve=>{saveRelease=resolve})}return normalApi(path,method,...args)};
+ const saving=element('settings').dispatch('submit');assert(saveIds.every(id=>element(id).disabled),'A pending save must disable all submitters');await element('settings').dispatch('submit');assert.equal(saveRequests,1,'Repeated native submits must share the busy guard');element('telegram-token').value='newer-secret';await element('settings').dispatch('input');saveRelease({ok:true});await saving;
  assert(element('test-telegram').disabled,'An edit during save must remain unsaved');assert.equal(element('telegram-token').value,'newer-secret','A save must not erase a newer unsaved token');
  ctx.api=normalApi;await element('settings').dispatch('submit');
  element('use-gmail').checked=true;await element('settings').dispatch('change');await element('settings').dispatch('submit');ctx.renderGmail({state:'saved'});element('setup-ack').checked=true;await element('setup-ack').dispatch('change');assert(!element('install').disabled);
@@ -177,7 +187,31 @@ ctx.api=async(path,method,data)=>{calls.push([path,method,data]);if(path==='/api
   assert(catalog[language].saved_calendar);calendarSaved.add(catalog[language].saved_calendar);
  }
  assert.equal(unavailable.size,8);assert.equal(calendarSaved.size,8,'Calendar-only save guidance must be localized in all languages');
- vm.runInContext("language='en'",ctx);element('use-telegram').checked=true;await element('settings').dispatch('change');await element('settings').dispatch('submit');
+ for(const language of Object.keys(catalog)){
+  vm.runInContext('language='+JSON.stringify(language),ctx);
+  for(const [scheduler,check_status,last_error,key] of [
+   ['disabled','recent',false,'health_off'],['unknown','recent',false,'health_unknown'],
+   ['enabled','never',false,'health_waiting'],['enabled','stale',false,'health_stale'],
+   ['enabled','recent',true,'health_failing'],['enabled','unknown',false,'health_unknown'],
+   ['enabled','recent',false,'health_recent']
+  ]){
+   ctx.renderBackground({scheduler,check_status,last_error,last_check:check_status==='never'?null:100,failures:[]});
+   assert(catalog[language][key],language+' must localize '+key);
+   assert.equal(element('reminder-health').textContent,catalog[language][key].replace('{date}',ctx.dateTime(100000)),language+' health must describe actual background checks, independently of provider failures');
+  }
+  for(const channel of ['gmail','google','telegram']){
+   ctx.renderBackground({scheduler:'enabled',check_status:'recent',last_error:false,last_check:100,failures:[channel]});
+   assert(catalog[language].health_channel_attention);
+   assert.equal(element('reminder-health').textContent,catalog[language].health_recent.replace('{date}',ctx.dateTime(100000))+' '+catalog[language].health_channel_attention,'A successful check with a channel failure must surface attention without claiming the check failed or delivery succeeded');
+  }
+  ctx.api=async()=>{throw Error('background unavailable')};await ctx.backgroundStatus();assert.equal(element('reminder-health').textContent,catalog[language].health_unknown,'A failed health refresh must not retain a successful check summary');
+  ctx.renderBackground({scheduler:'disabled',check_status:'never',last_check:null,last_error:false,failures:[]});
+  ctx.renderGoogle({state:'disconnected'});assert.equal(element('setup-next').textContent,catalog[language].ics_route);
+  element('setup-ack').checked=false;ctx.renderGoogle({state:'saved'});assert(catalog[language].setup_calendar_sync_next);assert.equal(element('setup-next').textContent,catalog[language].setup_calendar_sync_next);
+  vm.runInContext('googleSynced=true;renderSetup()',ctx);assert(catalog[language].setup_calendar_enable_next);assert.equal(element('setup-next').textContent,catalog[language].setup_calendar_enable_next);
+  ctx.renderBackground({scheduler:'enabled',check_status:'recent',last_check:100,last_error:false,failures:[]});assert(catalog[language].setup_calendar_checks_on);assert.equal(element('setup-next').textContent,catalog[language].setup_calendar_checks_on);
+ }
+ ctx.api=async()=>({ok:true});vm.runInContext("language='en'",ctx);element('use-telegram').checked=true;await element('settings').dispatch('change');await element('settings').dispatch('submit');
  assert.equal(element('flash').textContent,catalog.en.saved,'Notification settings retain the send-test next step');
  console.log('Guided setup prevents stale sends and false readiness, recovers after save/test failures, and gates disconnected/incomplete actions.');
 })().catch(e=>{console.error(e);process.exitCode=1});
