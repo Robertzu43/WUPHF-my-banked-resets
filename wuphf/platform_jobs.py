@@ -57,7 +57,9 @@ def install():
     UNITS.mkdir(parents=True,exist_ok=True)
     path=os.environ.get('PATH','/usr/bin:/bin')
     directory=Path(sys.executable).parent if frozen else ROOT
-    service_text='[Unit]\nDescription=WUPHF reset reminders\n[Service]\nType=oneshot\nWorkingDirectory='+_quote(directory)+'\nEnvironment='+_quote('PATH='+path)+'\nExecStart='+' '.join(_quote(arg) for arg in command)+'\n'
+    # The systemd ':' prefix preserves literal dollar signs in command paths.
+    literal=':' if any('$' in arg for arg in command) else ''
+    service_text='[Unit]\nDescription=WUPHF reset reminders\n[Service]\nType=oneshot\nWorkingDirectory='+_quote(directory)+'\nEnvironment='+_quote('PATH='+path)+'\nExecStart='+literal+' '.join(_quote(arg) for arg in command)+'\n'
     timer_text='[Unit]\nDescription=Check WUPHF reset reminders\n[Timer]\nOnStartupSec=1min\nOnUnitActiveSec=10min\nAccuracySec=10s\n[Install]\nWantedBy=timers.target\n'
     created=[]
     try:

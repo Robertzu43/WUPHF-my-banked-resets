@@ -117,3 +117,22 @@ class PlatformJobsTests(unittest.TestCase):
                 platform_jobs.install()
             args=run.call_args.args[0]
             self.assertEqual(args[args.index('/TR')+1],subprocess.list2cmdline([str(exe),str(root/'start_background.py')]))
+
+    def test_linux_source_scheduler_escapes_dollar_in_exec_arguments_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)/'Source ${USER} 10%';units=Path(d)/'units';exe=Path(d)/'Python ${HOME}'/'python'
+            with patch.object(platform_jobs.sys,'platform','linux'),patch.object(platform_jobs.sys,'frozen',False,create=True),patch.object(platform_jobs.sys,'executable',str(exe)),patch.object(platform_jobs,'ROOT',root),patch.object(platform_jobs,'UNITS',units),patch.dict(platform_jobs.os.environ,{'PATH':'/literal/${PATH}'}),patch.object(platform_jobs.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
+                platform_jobs.install()
+            service=(units/'wuphf-resets.service').read_text()
+            self.assertIn('WorkingDirectory='+platform_jobs._quote(root)+'\n',service)
+            self.assertIn('Environment='+platform_jobs._quote('PATH=/literal/${PATH}')+'\n',service)
+            self.assertIn('ExecStart=:'+platform_jobs._quote(exe)+' '+platform_jobs._quote(root/'start_background.py'),service)
+
+    def test_linux_frozen_scheduler_escapes_dollar_in_exec_arguments_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            exe=Path(d)/'Installed ${USER}'/'WUPHF';units=Path(d)/'units'
+            with patch.object(platform_jobs.sys,'platform','linux'),patch.object(platform_jobs.sys,'frozen',True,create=True),patch.object(platform_jobs.sys,'executable',str(exe)),patch.object(platform_jobs,'UNITS',units),patch.object(platform_jobs.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
+                platform_jobs.install()
+            service=(units/'wuphf-resets.service').read_text()
+            self.assertIn('WorkingDirectory='+platform_jobs._quote(exe.parent)+'\n',service)
+            self.assertIn('ExecStart=:'+platform_jobs._quote(exe)+' "--background"',service)
