@@ -144,7 +144,7 @@ class PackageLayoutTests(unittest.TestCase):
             for base in [package,package/'_internal']:
                 for relative in (path for path in build_package.PUBLIC_FILES if path.endswith('.md')):
                     document=base/relative
-                    links=re.findall(r'\]\(([^)]+)\)|(?:href|src)="([^"]+)"',document.read_text())
+                    links=re.findall(r'\]\(([^)]+)\)|(?:href|src)="([^"]+)"',document.read_text(encoding='utf-8'))
                     for markdown,html in links:
                         link=urlsplit(markdown or html)
                         if link.scheme or link.netloc or not link.path:continue
