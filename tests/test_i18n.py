@@ -41,10 +41,10 @@ class LanguageTests(unittest.TestCase):
         import tempfile
         from pathlib import Path
         from wuphf.runner import check
-        snap={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':1000}]}
+        snap={'count':1,'complete':True,'credits':[{'id':'a','status':'available','expiresAt':87400}]}
         settings={'advance_days':1,'repeat_hours':1,'channels':{'ntfy':{}},'language':'es'};sent=[]
         with tempfile.TemporaryDirectory() as d:
-            check(snap,settings,Path(d)/'state.json',now=900,deliver=lambda *a:sent.append(a))
+            check(snap,settings,Path(d)/'state.json',now=87300,deliver=lambda *a:sent.append(a))
         self.assertEqual(len(sent),1)
         self.assertIn('caduca',sent[0][2].lower())
         self.assertEqual(sent[0][1]['language'],'es')
