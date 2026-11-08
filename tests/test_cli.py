@@ -28,6 +28,29 @@ class CliTests(unittest.TestCase):
             with patch('wuphf.cli.PLIST',p),patch('wuphf.cli.sys.platform','darwin'),patch('wuphf.cli.shutil.which',return_value='/bin/codex'),patch('wuphf.cli.subprocess.run'):
                 with self.assertRaises(RuntimeError): install_agent()
             self.assertEqual(p.read_text(),'existing')
+    def test_mac_install_refuses_protected_source_and_frozen_paths_before_job_changes(self):
+        import tempfile
+        from pathlib import Path
+        from wuphf import cli
+        with tempfile.TemporaryDirectory() as d:
+            home=Path(d); plist=home/'agent.plist'
+            for folder,frozen in ((folder,frozen) for folder in ('Documents','Desktop','Downloads') for frozen in (False,True)):
+                protected=home/folder/'WUPHF'
+                with self.subTest(folder=folder,frozen=frozen),patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',plist),patch.object(cli,'ROOT',protected),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',frozen,create=True),patch.object(cli.sys,'executable',str(protected/'WUPHF')),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run') as launch:
+                    with self.assertRaisesRegex(RuntimeError,'Application Support'):cli.install_agent()
+                    launch.assert_not_called();self.assertFalse(plist.exists())
+
+    def test_mac_install_resolves_symlink_to_protected_source(self):
+        import tempfile
+        from pathlib import Path
+        from wuphf import cli
+        with tempfile.TemporaryDirectory() as d:
+            home=Path(d);target=home/'Documents'/'app';target.mkdir(parents=True)
+            alias=home/'app';alias.symlink_to(target,target_is_directory=True)
+            with patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',home/'agent.plist'),patch.object(cli,'ROOT',alias),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.sys,'executable','/usr/bin/python3'),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run') as launch:
+                with self.assertRaises(cli.ProtectedMacLocation):cli.install_agent()
+                launch.assert_not_called()
+
     def test_failed_background_check_records_failure(self):
         import tempfile
         from pathlib import Path
@@ -54,7 +77,7 @@ class CliTests(unittest.TestCase):
         from wuphf.cli import install_agent
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'agent.plist'
-            with patch('wuphf.cli.PLIST',p),patch('wuphf.cli.sys.platform','darwin'),patch('wuphf.cli.os.getuid',return_value=100,create=True),patch('wuphf.cli.shutil.which',return_value='/bin/codex'),patch('wuphf.cli.subprocess.run',return_value=SimpleNamespace(returncode=1)):
+            with patch('wuphf.cli.PLIST',p),patch('wuphf.cli.ROOT',Path(d)),patch('wuphf.cli.sys.platform','darwin'),patch('wuphf.cli.os.getuid',return_value=100,create=True),patch('wuphf.cli.shutil.which',return_value='/bin/codex'),patch('wuphf.cli.subprocess.run',return_value=SimpleNamespace(returncode=1)):
                 with self.assertRaises(RuntimeError):install_agent()
             self.assertFalse(p.exists())
     def test_google_sync_failure_is_recorded_after_successful_read(self):
@@ -139,10 +162,10 @@ class CliTests(unittest.TestCase):
         from wuphf import cli
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);plist=root/'agent.plist'
-            with patch.object(cli,'PLIST',plist),patch.object(cli,'ROOT',root),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.sys,'executable','python-example'),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
+            with patch.object(cli,'PLIST',plist),patch.object(cli,'ROOT',root),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.sys,'executable','/usr/bin/python-example'),patch.object(cli.os,'getuid',return_value=100,create=True),patch.object(cli.shutil,'which',return_value='codex'),patch.object(cli.subprocess,'run',return_value=SimpleNamespace(returncode=0)):
                 cli.install_agent()
             job=plistlib.loads(plist.read_bytes())
-            self.assertEqual(job['ProgramArguments'],['python-example','-m','wuphf.cli','run'])
+            self.assertEqual(job['ProgramArguments'],['/usr/bin/python-example','-m','wuphf.cli','run'])
             self.assertEqual(job['WorkingDirectory'],str(root))
 
     def test_new_cli_setup_does_not_offer_ntfy_but_existing_users_can_disable_it(self):

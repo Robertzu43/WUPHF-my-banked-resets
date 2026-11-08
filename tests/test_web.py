@@ -19,6 +19,17 @@ class WebTests(unittest.TestCase):
         res,_=self.request('GET','/api/settings');self.assertEqual(res.status,403)
         res,_=self.request('POST','/api/settings',{}, {'Cookie':'wuphf_session=test-token','Origin':'https://other.example','X-WUPHF-Token':'test-token'})
         self.assertEqual(res.status,403)
+    def test_protected_mac_install_explains_how_to_move_app(self):
+        from pathlib import Path
+        import tempfile
+        from wuphf import cli
+        with tempfile.TemporaryDirectory() as d:
+            home=Path(d)
+            with patch.object(Path,'home',return_value=home),patch.object(cli,'PLIST',home/'agent.plist'),patch.object(cli,'ROOT',home/'Documents'/'WUPHF'),patch.object(cli.sys,'platform','darwin'),patch.object(cli.sys,'frozen',False,create=True),patch.object(cli.shutil,'which',return_value='codex'):
+                res,body=self.request('POST','/api/install',{}, {'Cookie':'wuphf_session=test-token','Origin':f'http://127.0.0.1:{self.port}','X-WUPHF-Token':'test-token'})
+            self.assertEqual(res.status,400);self.assertEqual(json.loads(body)['error'],'mac_protected_location')
+            self.assertFalse((home/'agent.plist').exists())
+
     def test_pixel_font_is_same_origin_and_requires_session(self):
         res,_=self.request('GET','/assets/geist-pixel-square.woff2')
         self.assertEqual(res.status,403)

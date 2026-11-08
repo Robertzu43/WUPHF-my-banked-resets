@@ -70,6 +70,10 @@ def send_with_secrets(name, config, text):
     send(name,item,text)
 
 
+class ProtectedMacLocation(RuntimeError):
+    pass
+
+
 def install_agent():
     if not shutil.which('codex'): raise RuntimeError('Codex CLI was not found in PATH.')
     if sys.platform!='darwin':
@@ -78,10 +82,16 @@ def install_agent():
         print('Background job installed. Keep your computer awake, online, and logged in.')
         return
     if PLIST.exists(): raise RuntimeError('Background job is already installed; uninstall before reinstalling.')
-    PLIST.parent.mkdir(parents=True,exist_ok=True)
     frozen=getattr(sys,'frozen',False)
     arguments=[sys.executable,'--background'] if frozen else [sys.executable,'-m','wuphf.cli','run']
     directory=Path(sys.executable).parent if frozen else ROOT
+    protected=[(Path.home()/name).resolve() for name in ('Documents','Desktop','Downloads')]
+    locations=[directory.absolute(),Path(sys.executable).absolute()]
+    paths=locations+[path.resolve() for path in locations]
+    # macOS privacy rules can also block other locations; status still needs monitoring.
+    if any(path==folder or folder in path.parents for path in paths for folder in protected):
+        raise ProtectedMacLocation('Move WUPHF and its Python environment out of Documents, Desktop, or Downloads, for example to ~/Library/Application Support/WUPHF; reopen it and enable checks again.')
+    PLIST.parent.mkdir(parents=True,exist_ok=True)
     job={'Label':'com.wuphf.resets','ProgramArguments':arguments,'WorkingDirectory':str(directory),'RunAtLoad':True,'StartInterval':600,'EnvironmentVariables':{'PATH':os.environ.get('PATH','/usr/bin:/bin')}}
     with open(PLIST,'wb') as f: plistlib.dump(job,f)
     os.chmod(PLIST,0o600)

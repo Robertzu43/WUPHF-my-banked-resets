@@ -26,7 +26,7 @@ When Codex supplies an account identifier, WUPHF uses a local fingerprint to avo
 These instructions describe the current **cross-platform development branch**, not a finished installer. Windows and Linux require full real-account testing before release.
 
 1. Install **Python 3.11 or newer** and the [Codex CLI](https://developers.openai.com/codex/cli/). Sign in to the CLI with the ChatGPT account whose resets you want to track.
-2. Download and unzip the [`feature/cross-platform` branch](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/heads/feature/cross-platform.zip). Keep the extracted folder in a permanent location: background checks need it to remain there.
+2. Download and unzip the [`feature/cross-platform` branch](https://github.com/Robertzu43/WUPHF-my-banked-resets/archive/refs/heads/feature/cross-platform.zip). Keep the extracted folder in a permanent location: background checks need it to remain there. On macOS, keep WUPHF and its Python environment outside Documents, Desktop and Downloads (for example in `~/Library/Application Support/WUPHF`); background installation blocks those protected folders. Other macOS privacy restrictions may still prevent checks, so confirm the background status after enabling.
 3. Start WUPHF from that folder:
    - **macOS:** Double-click `Start WUPHF.command`. If macOS blocks the unsigned launcher, open Terminal in the folder and run `python3 -m wuphf.web`.
    - **Windows:** Double-click `Start WUPHF.bat`.
