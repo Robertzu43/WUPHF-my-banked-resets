@@ -12,6 +12,7 @@
 </p>
 <p align="center">
   <a href="#let-codex-set-it-up-for-you"><strong>Set up with Codex</strong></a> ·
+  <a href="docs/user-guide.md"><strong>Full user guide</strong></a> ·
   <a href="#install-and-get-started"><strong>Install manually</strong></a> ·
   <a href="#connect-your-own-accounts"><strong>Connect your accounts</strong></a> ·
   <a href="#help-and-troubleshooting"><strong>Get help</strong></a> ·
@@ -20,6 +21,10 @@
 
 WUPHF checks your available **banked Codex resets** and reminds you before known expiry dates. It never uses a reset for you. Choose **Gmail, other email, Telegram, calendar dates, or any combination**. There is no WUPHF account or hosted reminder service to sign up for.
 
+A banked reset is a one-time reset saved to your Codex account for you to use before it expires. WUPHF watches that expiry, not your normal five-hour or weekly usage refresh. [Read OpenAI's explanation](https://help.openai.com/en/articles/20001498-how-resets-work-in-codex).
+
+**New here?** The [full user guide](docs/user-guide.md) explains which option to choose, installation on each supported computer, every connection, reminder settings, calendar imports, daily use, troubleshooting and removal. Its [setup checklist](docs/user-guide.md#6-check-that-setup-is-complete) helps you verify that your own installation works.
+
 ## Let Codex set it up for you
 
 Copy the prompt below into a **local Codex session on the computer that will run WUPHF**. Codex can handle the technical setup when that session has terminal and browser access. You choose the channels and complete any required sign-in or permission prompts. No passwords or bot tokens belong in the chat.
@@ -27,7 +32,7 @@ Copy the prompt below into a **local Codex session on the computer that will run
 ```text
 Install and configure WUPHF for Codex Banked Resets on this computer for me.
 Official project: https://github.com/Robertzu43/WUPHF-my-banked-resets
-Setup guide: https://github.com/Robertzu43/WUPHF-my-banked-resets#install-and-get-started
+Setup guide: https://github.com/Robertzu43/WUPHF-my-banked-resets/blob/wuphf-initial/docs/user-guide.md
 
 Do the setup work using your available tools. First check that you can access
 my local computer; a cloud workspace cannot install my local background job.
@@ -147,7 +152,7 @@ You only create the bot once. Never share its token publicly. If automatic looku
 
 Click **Download .ics**, then import the file into Google Calendar, Apple Calendar, Outlook, or another compatible app. This works without connecting WUPHF to Google.
 
-The file is a **snapshot**, not a subscription: it does not automatically update. Review imported events and alarms in your calendar app. Re-importing can create duplicates depending on the app.
+The file is a **snapshot**, not a subscription: it does not automatically update. Review imported events and alarms in your calendar app. Re-importing can create duplicates depending on the app. See [import steps for Google Calendar, Apple Calendar and Outlook](docs/user-guide.md#calendar-file-ics). Calendar alarms are separate from your email/Telegram reminder frequency.
 
 ### Google Calendar: automatic sync
 
